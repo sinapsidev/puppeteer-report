@@ -14,13 +14,18 @@ app.get('/', function (req, res) {
 })
 
 app.post('/print', async (req, res) => {
-  const browser = await puppeteer.launch()
-  const page = await browser.newPage()
-  await page.goto(req.body)
-  const buffer = await page.pdf({ format: 'A4' })
-  await browser.close()
-  res.type('application/pdf')
-  res.send(buffer)
+  try {
+    const browser = await puppeteer.launch()
+    const page = await browser.newPage()
+    await page.goto(req.body)
+    const buffer = await page.pdf({ format: 'A4' })
+    await browser.close()
+    res.type('application/pdf')
+    res.send(buffer)
+  } catch (e) {
+    res.status(500)
+    res.send(e.message)
+  }
 })
 
 app.listen(PORT, function () {
