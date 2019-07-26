@@ -1,64 +1,99 @@
-
 <!DOCTYPE html>
 <html lang="it">
-    <head>
-        <title>Print Template Example</title>
-        <link rel="stylesheet" href="./style.css" >
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.8/angular.js"></script>
-    </head>
-    <body ng-app>
-        
-        <div id="header">
-            <div style="font-size: 11px">
-                <h1>Zio Paperone</h1>
-                <div class="p-1">
-                    Zio Paperone srl - via di Casa Mia - Paperopoli 12, (PP) - Tel. 0444/123456 - Fax. 0444/123456<br/>
-                    info@ziopaperone.com - www.ziopaperone.com - Iscrizione Registro Imprese PP - C.F. - Partita IVA 1111111111
-                </div>
+
+<head>
+    <title>Print Template Example</title>
+    <link rel="stylesheet" href="./style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.8/angular.js"></script>
+</head>
+
+<body ng-app>
+
+    <div id="header">
+        <div style="padding: 5px 15px; border-bottom: 1px solid #000000;">         
+            <div >Zio Paperone</div>
+            <div >
+                <img width="20px" style="float: left;" src="data:image/png;base64,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
+" />
+                Zio Paperone srl - via di Casa Mia - Paperopoli 12, (PP) - Tel. 0444/123456 - Fax. 0444/123456<br />
+                info@ziopaperone.com - www.ziopaperone.com - Iscrizione Registro Imprese PP - C.F. - Partita IVA 1111111111
             </div>
+
+            <div style="text-align: right; margin-top: 5px;">Business Unit Qui Quo Qua</div>
         </div>
-       
+    </div>
 
-        <div id="body">
 
-                <h1>VERBALE DI ESECUZIONE ESEMPIO - RIEPILOGO ESEMPIO</h1>
+    <div id="body">
 
-                <div>
-                    Verifica 2099 / 999
-                    Fasi eseguite dal 11/11/2019 al 12/11/2019
-                </div>
-        
-                <div>
-                    Cliente: COSTRUZIONI TOPOLINIA SRL
-                    Cantiere:
-                    EDILTOPOLINIA S.R.L. DEPOSITO - SEDE VIA DEL BARATTO, 44 - 55555 - TOPOLINIA (TP)
-                </div>
-        
-                <div>
-                    Contratto verifiche visive accessori sottogancio
-                </div>
-        
-        
-                <div>
-                    KIT EDI _generico matr. Ediltopolina GT 888-C1,5 matr 888888
-                </div>
+        <div class="p-1">
 
-        
 
-        </div>
-        
-        <div id="footer">
-            <div style="font-size: 11px">
-                <div class="p-1">
-                    Zio Paperone srl - via di Casa Mia - Paperopoli 12, (PP) - Tel. 0444/123456 - Fax. 0444/123456<br/>
-                    info@ziopaperone.com - www.ziopaperone.com - Iscrizione Registro Imprese PP - C.F. - Partita IVA 1111111111
-                </div>
-                <div >Pagina <span class="pageNumber"></span> di <span class="totalPages"></span></div>
+            <h1>VERBALE DI ESECUZIONE ESEMPIO - RIEPILOGO ESEMPIO</h1>
+
+            <div>
+                Verifica 2099 / 999
+                Fasi eseguite dal 11/11/2019 al 12/11/2019
             </div>
-        </div>
-        
-        
 
-        
-    </body>
+            <div>
+                Cliente: COSTRUZIONI TOPOLINIA SRL
+                Cantiere:
+                EDILTOPOLINIA S.R.L. DEPOSITO - SEDE VIA DEL BARATTO, 44 - 55555 - TOPOLINIA (TP)
+            </div>
+
+            <div>
+                Contratto verifiche visive accessori sottogancio
+            </div>
+
+
+            <div>
+                KIT EDI _generico matr. Ediltopolina GT 888-C1,5 matr 888888
+            </div>
+
+
+
+            <div>
+                Contratto verifiche visive accessori sottogancio
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Intestazione 1</th>
+                        <th>Intestazione 2</th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <td>Footer 1</td>
+                        <td>Footer 2</td>
+                    </tr>
+                </tfoot>
+                <tbody>
+                    <tr ng-repeat="e in [1,2,3,4,5,6,7,8,9,10]">
+                        <td>Corpo della tabella {{$index}}.1.</td>
+                        <td>Corpo della tabella {{$index}}.2.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+
+
+    </div>
+
+    <div id="footer">
+        <div style="padding: 5px 15px; border-top: 1px solid #000000;">
+            <div style="text-align: center;">
+                Zio Paperone srl - via di Casa Mia - Paperopoli 12, (PP) - Tel. 0444/123456 - Fax. 0444/123456<br />
+                info@ziopaperone.com - www.ziopaperone.com - Iscrizione Registro Imprese PP - C.F. - Partita IVA
+                1111111111
+            </div>
+            <div style="text-align: right;">Pagina <span class="pageNumber"></span> di <span class="totalPages"></span></div>
+        </div>
+    </div>
+
+</body>
+
 </html>
