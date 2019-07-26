@@ -57,7 +57,7 @@
                 Contratto verifiche visive accessori sottogancio
             </div>
 
-            <table>
+            <table style="width: 100%;">
                 <thead>
                     <tr>
                         <th>Intestazione 1</th>
@@ -71,7 +71,7 @@
                     </tr>
                 </tfoot>
                 <tbody>
-                    <tr ng-repeat="e in [1,2,3,4,5,6,7,8,9,10]">
+                    <tr ng-repeat="e in [].constructor(100) track by $index">
                         <td>Corpo della tabella {{$index}}.1.</td>
                         <td>Corpo della tabella {{$index}}.2.</td>
                     </tr>
