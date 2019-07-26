@@ -19,22 +19,24 @@ app.post('/print', async (req, res) => {
     const page = await browser.newPage()
     await page.goto(req.body, {waitUntil: 'domcontentloaded'});
 
-    const FOOTER_TEMPLATE = `
-    <div class="p-1">
-        Zio Paperone srl - via di Casa Mia - Paperopoli 12, (PP) - Tel. 0444/123456 - Fax. 0444/123456<br/>
-        info@ziopaperone.com - www.ziopaperone.com - Iscrizione Registro Imprese PP - C.F. - Partita IVA 1111111111
-    </div>
-    <div id="header-template" style="font-size:10px !important; color:#808080; padding-left:10px">Pagina <span class="pageNumber"></span> di <span class="totalPages"></span></div>
-    `;
+    
+    let HEADER_TEMPLATE = await page.$eval('#header', e => e.innerHTML);
+    let FOOTER_TEMPLATE = await page.$eval('#footer', e => e.innerHTML);
+
+  
+    await page.evaluate(() => {
+      document.querySelector('#header').innerHTML = "";
+      document.querySelector('#footer').innerHTML = "";
+    });
 
     const buffer = await page.pdf({
       format: 'A4',
-      printBackground: true,
       displayHeaderFooter: true,
+      headerTemplate: HEADER_TEMPLATE,
       footerTemplate: FOOTER_TEMPLATE,
       margin: {
-        top: '0mm',
-        bottom: '10mm'
+        top: '30mm',
+        bottom: '30mm'
       }
     });
     await browser.close()

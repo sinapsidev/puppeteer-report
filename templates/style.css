@@ -1,0 +1,46 @@
+/* 
+
+.header {
+    position: fixed;
+    top: 0;
+    border-bottom: 0.1mm solid #000000;
+    width: 100%;
+}
+.footer {
+    position: fixed;
+    bottom: 10mm;
+    border-top: 0.1mm solid #000000;
+    width: 100%;
+}
+
+
+.header, .header-space {
+    height:  20mm;
+}
+.footer, .footer-space {
+    height:  20mm;
+} */
+
+
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    margin: 0;
+}
+
+html {
+    margin: 0;
+}
+
+
+.p-1 {
+    padding: 10mm;
+}
+
+@media print {
+    /* thead {display: table-header-group;} 
+    tfoot {display: table-footer-group;} */
+    
+    button {display: none;}
+}
