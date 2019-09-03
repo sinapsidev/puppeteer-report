@@ -44,18 +44,10 @@ app.post('/print', async (req, res) => {
     const FOOTER_FONT_SIZE_PX = await page.$eval('#footer', e => getComputedStyle(e).fontSize);
     const FOOTER_FONT_SIZE_INT = getFontSizeInIntByFontSizeInPX(FOOTER_FONT_SIZE_PX);
 
-    const BODY_FONT_SIZE_PX = await page.$eval('#body', e => getComputedStyle(e).fontSize);
-    const BODY_FONT_SIZE_INT = getFontSizeInIntByFontSizeInPX(BODY_FONT_SIZE_PX);
-
     const SBECCO = 25;
 
     const HEADER_H = await page.$eval('#header', e => e.getBoundingClientRect().height)+SBECCO;
     const FOOTER_H = await page.$eval('#footer', e => e.getBoundingClientRect().height)+SBECCO;
-
-    // await bodyPage.setContent(
-    //   `${CSS_RESET}<div style="margin: 0 10px; font-size: ${BODY_FONT_SIZE_INT}px;">${BODY_TEMPLATE}</div>`
-    // )
-
   
     await page.evaluate(() => {
       document.querySelector('#header').innerHTML = "";
