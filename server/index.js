@@ -18,7 +18,7 @@ const CSS_RESET = "<style>html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5
 // bau bau bau
 const equalizeFont = (HTML, fontSize) => {
   const correctFontSize = fontSize*0.54;
-  return `${CSS_RESET}<div style="font-size: ${correctFontSize}px; width: 100%;">${HTML}</div>`;
+  return `${CSS_RESET}<div style="font-size: ${correctFontSize}px; width: 100%;"><div style="margin: 0 10px;">${HTML}</div></div>`;
 }
 
 const getFontSizeInIntByFontSizeInPX = computedHeight => {
@@ -32,28 +32,39 @@ app.post('/print', async (req, res) => {
   try {
     const browser = await puppeteer.launch()
     const page = await browser.newPage()
+    // const bodyPage = await browser.newPage()
     await page.goto(req.body, {"waitUntil" : "networkidle0"});
 
     const HEADER_TEMPLATE = await page.$eval('#header', e => e.innerHTML);
     const FOOTER_TEMPLATE = await page.$eval('#footer', e => e.innerHTML);
+    
 
     const HEADER_FONT_SIZE_PX = await page.$eval('#header', e => getComputedStyle(e).fontSize);
     const HEADER_FONT_SIZE_INT = getFontSizeInIntByFontSizeInPX(HEADER_FONT_SIZE_PX);
     const FOOTER_FONT_SIZE_PX = await page.$eval('#footer', e => getComputedStyle(e).fontSize);
     const FOOTER_FONT_SIZE_INT = getFontSizeInIntByFontSizeInPX(FOOTER_FONT_SIZE_PX);
 
+    const BODY_FONT_SIZE_PX = await page.$eval('#body', e => getComputedStyle(e).fontSize);
+    const BODY_FONT_SIZE_INT = getFontSizeInIntByFontSizeInPX(BODY_FONT_SIZE_PX);
+
     const SBECCO = 25;
 
     const HEADER_H = await page.$eval('#header', e => e.getBoundingClientRect().height)+SBECCO;
     const FOOTER_H = await page.$eval('#footer', e => e.getBoundingClientRect().height)+SBECCO;
 
-    console.log("HEADER_H", HEADER_H)
-    console.log("FOOTER_H", FOOTER_H)
+    // await bodyPage.setContent(
+    //   `${CSS_RESET}<div style="margin: 0 10px; font-size: ${BODY_FONT_SIZE_INT}px;">${BODY_TEMPLATE}</div>`
+    // )
 
   
     await page.evaluate(() => {
       document.querySelector('#header').innerHTML = "";
       document.querySelector('#footer').innerHTML = "";
+    });
+
+    await page.evaluate(() => {
+      const BODY_TEMPLATE = document.querySelector('#body').innerHTML;
+      document.querySelector('body').innerHTML = `<div style="margin: 0 20px;">${BODY_TEMPLATE}</div>`;
     });
 
     const buffer = await page.pdf({
