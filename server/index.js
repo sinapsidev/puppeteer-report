@@ -5,7 +5,7 @@ const bodyParser = require('body-parser')
 
 const app = express()
 
-app.use(bodyParser.text())
+app.use(bodyParser.json())
 
 const PORT = process.env.PORT || 5000
 
@@ -66,21 +66,27 @@ app.post('/print', async (req, res) => {
     }
     const browser = await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors']})
     const page = await browser.newPage()
-    await page.goto(req.body+"?token="+token, {"waitUntil" : "networkidle0"});
+    await page.goto(req.body.url+"?token="+token, {"waitUntil" : "networkidle0"});
+
+    const WIDTH = req.body.width+"mm";
+    const HEIGHT = req.body.height+"mm";
 
     const HEADER_TEMPLATE = await page.$eval('#header', e => e.innerHTML);
     const FOOTER_TEMPLATE = await page.$eval('#footer', e => e.innerHTML);
 
+    const HAS_HEADER = !!HEADER_TEMPLATE;
+    const HAS_FOOTER = !!FOOTER_TEMPLATE;
+
+    console.log("HEADER_TEMPLATE", HAS_HEADER);
+    console.log("FOOTER_TEMPLATE", HAS_FOOTER);
 
     const HEADER_FONT_SIZE_PX = await page.$eval('#header', e => getComputedStyle(e).fontSize);
     const HEADER_FONT_SIZE_INT = getFontSizeInIntByFontSizeInPX(HEADER_FONT_SIZE_PX);
     const FOOTER_FONT_SIZE_PX = await page.$eval('#footer', e => getComputedStyle(e).fontSize);
     const FOOTER_FONT_SIZE_INT = getFontSizeInIntByFontSizeInPX(FOOTER_FONT_SIZE_PX);
 
-    const SBECCO = 25;
-
-    const HEADER_H = await page.$eval('#header', e => e.getBoundingClientRect().height)+SBECCO;
-    const FOOTER_H = await page.$eval('#footer', e => e.getBoundingClientRect().height)+SBECCO;
+    const HEADER_H = HEADER_TEMPLATE ? await page.$eval('#header', e => e.getBoundingClientRect().height)+SBECCO : SBECCO;
+    const FOOTER_H = FOOTER_TEMPLATE ? await page.$eval('#footer', e => e.getBoundingClientRect().height)+SBECCO : SBECCO;
   
     await page.evaluate(() => {
       document.querySelector('#header').innerHTML = "";
@@ -92,17 +98,32 @@ app.post('/print', async (req, res) => {
       document.querySelector('body').innerHTML = `<div style="margin: 0 20px;">${BODY_TEMPLATE}</div>`;
     });
 
-    const buffer = await page.pdf({
-      format: 'A4',
-      displayHeaderFooter: true,
+    const HEADER_TEMPLATE_EQUILIZED = equalizeFont(HEADER_TEMPLATE, HEADER_FONT_SIZE_INT);
+    const FOOTER_TEMPLATE_EQUILIZED = equalizeFont(FOOTER_TEMPLATE, FOOTER_FONT_SIZE_INT);
+
+    let config = {
+      width: WIDTH,
+      height: HEIGHT,
       printBackground: true,
-      headerTemplate: equalizeFont(HEADER_TEMPLATE, HEADER_FONT_SIZE_INT),
-      footerTemplate: equalizeFont(FOOTER_TEMPLATE, FOOTER_FONT_SIZE_INT),
       margin: {
         top: HEADER_H+'px',
         bottom: FOOTER_H+'px'
       }
-    });
+    };
+
+    if(HAS_FOOTER || HAS_HEADER){
+      config.displayHeaderFooter = true;
+    }
+
+    if(HAS_HEADER){
+      config.headerTemplate = HEADER_TEMPLATE_EQUILIZED;
+    }
+
+    if(HAS_FOOTER){
+      config.footerTemplate = FOOTER_TEMPLATE_EQUILIZED;
+    }
+
+    const buffer = await page.pdf(config);
     await browser.close()
     res.type('application/pdf')
     res.send(buffer)
