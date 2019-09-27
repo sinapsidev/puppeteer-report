@@ -45,7 +45,7 @@ h6, .h6 {
 // bau bau bau
 const equalizeFont = (HTML, fontSize) => {
   const correctFontSize = fontSize*0.54;
-  return `${CSS_RESET}<div style="font-size: ${correctFontSize}px; width: 100%;"><div style="margin: 0 10px;">${HTML}</div></div>`;
+  return `${CSS_RESET}<div style="font-size: ${correctFontSize}px; width: 100%;"><div style="margin: 0 0px;">${HTML}</div></div>`;
 }
 
 const getFontSizeInIntByFontSizeInPX = computedHeight => {
@@ -67,7 +67,8 @@ app.post('/print', async (req, res) => {
     const browser = await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors']})
     const page = await browser.newPage()
     await page.goto(req.body.url+"?token="+token, {"waitUntil" : "networkidle0"});
-
+    
+    const SBECCO = 25;
     const WIDTH = req.body.width+"mm";
     const HEIGHT = req.body.height+"mm";
 
@@ -85,29 +86,42 @@ app.post('/print', async (req, res) => {
     const FOOTER_FONT_SIZE_PX = await page.$eval('#footer', e => getComputedStyle(e).fontSize);
     const FOOTER_FONT_SIZE_INT = getFontSizeInIntByFontSizeInPX(FOOTER_FONT_SIZE_PX);
 
-    const HEADER_H = HEADER_TEMPLATE ? await page.$eval('#header', e => e.getBoundingClientRect().height)+SBECCO : SBECCO;
-    const FOOTER_H = FOOTER_TEMPLATE ? await page.$eval('#footer', e => e.getBoundingClientRect().height)+SBECCO : SBECCO;
-  
+    const HEADER_H = HAS_HEADER ? await page.$eval('#header', e => e.getBoundingClientRect().height) : 0;
+    const FOOTER_H = HAS_FOOTER ? await page.$eval('#footer', e => e.getBoundingClientRect().height) : 0;
+    
+    
+
     await page.evaluate(() => {
       document.querySelector('#header').innerHTML = "";
       document.querySelector('#footer').innerHTML = "";
     });
 
+
     await page.evaluate(() => {
       const BODY_TEMPLATE = document.querySelector('#body').innerHTML;
-      document.querySelector('body').innerHTML = `<div style="margin: 0 20px;">${BODY_TEMPLATE}</div>`;
+      document.querySelector('body').innerHTML = `<div style="margin: 0 0px;">${BODY_TEMPLATE}</div>`;
+
     });
 
     const HEADER_TEMPLATE_EQUILIZED = equalizeFont(HEADER_TEMPLATE, HEADER_FONT_SIZE_INT);
     const FOOTER_TEMPLATE_EQUILIZED = equalizeFont(FOOTER_TEMPLATE, FOOTER_FONT_SIZE_INT);
 
+    const IS_LANDSCAPE = WIDTH > HEIGHT;
+
+    await page.addStyleTag(
+      {'content': `@page {size: ${WIDTH}mm ${HEIGHT}mm ${IS_LANDSCAPE ? "landscape" : ""}}`}
+    );
+
+    console.log("IS_LANDSCAPE", IS_LANDSCAPE);
+    console.log("WIDTH", WIDTH);
+    console.log("HEIGHT", HEIGHT);
+
     let config = {
-      width: WIDTH,
-      height: HEIGHT,
+      preferCSSPageSize: true,
       printBackground: true,
       margin: {
         top: HEADER_H+'px',
-        bottom: FOOTER_H+'px'
+        bottom: FOOTER_H+'px',
       }
     };
 
