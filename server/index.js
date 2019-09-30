@@ -124,7 +124,9 @@ app.post('/print', async (req, res) => {
       printBackground: true,
       margin: {
         top: HEADER_H+'px',
-        bottom: FOOTER_H+'px'
+        bottom: FOOTER_H+'px',
+        left: "10px",
+        right: "10px"
       }
     };
 
