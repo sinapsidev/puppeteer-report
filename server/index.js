@@ -111,13 +111,12 @@ app.post('/print', async (req, res) => {
 
     const IS_LANDSCAPE = WIDTH > HEIGHT;
 
-    await page.addStyleTag(
-      {'content': `@page {size: ${WIDTH}mm ${HEIGHT}mm ${IS_LANDSCAPE ? "landscape" : ""}}`}
-    );
+    const PAGE_CSS = `@page { size: ${WIDTH} ${HEIGHT} ${(IS_LANDSCAPE ? "landscape" : "")}; }`
+    console.log("PAGE_CSS", PAGE_CSS);
 
-    console.log("IS_LANDSCAPE", IS_LANDSCAPE);
-    console.log("WIDTH", WIDTH);
-    console.log("HEIGHT", HEIGHT);
+    await page.addStyleTag(
+      {'content': PAGE_CSS}
+    );
 
     let config = {
       preferCSSPageSize: true,
