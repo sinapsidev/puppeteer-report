@@ -15,6 +15,16 @@ app.get('/', function (req, res) {
 
 const CSS_RESET = `<style>
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{border:0;font-size:100%;font:inherit;vertical-align:baseline;margin:0;padding:0}article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:none}table{border-collapse:collapse;border-spacing:0}*{font-family:Arial,Helvetica,sans-serif !important;}
+.header-footer-wrapper {
+  margin: 0;
+  font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-size: 0.9rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #000;
+  text-align: left;
+  background-color: #fff;
+}
 h1, h2, h3, h4, h5, h6,
 .h1, .h2, .h3, .h4, .h5, .h6 {
   margin-bottom: 0.5rem;
@@ -22,30 +32,24 @@ h1, h2, h3, h4, h5, h6,
   font-weight: 500;
   line-height: 1.2;
   color: inherit; }
-
 h1, .h1 {
-  font-size: 21px; }
-
+  font-size: 26.5px; }
 h2, .h2 {
-  font-size: 18px; }
-
+  font-size: 22px; }
 h3, .h3 {
-  font-size: 16px; }
-
+  font-size: 20px; }
 h4, .h4 {
-  font-size: 15px; }
-
+  font-size: 16px; }
 h5, .h5 {
   font-size: 14px; }
-
 h6, .h6 {
   font-size: 13px; }
 </style>`
 
 // bau bau bau
 const equalizeFont = (HTML, fontSize) => {
-  const correctFontSize = fontSize*0.54;
-  return `${CSS_RESET}<div style="font-size: ${correctFontSize}px; width: 100%;"><div style="margin: 0 0px;">${HTML}</div></div>`;
+  const correctFontSize = fontSize*0.78;
+  return `${CSS_RESET}<div class="header-footer-wrapper" style="font-size: ${correctFontSize}px; width: 100%;"><div style="margin: 0 7px;">${HTML}</div></div>`;
 }
 
 const getFontSizeInIntByFontSizeInPX = computedHeight => {
@@ -68,7 +72,6 @@ app.post('/print', async (req, res) => {
     const page = await browser.newPage()
     await page.goto(req.body.url+"?token="+token, {"waitUntil" : "networkidle0"});
     
-    const SBECCO = 25;
     const WIDTH = req.body.width+"mm";
     const HEIGHT = req.body.height+"mm";
 
@@ -121,7 +124,7 @@ app.post('/print', async (req, res) => {
       printBackground: true,
       margin: {
         top: HEADER_H+'px',
-        bottom: FOOTER_H+'px',
+        bottom: FOOTER_H+'px'
       }
     };
 
