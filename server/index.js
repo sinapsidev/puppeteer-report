@@ -111,7 +111,19 @@ app.post('/print', async (req, res) => {
 
     const IS_LANDSCAPE = WIDTH > HEIGHT;
 
-    const PAGE_CSS = `@page { size: ${WIDTH} ${HEIGHT} ${(IS_LANDSCAPE ? "landscape" : "")}; }`
+    const PAGE_CSS = `
+    @page { size: ${WIDTH} ${HEIGHT} ${(IS_LANDSCAPE ? "landscape" : "")}; }
+    
+    .document-preview__frame__page-break-after {
+      width: 100%;
+      border: none;
+      cursor: default;
+      display: block;
+      height: 1px;
+      margin-top: 0;
+      page-break-after: always !important;
+    }
+    `;
     console.log("PAGE_CSS", PAGE_CSS);
 
     await page.addStyleTag(
