@@ -1,7 +1,7 @@
 FROM node:10.16.3-buster-slim
 
 RUN apt-get update && \
-    apt-get install gconf-service \
+    apt-get install -y gconf-service \
     libasound2 \
     libatk1.0-0 \
     libatk-bridge2.0-0 \
@@ -40,9 +40,9 @@ RUN apt-get update && \
     lsb-release \
     xdg-utils \
     wget && \
-    apt-get clean && \
-    apt-get autoclean && \
-    apt-get autoremove
+    apt-get clean -y && \
+    apt-get autoclean -y && \
+    apt-get autoremove -y
 
 RUN npm install 
 
