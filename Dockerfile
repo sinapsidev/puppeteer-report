@@ -44,6 +44,10 @@ RUN apt-get update && \
     apt-get autoclean -y && \
     apt-get autoremove -y
 
+COPY server/ server/
+COPY templates/ templates/
+COPY package.json package.json
+
 RUN npm install 
 
 EXPOSE 5000
