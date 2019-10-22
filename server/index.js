@@ -162,6 +162,10 @@ app.post('/print', async (req, res) => {
       printBackground: true
     };
 
+    if(IS_LANDSCAPE){
+      config.landscape = true;
+    }
+
     if(IS_PAGE_NUMBER_VISIBLE){
       config.displayHeaderFooter = true;
       config.footerTemplate = `<div style="width: 100%; font-size: 10px; text-align: center; padding: 5px 0 0 0; font-family: Arial; color: #444;">Pagina <span class="pageNumber"></span> di <span class="totalPages"></span></div>`;
