@@ -13,55 +13,6 @@ app.get('/', function (req, res) {
   res.send('Hello from Puppeteer Report!')
 })
 
-const getCustomCSS = function(headerHeight, footerHeight) {
-  CUSTOM_CSS = `
-  html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{border:0;font-size:100%;font:inherit;vertical-align:baseline;margin:0;padding:0}article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:none}table{border-collapse:collapse;border-spacing:0}*{font-family:Arial,Helvetica,sans-serif !important;}
-
-  .document-preview__frame__page-break-after {
-    width: 100%;
-    border: none;
-    cursor: default;
-    display: block;
-    height: 1px;
-    margin-top: 0;
-    page-break-after: always !important;
-  }
-
-  .page-header, .page-header-space {
-    height: ${headerHeight}px;
-  }
-
-  .page-footer, .page-footer-space {
-    height: ${footerHeight}px;
-  }
-
-  .page-footer {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    border-top: 1px solid black;
-  }
-
-  .page-header {
-    position: fixed;
-    top: 0mm;
-    width: 100%;
-    border-bottom: 1px solid black;
-  }
-
-  .page {
-    page-break-after: always;
-  }
-
-  @media print {
-    thead {display: table-header-group;} 
-    tfoot {display: table-footer-group;}
-    button {display: none;}
-    body {margin: 0;}
-  }`;
-  return CUSTOM_CSS;
-}
-
 app.post('/print', async (req, res) => {
   try {
     const token = req.query.token;
@@ -81,14 +32,83 @@ app.post('/print', async (req, res) => {
 
     await page.evaluate(() => {
 
+      const SBECCO = 20;
+
+      const HEADER_TEMPLATE = document.querySelector('#header').innerHTML;
+      const FOOTER_TEMPLATE = document.querySelector('#footer').innerHTML;
+      const BODY_TEMPLATE = document.querySelector('#body').innerHTML;
+  
+      const HAS_HEADER = !!HEADER_TEMPLATE;
+      const HAS_FOOTER = !!FOOTER_TEMPLATE;
+  
+      const HEADER_H = HAS_HEADER ? document.querySelector('#header').getBoundingClientRect().height : 0;
+      const FOOTER_H = HAS_FOOTER ? document.querySelector('#footer').getBoundingClientRect().height : 0;
+      
+      const getCustomCSS = function(headerHeight, footerHeight) {
+        
+        let CUSTOM_CSS = `
+        html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{border:0;font-size:100%;font:inherit;vertical-align:baseline;margin:0;padding:0}article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:none}table{border-collapse:collapse;border-spacing:0}*{font-family:Arial,Helvetica,sans-serif !important;}
+      
+        .document-preview__frame__page-break-after {
+          width: 100%;
+          border: none;
+          cursor: default;
+          display: block;
+          height: 1px;
+          margin-top: 0;
+          page-break-after: always !important;
+        }
+      
+        .page-header, .page-header-space {
+          height: ${headerHeight+SBECCO}px;
+        }
+      
+        .page-footer, .page-footer-space {
+          height: ${footerHeight+SBECCO}px;
+        }
+      
+        .page-footer {
+          position: fixed;
+          bottom: 0;
+          width: 100%;
+          border-top: 1px solid black;
+        }
+      
+        .page-header {
+          position: fixed;
+          top: 0mm;
+          width: 100%;
+          border-bottom: 1px solid black;
+        }
+
+        .standard-padding {
+          padding: ${SBECCO/2}px;
+        }
+      
+        .page {
+          page-break-after: always;
+        }
+      
+        @media print {
+          thead {display: table-header-group;} 
+          tfoot {display: table-footer-group;}
+          button {display: none;}
+          body {margin: 0;}
+        }`;
+        return CUSTOM_CSS;
+      }
+
+      const CUSTOM_CSS = getCustomCSS(HEADER_H, FOOTER_H);
+
       const getHTMLReportFromContent = function(bodyHTML, headerHTML, footerHTML) {
         return `
+          <style>${CUSTOM_CSS}</style>
           <div id="header" class="page-header">
-            ${headerHTML}
+            <div class="standard-padding">${headerHTML}</div>
           </div>
       
           <div id="footer" class="page-footer">
-            ${footerHTML}
+            <div class="standard-padding">${footerHTML}</div>
           </div>
       
           <table>
@@ -102,7 +122,7 @@ app.post('/print', async (req, res) => {
             <tbody id="body">
               <tr>
                 <td>
-                  <div class="page">
+                  <div class="page standard-padding">
                     ${bodyHTML}
                   </div>
                 </td>
@@ -119,28 +139,17 @@ app.post('/print', async (req, res) => {
         `;
       };
       
-      const BODY_TEMPLATE = document.querySelector('#body').innerHTML;
-      const HEADER_TEMPLATE = document.querySelector('#header').innerHTML;
-      const FOOTER_TEMPLATE = document.querySelector('#footer').innerHTML;
+      
+
       const TEMPLATE = getHTMLReportFromContent(BODY_TEMPLATE, HEADER_TEMPLATE, FOOTER_TEMPLATE);
       document.querySelector('body').innerHTML = `${TEMPLATE}`;
     });
 
-    const HEADER_TEMPLATE = await page.$eval('#header', e => e.innerHTML);
-    const FOOTER_TEMPLATE = await page.$eval('#footer', e => e.innerHTML);
 
-    const HAS_HEADER = !!HEADER_TEMPLATE;
-    const HAS_FOOTER = !!FOOTER_TEMPLATE;
-
-    const HEADER_H = HAS_HEADER ? await page.$eval('#header', e => e.getBoundingClientRect().height) : 0;
-    const FOOTER_H = HAS_FOOTER ? await page.$eval('#footer', e => e.getBoundingClientRect().height) : 0;
-    const CUSTOM_CSS = getCustomCSS(HEADER_H, FOOTER_H);
 
     const IS_LANDSCAPE = WIDTH > HEIGHT;
 
-    const PAGE_CSS = `
-    ${CUSTOM_CSS}
-    @page { size: ${WIDTH} ${HEIGHT} ${(IS_LANDSCAPE ? "landscape" : "")}; }`;
+    const PAGE_CSS = `@page { size: ${WIDTH} ${HEIGHT} ${(IS_LANDSCAPE ? "landscape" : "")}; }`;
 
     console.log(PAGE_CSS);
 
