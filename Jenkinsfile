@@ -58,4 +58,11 @@ pipeline {
             }
         }
     }
+    triggers {
+            pollSCM('*/1 * * * *')
+        }
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10', artifactNumToKeepStr: '3'))
+        disableConcurrentBuilds()
+    }
 }
