@@ -37,7 +37,7 @@ app.post('/print', async (req, res) => {
       const HEADER_TEMPLATE = document.querySelector('#header').innerHTML;
       const FOOTER_TEMPLATE = document.querySelector('#footer').innerHTML;
       const BODY_TEMPLATE = document.querySelector('#body').innerHTML;
-  
+
       const HAS_HEADER = !!HEADER_TEMPLATE;
       const HAS_FOOTER = !!FOOTER_TEMPLATE;
   
@@ -47,8 +47,6 @@ app.post('/print', async (req, res) => {
       const getCustomCSS = function(headerHeight, footerHeight) {
         
         let CUSTOM_CSS = `
-        html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{border:0;font-size:100%;font:inherit;vertical-align:baseline;margin:0;padding:0}article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:none}table{border-collapse:collapse;border-spacing:0}*{font-family:Arial,Helvetica,sans-serif !important;}
-      
         .document-preview__frame__page-break-after {
           width: 100%;
           border: none;
@@ -83,10 +81,15 @@ app.post('/print', async (req, res) => {
 
         .standard-padding {
           padding: ${SBECCO/2}px;
+          width: calc(100% - 80px);
         }
       
         .page {
           page-break-after: always;
+        }
+
+        #body, #header, #footer {
+          width: 100%;
         }
       
         @media print {
@@ -111,7 +114,7 @@ app.post('/print', async (req, res) => {
             <div class="standard-padding">${footerHTML}</div>
           </div>
       
-          <table>
+          <table style="width: 100%;">
             <thead>
               <tr>
                 <td>
@@ -119,7 +122,7 @@ app.post('/print', async (req, res) => {
                 </td>
               </tr>
             </thead>
-            <tbody id="body">
+            <tbody>
               <tr>
                 <td>
                   <div class="page standard-padding">
@@ -168,7 +171,7 @@ app.post('/print', async (req, res) => {
 
     if(IS_PAGE_NUMBER_VISIBLE){
       config.displayHeaderFooter = true;
-      config.footerTemplate = `<div style="width: 100%; font-size: 10px; text-align: center; padding: 5px 0 0 0; font-family: Arial; color: #444;">Pagina <span class="pageNumber"></span> di <span class="totalPages"></span></div>`;
+      config.footerTemplate = `<div style="width: 100%; font-size: 9px; text-align: center; padding: 5px 0 0 0; font-family: Arial; color: #444;">Pagina <span class="pageNumber"></span> di <span class="totalPages"></span></div>`;
       config.margin = {
         top: 0,
         right: 0,
