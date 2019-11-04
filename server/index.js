@@ -58,25 +58,23 @@ app.post('/print', async (req, res) => {
         }
       
         .page-header, .page-header-space {
-          height: ${headerHeight+SBECCO}px;
+          height: ${headerHeight ? headerHeight+SBECCO : "0"}px;
         }
       
         .page-footer, .page-footer-space {
-          height: ${footerHeight+SBECCO}px;
+          height: ${footerHeight ? footerHeight+SBECCO : "0"}px;
         }
       
         .page-footer {
           position: fixed;
           bottom: 0;
           width: 100%;
-          border-top: 1px solid black;
         }
       
         .page-header {
           position: fixed;
           top: 0mm;
           width: 100%;
-          border-bottom: 1px solid black;
         }
 
         .standard-padding {
