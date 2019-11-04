@@ -81,7 +81,6 @@ app.post('/print', async (req, res) => {
 
         .standard-padding {
           padding: ${SBECCO/2}px;
-          width: calc(100% - 80px);
         }
       
         .page {
@@ -125,7 +124,7 @@ app.post('/print', async (req, res) => {
             <tbody>
               <tr>
                 <td>
-                  <div class="page standard-padding">
+                  <div class="page standard-padding" >
                     ${bodyHTML}
                   </div>
                 </td>
