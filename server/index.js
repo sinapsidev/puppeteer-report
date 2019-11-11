@@ -68,12 +68,19 @@ app.post('/print', async (req, res) => {
         .page-footer {
           position: fixed;
           bottom: 0;
+          left: 0;
           width: 100%;
         }
       
         .page-header {
           position: fixed;
+          left: 0;
           top: 0mm;
+          width: 100%;
+        }
+
+        .page-body {
+          position: absolute;
           width: 100%;
         }
 
@@ -85,10 +92,6 @@ app.post('/print', async (req, res) => {
           page-break-after: always;
         }
 
-        #body, #header, #footer {
-          width: 100%;
-        }
-      
         @media print {
           thead {display: table-header-group;} 
           tfoot {display: table-footer-group;}
@@ -110,8 +113,8 @@ app.post('/print', async (req, res) => {
           <div id="footer" class="page-footer">
             <div class="standard-padding">${footerHTML}</div>
           </div>
-      
-          <table style="width: 100%;">
+
+          <table class="page-body">
             <thead>
               <tr>
                 <td>
@@ -122,7 +125,7 @@ app.post('/print', async (req, res) => {
             <tbody>
               <tr>
                 <td>
-                  <div class="page standard-padding" >
+                  <div class="standard-padding">
                     ${bodyHTML}
                   </div>
                 </td>
