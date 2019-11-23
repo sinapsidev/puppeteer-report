@@ -56,32 +56,31 @@ app.post('/print', async (req, res) => {
           margin-top: 0;
           page-break-after: always !important;
         }
-      
+
         .page-header, .page-header-space {
           height: ${headerHeight ? headerHeight+SBECCO : "0"}px;
         }
-      
+
         .page-footer, .page-footer-space {
           height: ${footerHeight ? footerHeight+SBECCO : "0"}px;
         }
-      
+
         .page-footer {
           position: fixed;
           bottom: 0;
           left: 0;
-          width: 100%;
+          right: 0;
         }
-      
+
         .page-header {
           position: fixed;
           left: 0;
-          top: 0mm;
-          width: 100%;
+          top: 0;
+          right: 0;
         }
-
+        
         .page-body {
-          position: absolute;
-          width: 100%;
+          table-layout: fixed;
         }
 
         .standard-padding {
@@ -97,7 +96,9 @@ app.post('/print', async (req, res) => {
           tfoot {display: table-footer-group;}
           button {display: none;}
           body {margin: 0;}
-        }`;
+        }
+
+        `;
         return CUSTOM_CSS;
       }
 
@@ -106,6 +107,65 @@ app.post('/print', async (req, res) => {
       const getHTMLReportFromContent = function(bodyHTML, headerHTML, footerHTML) {
         return `
           <style>${CUSTOM_CSS}</style>
+          <div>
+            <table class="page-body">
+              <thead>
+                <tr>
+                  <td>
+                    <div class="page-header-space"></div>
+                  </td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="line-height: 0.01; height: 1px; opacity: 0;">
+                  <td style="line-height: 0.01; height: 1px; opacity: 0;">
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                    ________________________________
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="standard-padding">
+                      ${bodyHTML}
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td>
+                    <div class="page-footer-space"></div>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
           <div id="header" class="page-header">
             <div class="standard-padding">${headerHTML}</div>
           </div>
@@ -113,32 +173,6 @@ app.post('/print', async (req, res) => {
           <div id="footer" class="page-footer">
             <div class="standard-padding">${footerHTML}</div>
           </div>
-
-          <table class="page-body">
-            <thead>
-              <tr>
-                <td>
-                  <div class="page-header-space"></div>
-                </td>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  <div class="standard-padding">
-                    ${bodyHTML}
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-            <tfoot>
-              <tr>
-                <td>
-                  <div class="page-footer-space"></div>
-                </td>
-              </tr>
-            </tfoot>
-          </table>
         `;
       };
       
