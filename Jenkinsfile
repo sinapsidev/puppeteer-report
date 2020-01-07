@@ -57,6 +57,14 @@ pipeline {
                 sh "docker system prune -f"
             }
         }
+        stage ('Trigger deployment') {
+            when {
+                branch 'develop'
+            }
+            steps {
+                build(job: 'xdbDeployer/develop', wait: false)
+            }
+        }
     }
     triggers {
             pollSCM('*/1 * * * *')
