@@ -22,6 +22,9 @@ app.post('/print', async (req, res) => {
       console.log("Unauthorized")
       return
     }
+    console.log("Print request received");
+    console.log(req.body);
+
     const browser = await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors']})
     const page = await browser.newPage()
     await page.goto(req.body.url+"?token="+token, {"waitUntil" : "networkidle0"});
@@ -225,5 +228,5 @@ app.post('/print', async (req, res) => {
 })
 
 app.listen(PORT, function () {
-  console.log(`Example app listening on port ${PORT}!`)
+  console.log(`Puppeteer Report ready`)
 })
