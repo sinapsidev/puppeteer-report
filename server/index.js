@@ -1,3 +1,4 @@
+process.env.TZ = "Europe/Rome";
 
 const express = require('express')
 const puppeteer = require('puppeteer')
