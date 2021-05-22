@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  namespace: logica-{{ .Values.env }}
+  labels:
+    app: {{ .Release.Name }}
+    version: {{ .Chart.AppVersion }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+      {{ if .Values.generated }}
+      annotations:
+        generatedAt: {{ .Values.generated | quote }}
+      {{ end }}
+    spec:
+      imagePullSecrets:
+        - name: nexus
+      containers:
+        - name: {{ .Release.Name }}
+          image: docker.snps.it/snps/puppeteer-report:{{ .Chart.AppVersion }}
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: {{ .Values.resources.limitMem }}
+              cpu: {{ .Values.resources.limitCpu }}
+            requests:
+              cpu: {{ .Values.resources.requestCpu }}
+          ports:
+            - name: http-port
+              containerPort: 5000
+              protocol: TCP
+          env:
+            - name: TZ
+              value: Europe/Rome
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http-port
+            initialDelaySeconds: 30
+            timeoutSeconds: 30
+            periodSeconds: 45
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http-port
+            initialDelaySeconds: 30
+            periodSeconds: 45
+            timeoutSeconds: 30
+            failureThreshold: 5

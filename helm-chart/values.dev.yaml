@@ -1,0 +1,5 @@
+env: dev
+resources:
+  limitMem: 2G
+  limitCpu: 1.5
+  requestCpu: 0.3
