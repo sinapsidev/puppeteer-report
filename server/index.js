@@ -1,41 +1,40 @@
-process.env.TZ = "Europe/Rome";
+process.env.TZ = 'Europe/Rome';
 
-const express = require('express')
-const puppeteer = require('puppeteer')
-const bodyParser = require('body-parser')
+const express = require('express');
+const puppeteer = require('puppeteer');
+const bodyParser = require('body-parser');
 
-const app = express()
+const app = express();
 
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 
-const PORT = process.env.PORT || 5000
+const PORT = process.env.PORT || 5000;
 
 app.get('/', function (req, res) {
-  res.send('Hello from Puppeteer Report!')
-})
+  res.send('Hello from Puppeteer Report!');
+});
 
 app.post('/print', async (req, res) => {
   try {
     const token = req.query.token;
-    if (!token){
-      res.status(401)
-      res.send()
-      console.log("Unauthorized")
-      return
+    if (!token) {
+      res.status(401);
+      res.send();
+      console.log('Unauthorized');
+      return;
     }
-    console.log("Print request received");
+    console.log('Print request received');
     console.log(req.body);
 
-    const browser = await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors']})
-    const page = await browser.newPage()
-    await page.goto(req.body.url+"?token="+token, {"waitUntil" : "networkidle0"});
-    
-    const WIDTH = req.body.width+"mm";
-    const HEIGHT = req.body.height+"mm";
+    const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
+    const page = await browser.newPage();
+    await page.goto(req.body.url + '?token=' + token, { waitUntil: 'networkidle0' });
+
+    const WIDTH = req.body.width + 'mm';
+    const HEIGHT = req.body.height + 'mm';
     const IS_PAGE_NUMBER_VISIBLE = req.body.insertPageNumber;
 
     await page.evaluate(() => {
-
       const SBECCO = 20;
 
       const HEADER_TEMPLATE = document.querySelector('#header').innerHTML;
@@ -44,13 +43,12 @@ app.post('/print', async (req, res) => {
 
       const HAS_HEADER = !!HEADER_TEMPLATE;
       const HAS_FOOTER = !!FOOTER_TEMPLATE;
-  
+
       const HEADER_H = HAS_HEADER ? document.querySelector('#header').getBoundingClientRect().height : 0;
       const FOOTER_H = HAS_FOOTER ? document.querySelector('#footer').getBoundingClientRect().height : 0;
-      
-      const getCustomCSS = function(headerHeight, footerHeight) {
-        
-        let CUSTOM_CSS = `
+
+      const getCustomCSS = function (headerHeight, footerHeight) {
+        const CUSTOM_CSS = `
         .document-preview__frame__page-break-after {
           width: 100%;
           border: none;
@@ -62,11 +60,11 @@ app.post('/print', async (req, res) => {
         }
 
         .page-header, .page-header-space {
-          height: ${headerHeight ? headerHeight+SBECCO : "0"}px;
+          height: ${headerHeight ? headerHeight + SBECCO : '0'}px;
         }
 
         .page-footer, .page-footer-space {
-          height: ${footerHeight ? footerHeight+SBECCO : "0"}px;
+          height: ${footerHeight ? footerHeight + SBECCO : '0'}px;
         }
 
         .page-footer {
@@ -88,7 +86,7 @@ app.post('/print', async (req, res) => {
         }
 
         .standard-padding {
-          padding: ${SBECCO/2}px;
+          padding: ${SBECCO / 2}px;
         }
       
         .page {
@@ -104,11 +102,11 @@ app.post('/print', async (req, res) => {
 
         `;
         return CUSTOM_CSS;
-      }
+      };
 
       const CUSTOM_CSS = getCustomCSS(HEADER_H, FOOTER_H);
 
-      const getHTMLReportFromContent = function(bodyHTML, headerHTML, footerHTML) {
+      const getHTMLReportFromContent = function (bodyHTML, headerHTML, footerHTML) {
         return `
           <style>${CUSTOM_CSS}</style>
           <div>
@@ -179,55 +177,51 @@ app.post('/print', async (req, res) => {
           </div>
         `;
       };
-      
-      
 
       const TEMPLATE = getHTMLReportFromContent(BODY_TEMPLATE, HEADER_TEMPLATE, FOOTER_TEMPLATE);
       document.querySelector('body').innerHTML = `${TEMPLATE}`;
     });
 
-
-
     const IS_LANDSCAPE = WIDTH > HEIGHT;
 
-    const PAGE_CSS = `@page { size: ${WIDTH} ${HEIGHT} ${(IS_LANDSCAPE ? "landscape" : "")}; }`;
+    const PAGE_CSS = `@page { size: ${WIDTH} ${HEIGHT} ${(IS_LANDSCAPE ? 'landscape' : '')}; }`;
 
     console.log(PAGE_CSS);
 
     await page.addStyleTag(
-      {'content': PAGE_CSS}
+      { content: PAGE_CSS }
     );
 
-    let config = {
+    const config = {
       preferCSSPageSize: true,
       printBackground: true
     };
 
-    if(IS_LANDSCAPE){
+    if (IS_LANDSCAPE) {
       config.landscape = true;
     }
 
-    if(IS_PAGE_NUMBER_VISIBLE){
+    if (IS_PAGE_NUMBER_VISIBLE) {
       config.displayHeaderFooter = true;
-      config.footerTemplate = `<div style="width: 100%; font-size: 9px; text-align: center; padding: 5px 0 0 0; font-family: Arial; color: #444;">Pagina <span class="pageNumber"></span> di <span class="totalPages"></span></div>`;
+      config.footerTemplate = '<div style="width: 100%; font-size: 9px; text-align: center; padding: 5px 0 0 0; font-family: Arial; color: #444;">Pagina <span class="pageNumber"></span> di <span class="totalPages"></span></div>';
       config.margin = {
         top: 0,
         right: 0,
         left: 0,
-        bottom: 40,
+        bottom: 40
       };
     }
 
     const buffer = await page.pdf(config);
-    await browser.close()
-    res.type('application/pdf')
-    res.send(buffer)
+    await browser.close();
+    res.type('application/pdf');
+    res.send(buffer);
   } catch (e) {
-    res.status(500)
-    res.send(e.message)
+    res.status(500);
+    res.send(e.message);
   }
-})
+});
 
 app.listen(PORT, function () {
-  console.log(`Puppeteer Report ready`)
-})
+  console.log('Puppeteer Report ready');
+});
