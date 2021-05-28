@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-process.env.TZ = 'Europe/Rome';
-=======
 process.env.TZ = "Europe/Rome";
->>>>>>> 1.0.1
 
 const express = require('express');
 const puppeteer = require('puppeteer');
