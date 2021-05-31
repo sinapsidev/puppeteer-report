@@ -1,34 +1,50 @@
-process.env.TZ = 'Europe/Rome';
-
 const express = require('express');
 const puppeteer = require('puppeteer');
 const bodyParser = require('body-parser');
+
+const PORT = process.env.PORT || 5000;
+const URL = process.env.URL || 'http://localhost:8080';
+
+const auth = require('./lib/auth')(URL);
 
 const app = express();
 
 app.use(bodyParser.json());
 
-const PORT = process.env.PORT || 5000;
-
 app.get('/', function (req, res) {
-  res.send('Hello from Puppeteer Report!');
+  res.send('Hello from Puppeteer Report');
 });
 
-app.post('/print', async (req, res) => {
+app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
   try {
-    const token = req.query.token;
-    if (!token) {
+    const authorization = req.headers.authorization;
+    const timeZone = req.headers['time-zone'];
+
+    const authenticated = await auth.check(authorization, timeZone);
+
+    const token = authorization.split(' ')[1];
+
+    const {
+      templateId,
+      recordId,
+      tenantId
+    } = req.params;
+
+    const url = `${URL}/#!/${tenantId}/report/${templateId}/${recordId}?token=${token}`;
+
+    if (!authenticated) {
       res.status(401);
       res.send();
-      console.log('Unauthorized');
+      console.error('Unauthorized');
       return;
     }
-    console.log('Print request received');
-    console.log(req.body);
 
-    const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
+    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
     const page = await browser.newPage();
-    await page.goto(req.body.url + '?token=' + token, { waitUntil: 'networkidle0' });
+
+    await page.emulateTimezone(timeZone);
+
+    await page.goto(url, { waitUntil: 'networkidle0' });
 
     const WIDTH = req.body.width + 'mm';
     const HEIGHT = req.body.height + 'mm';
@@ -217,11 +233,12 @@ app.post('/print', async (req, res) => {
     res.type('application/pdf');
     res.send(buffer);
   } catch (e) {
+    console.error(e.message);
     res.status(500);
     res.send(e.message);
   }
 });
 
 app.listen(PORT, function () {
-  console.log('Puppeteer Report ready');
+  console.log('Puppeteer Report ready on port ', PORT);
 });
