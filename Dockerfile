@@ -16,6 +16,7 @@ RUN apt-get update && \
     libgdk-pixbuf2.0-0 \
     libglib2.0-0 \
     libgtk-3-0 \
+    libgbm-dev \
     libnspr4 \
     libpango-1.0-0 \
     libpangocairo-1.0-0 \
