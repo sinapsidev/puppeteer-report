@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 
 const PORT = process.env.PORT || 5000;
 const URL = process.env.URL || 'http://localhost:8080';
+const DOMAIN = process.env.DOMAIN || 'http://localhost:8080';
 
 const auth = require('./lib/auth')(URL);
 
@@ -30,7 +31,7 @@ app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
       tenantId
     } = req.params;
 
-    const url = `${URL}/#!/${tenantId}/report/${templateId}/${recordId}?token=${token}`;
+    const url = `${DOMAIN}/#!/${tenantId}/report/${templateId}/${recordId}?token=${token}`;
     console.log(url);
 
     if (!authenticated) {
