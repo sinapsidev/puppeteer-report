@@ -31,6 +31,7 @@ app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
     } = req.params;
 
     const url = `${URL}/#!/${tenantId}/report/${templateId}/${recordId}?token=${token}`;
+    console.log(url);
 
     if (!authenticated) {
       res.status(401);
