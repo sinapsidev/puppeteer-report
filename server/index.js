@@ -101,6 +101,7 @@ app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
         
         .page-body {
           table-layout: fixed;
+          white-space: pre-line;
         }
 
         .standard-padding {
