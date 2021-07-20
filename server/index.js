@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 
 const PORT = process.env.PORT || 5000;
 const URL = process.env.URL || 'http://localhost:8080';
+const DOMAIN = process.env.DOMAIN || 'http://localhost:8080';
 
 const auth = require('./lib/auth')(URL);
 
@@ -30,7 +31,8 @@ app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
       tenantId
     } = req.params;
 
-    const url = `${URL}/#!/${tenantId}/report/${templateId}/${recordId}?token=${token}`;
+    const url = `${DOMAIN}/#!/${tenantId}/report/${templateId}/${recordId}?token=${token}`;
+    console.log(url);
 
     if (!authenticated) {
       res.status(401);
@@ -88,17 +90,19 @@ app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
           bottom: 0;
           left: 0;
           right: 0;
+          background-color: #fff;
         }
 
         .page-header {
           position: fixed;
-          left: 0;
-          top: 0;
-          right: 0;
+          top: 0mm;
+          width: 100%;
+          background-color: #fff;
         }
         
         .page-body {
           table-layout: fixed;
+          white-space: pre-line;
         }
 
         .standard-padding {
@@ -125,64 +129,7 @@ app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
       const getHTMLReportFromContent = function (bodyHTML, headerHTML, footerHTML) {
         return `
           <style>${CUSTOM_CSS}</style>
-          <div>
-            <table class="page-body">
-              <thead>
-                <tr>
-                  <td>
-                    <div class="page-header-space"></div>
-                  </td>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style="line-height: 0.01; height: 1px; opacity: 0;">
-                  <td style="line-height: 0.01; height: 1px; opacity: 0;">
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                    ________________________________
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <div class="standard-padding">
-                      ${bodyHTML}
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td>
-                    <div class="page-footer-space"></div>
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
+
 
           <div id="header" class="page-header">
             <div class="standard-padding">${headerHTML}</div>
@@ -191,6 +138,64 @@ app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
           <div id="footer" class="page-footer">
             <div class="standard-padding">${footerHTML}</div>
           </div>
+
+          <table class="page-body">
+            <thead>
+              <tr>
+                <td>
+                  <div class="page-header-space"></div>
+                </td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="line-height: 0.01; height: 1px; opacity: 0;">
+                <td style="line-height: 0.01; height: 1px; opacity: 0;">
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                  ________________________________
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="standard-padding content">
+                    ${bodyHTML}
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td>
+                  <div class="page-footer-space"></div>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+
         `;
       };
 

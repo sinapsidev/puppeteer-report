@@ -1,5 +1,9 @@
 Change Log
 =========
+1.2.0 - 20/07/2021
+----------
+* fix a capo testo da logica
+
 1.1.0 - 17/06/2021
 ----------
 * nuova gestione login servizio
