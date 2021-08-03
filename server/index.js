@@ -46,7 +46,7 @@ app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
 
     await page.emulateTimezone(timeZone);
 
-    await page.goto(url, { waitUntil: 'networkidle0' });
+    await page.goto(url);
 
     const WIDTH = req.body.width + 'mm';
     const HEIGHT = req.body.height + 'mm';
