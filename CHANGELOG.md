@@ -1,5 +1,11 @@
 Change Log
 =========
+1.3.0 - 09/09/2021
+----------
+* fix a capo testo da logica
+* gestione numeri di pagina
+* fix tabelle con bordo
+
 1.2.0 - 20/07/2021
 ----------
 * fix a capo testo da logica
