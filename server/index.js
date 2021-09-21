@@ -23,6 +23,13 @@ app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
 
     const authenticated = await auth.check(authorization, timeZone);
 
+    if (!authenticated) {
+      res.status(401);
+      res.send();
+      console.error('Unauthorized');
+      return;
+    }
+
     const token = authorization.split(' ')[1];
 
     const {
@@ -34,13 +41,6 @@ app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
     const url = `${DOMAIN}/#!/${tenantId}/report/${templateId}/${recordId}?token=${token}`;
     console.log(url);
 
-    if (!authenticated) {
-      res.status(401);
-      res.send();
-      console.error('Unauthorized');
-      return;
-    }
-
     const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
     const page = await browser.newPage();
 
@@ -51,6 +51,10 @@ app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
     const WIDTH = req.body.width + 'mm';
     const HEIGHT = req.body.height + 'mm';
     const IS_PAGE_NUMBER_VISIBLE = req.body.insertPageNumber;
+
+    await page.waitForSelector('#header', { timeout: 0 });
+    await page.waitForSelector('#footer', { timeout: 0 });
+    await page.waitForSelector('#body', { timeout: 0 });
 
     await page.evaluate(() => {
       const SBECCO = 20;
