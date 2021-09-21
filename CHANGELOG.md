@@ -1,5 +1,9 @@
 Change Log
 =========
+1.4.0 - 21/09/2021
+----------
+* fix selettori per migliorare tempi caricamento e timeout
+
 1.3.0 - 09/09/2021
 ----------
 * fix a capo testo da logica
