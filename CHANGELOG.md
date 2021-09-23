@@ -1,5 +1,9 @@
 Change Log
 =========
+1.5.0 - 23/09/2021
+----------
+* migliorato caricamento immagini
+
 1.4.0 - 21/09/2021
 ----------
 * fix selettori per migliorare tempi caricamento e timeout

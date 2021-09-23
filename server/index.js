@@ -46,7 +46,7 @@ app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
 
     await page.emulateTimezone(timeZone);
 
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 0 });
+    await page.goto(url, { waitUntil: 'networkidle0', timeout: 0 });
 
     const WIDTH = req.body.width + 'mm';
     const HEIGHT = req.body.height + 'mm';
@@ -55,6 +55,17 @@ app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
     await page.waitForSelector('#header', { timeout: 0 });
     await page.waitForSelector('#footer', { timeout: 0 });
     await page.waitForSelector('#body', { timeout: 0 });
+
+    await page.evaluate(async () => {
+      const selectors = Array.from(document.querySelectorAll("img"));
+      await Promise.all(selectors.map(img => {
+        if (img.complete) return;
+        return new Promise((resolve, reject) => {
+          img.addEventListener('load', resolve);
+          img.addEventListener('error', reject);
+        });
+      }));
+    })
 
     await page.evaluate(() => {
       const SBECCO = 20;
