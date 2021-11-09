@@ -40,6 +40,16 @@ spec:
           env:
             - name: TZ
               value: Europe/Rome
+            - name: URL
+              valueFrom:
+                configMapKeyRef:
+                  name: service-discovery-configmap
+                  key: uri.gateway
+            - name: DOMAIN
+              valueFrom:
+                configMapKeyRef:
+                  name: common-configmap
+                  key: domain
           livenessProbe:
             httpGet:
               path: /
