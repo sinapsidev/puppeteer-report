@@ -21,7 +21,17 @@ app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
     const authorization = req.headers.authorization;
     const timeZone = req.headers['time-zone'];
 
-    const authenticated = await auth.check(authorization, timeZone);
+    const {
+      templateId,
+      recordId,
+      tenantId
+    } = req.params;
+
+    const authenticated = await auth.check({
+      timeZone,
+      token: authorization,
+      tenantId
+    });
 
     if (!authenticated) {
       res.status(401);
@@ -31,12 +41,6 @@ app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
     }
 
     const token = authorization.split(' ')[1];
-
-    const {
-      templateId,
-      recordId,
-      tenantId
-    } = req.params;
 
     const url = `${DOMAIN}/#!/${tenantId}/report/${templateId}/${recordId}?token=${token}`;
     console.log(url);
