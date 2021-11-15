@@ -61,15 +61,14 @@ app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
     await page.waitForSelector('#body', { timeout: 0 });
 
     await page.evaluate(async () => {
-      const selectors = Array.from(document.querySelectorAll("img"));
-      await Promise.all(selectors.map(img => {
-        if (img.complete) return;
+      const selectors = Array.from(document.querySelectorAll('img'));
+      await Promise.all(selectors.filter(img => !img.complete).map(img => {
         return new Promise((resolve, reject) => {
           img.addEventListener('load', resolve);
           img.addEventListener('error', reject);
         });
       }));
-    })
+    });
 
     await page.evaluate(() => {
       const SBECCO = 20;
