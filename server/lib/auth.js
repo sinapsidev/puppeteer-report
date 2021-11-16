@@ -1,6 +1,4 @@
-const fetch = require('node-fetch');
-
-const factory = (baseUrl, logger) => {
+const factory = ({ fetch, baseUrl, logger }) => {
   const checkV1 = async (token, timeZone) => {
     const url = `${baseUrl}/api/data/me`;
     logger.info(`Checking token ${token} with v1 on ${url}`);
@@ -13,7 +11,15 @@ const factory = (baseUrl, logger) => {
         }
       });
 
-      return response.status === 200;
+      if (response.status !== 200) {
+        return false;
+      }
+
+      const body = await response.json();
+      return {
+        ...body,
+        authVersion: 1
+      };
     } catch (e) {
       logger.error(e);
       return false;
@@ -33,7 +39,15 @@ const factory = (baseUrl, logger) => {
         }
       });
 
-      return response.status === 200;
+      if (response.status !== 200) {
+        return false;
+      }
+
+      const body = await response.json();
+      return {
+        ...body,
+        authVersion: 2
+      };
     } catch (e) {
       logger.error(e);
       return false;
@@ -41,15 +55,15 @@ const factory = (baseUrl, logger) => {
   };
 
   return {
-    check: async ({ token, timeZone, tenantId }) => {
-      const validV1 = await checkV1(token, timeZone);
-      if (validV1) {
-        return true;
+    getProfile: async ({ token, timeZone, tenantId }) => {
+      const profileV1 = await checkV1(token, timeZone);
+      if (profileV1) {
+        return profileV1;
       }
 
-      const validV2 = await checkV2(tenantId, token, timeZone);
+      const profileV2 = await checkV2(tenantId, token, timeZone);
 
-      return validV2;
+      return profileV2;
     }
   };
 };

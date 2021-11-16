@@ -2,6 +2,7 @@ const express = require('express');
 const puppeteer = require('puppeteer');
 const bodyParser = require('body-parser');
 const pino = require('pino-http')();
+const fetch = require('node-fetch');
 const logger = require('pino')({
   transport: {
     target: 'pino-pretty'
@@ -17,7 +18,11 @@ const printer = require('./lib/printer')({
   logger
 });
 
-const auth = require('./lib/auth')(URL, logger);
+const auth = require('./lib/auth')({
+  fetch,
+  baseUrl: URL,
+  logger
+});
 
 const app = express();
 
