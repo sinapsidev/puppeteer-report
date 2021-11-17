@@ -45,14 +45,13 @@ app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
       tenantId
     } = req.params;
 
-    const authenticated = await auth.check({
+    const profile = await auth.getProfile({
       timeZone,
       token: authorization,
-      tenantId,
-      logger
+      tenantId
     });
 
-    if (!authenticated) {
+    if (!profile) {
       res.status(401);
       res.send();
       logger.error('Unauthorized');
