@@ -10,7 +10,7 @@ const create = ({ puppeteer, logger }) => {
     loginV2 = false
   }) => {
     const url = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}?token=${token}&loginV2=${loginV2}`;
-    logger.debug(`Opening ${url}`);
+    logger.info(`Opening ${url}`);
 
     const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
     const page = await browser.newPage();
