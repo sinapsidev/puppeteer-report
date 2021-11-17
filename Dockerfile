@@ -49,9 +49,7 @@ COPY server/ server/
 COPY templates/ templates/
 COPY package.json package.json
 
-RUN npm install
-
-RUN npm test
+RUN npm install 
 
 EXPOSE 5000
 
