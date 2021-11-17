@@ -6,9 +6,10 @@ const create = ({ puppeteer, logger }) => {
     token,
     timeZone,
     body,
-    domain
+    domain,
+    loginV2 = false
   }) => {
-    const url = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}?token=${token}`;
+    const url = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}?token=${token}&loginV2=${loginV2}`;
     logger.debug(`Opening ${url}`);
 
     const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });

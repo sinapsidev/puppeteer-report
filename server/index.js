@@ -67,7 +67,8 @@ app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
       recordId,
       token,
       domain: DOMAIN,
-      timeZone
+      timeZone,
+      loginV2: profile.authVersion === 2
     });
 
     res.type('application/pdf');
