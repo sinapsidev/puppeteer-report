@@ -1,5 +1,11 @@
 Change Log
 =========
+1.6.0 - 30/11/2021
+----------
+* refactoring
+* aggiunta test unitari
+* gestione loginV2
+
 1.5.0 - 23/09/2021
 ----------
 * migliorato caricamento immagini
