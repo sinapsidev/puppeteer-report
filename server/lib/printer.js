@@ -17,7 +17,8 @@ const create = ({ puppeteer, logger }) => {
 
     await page.evaluateOnNewDocument((loginV2) => {
       try {
-        window.setLoginV2(loginV2);
+        const LOGINV2_KEY = 'ngStorage-__loginV2';
+        window.localStorage.setItem(LOGINV2_KEY, loginV2);
       } catch (e) {
         console.error(e);
       }
