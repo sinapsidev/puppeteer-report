@@ -9,16 +9,16 @@ const create = ({ puppeteer, logger }) => {
     domain,
     loginV2 = false
   }) => {
-    const LOGIN_V2_KEY = '__loginV2';
     const url = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}?token=${token}`;
     logger.info(`Opening ${url}`);
 
     const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
     const page = await browser.newPage();
 
-    await page.evaluateOnNewDocument(() => {
+    await page.evaluateOnNewDocument((loginV2) => {
+      const LOGIN_V2_KEY = '__loginV2';
       window.localStorage.setItem(LOGIN_V2_KEY, loginV2);
-    });
+    }, loginV2);
 
     await page.emulateTimezone(timeZone);
 
