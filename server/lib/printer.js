@@ -16,8 +16,11 @@ const create = ({ puppeteer, logger }) => {
     const page = await browser.newPage();
 
     await page.evaluateOnNewDocument((loginV2) => {
-      const LOGIN_V2_KEY = '__loginV2';
-      window.localStorage.setItem(LOGIN_V2_KEY, loginV2);
+      try {
+        window.setLoginV2(loginV2);
+      } catch (e) {
+        console.error(e);
+      }
     }, loginV2);
 
     await page.emulateTimezone(timeZone);
