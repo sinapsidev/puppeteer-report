@@ -9,11 +9,20 @@ const create = ({ puppeteer, logger }) => {
     domain,
     loginV2 = false
   }) => {
-    const url = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}?token=${token}&loginV2=${loginV2}`;
+    const url = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}?token=${token}`;
     logger.info(`Opening ${url}`);
 
     const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
     const page = await browser.newPage();
+
+    await page.evaluateOnNewDocument((loginV2) => {
+      try {
+        const LOGINV2_KEY = 'ngStorage-__loginV2';
+        window.localStorage.setItem(LOGINV2_KEY, loginV2);
+      } catch (e) {
+        console.error(e);
+      }
+    }, loginV2);
 
     await page.emulateTimezone(timeZone);
 
