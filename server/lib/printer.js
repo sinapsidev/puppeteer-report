@@ -41,9 +41,9 @@ const create = ({ puppeteer, logger }) => {
     const HEIGHT = body.height + 'mm';
     const IS_PAGE_NUMBER_VISIBLE = body.insertPageNumber;
 
-    await page.waitForSelector('#header', { timeout: 0 });
-    await page.waitForSelector('#footer', { timeout: 0 });
-    await page.waitForSelector('#body', { timeout: 0 });
+    await page.waitForSelector('#header', { timeout: 0, visible: true });
+    await page.waitForSelector('#footer', { timeout: 0, visible: true });
+    await page.waitForSelector('#body', { timeout: 0, visible: true });
 
     await page.evaluate(async () => {
       const selectors = Array.from(document.querySelectorAll('img'));
