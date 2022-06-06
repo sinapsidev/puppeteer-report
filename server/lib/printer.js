@@ -15,6 +15,12 @@ const create = ({ puppeteer, logger }) => {
     const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
     const page = await browser.newPage();
 
+    const { valoriCampiEditabili } = body;
+
+    await page.evaluateOnNewDocument((valoriCampiEditabili) => {
+      window.valoriCampiEditabili = valoriCampiEditabili || {};
+    }, valoriCampiEditabili);
+
     await page.evaluateOnNewDocument((loginV2) => {
       try {
         const LOGINV2_KEY = 'ngStorage-__loginV2';
