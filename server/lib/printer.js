@@ -17,7 +17,7 @@ const create = ({ puppeteer, logger }) => {
 
     const { valoriCampiEditabili } = body;
 
-    logger.info(`Passing ${valoriCampiEditabili.length} fields to the page: ${JSON.stringify(valoriCampiEditabili)}`);
+    logger.info(`Passing fields to the page: ${JSON.stringify(valoriCampiEditabili)}`);
 
     await page.evaluateOnNewDocument((valoriCampiEditabili) => {
       const VALORI_KEY = 'ngStorage-__valoriCampiEditabili';
