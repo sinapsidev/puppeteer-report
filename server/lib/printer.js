@@ -18,8 +18,9 @@ const create = ({ puppeteer, logger }) => {
     const { valoriCampiEditabili } = body;
 
     await page.evaluateOnNewDocument((valoriCampiEditabili) => {
-      window.valoriCampiEditabili = valoriCampiEditabili || {};
-    }, valoriCampiEditabili);
+      const VALORI_KEY = 'ngStorage-__valoriCampiEditabili';
+      window.localStorage.setItem(VALORI_KEY, JSON.stringify(valoriCampiEditabili));
+    }, valoriCampiEditabili || {});
 
     await page.evaluateOnNewDocument((loginV2) => {
       try {
