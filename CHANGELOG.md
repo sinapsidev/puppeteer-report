@@ -1,5 +1,9 @@
 Change Log
 =========
+1.8.0 - 29/06/2022
+----------
+* gestione campi editabili
+
 1.7.0 - 25/05/2022
 ----------
 * fix loginV2

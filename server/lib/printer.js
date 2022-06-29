@@ -15,6 +15,15 @@ const create = ({ puppeteer, logger }) => {
     const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
     const page = await browser.newPage();
 
+    const { valoriCampiEditabili } = body;
+
+    logger.info(`Passing fields to the page: ${JSON.stringify(valoriCampiEditabili)}`);
+
+    await page.evaluateOnNewDocument((valoriCampiEditabili) => {
+      const VALORI_KEY = 'ngStorage-__valoriCampiEditabili';
+      window.localStorage.setItem(VALORI_KEY, JSON.stringify(valoriCampiEditabili));
+    }, valoriCampiEditabili || {});
+
     await page.evaluateOnNewDocument((loginV2) => {
       try {
         const LOGINV2_KEY = 'ngStorage-__loginV2';
@@ -32,9 +41,9 @@ const create = ({ puppeteer, logger }) => {
     const HEIGHT = body.height + 'mm';
     const IS_PAGE_NUMBER_VISIBLE = body.insertPageNumber;
 
-    await page.waitForSelector('#header', { timeout: 0 });
-    await page.waitForSelector('#footer', { timeout: 0 });
-    await page.waitForSelector('#body', { timeout: 0 });
+    await page.waitForSelector('#header', { timeout: 0, visible: true });
+    await page.waitForSelector('#footer', { timeout: 0, visible: true });
+    await page.waitForSelector('#body', { timeout: 0, visible: true });
 
     await page.evaluate(async () => {
       const selectors = Array.from(document.querySelectorAll('img'));
