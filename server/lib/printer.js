@@ -1,5 +1,6 @@
 const create = ({ puppeteer, logger }) => {
-  const pdf = async ({
+  const preparePage = async ({
+    browser,
     templateId,
     recordId,
     tenantId,
@@ -12,7 +13,6 @@ const create = ({ puppeteer, logger }) => {
     const url = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}?token=${token}`;
     logger.info(`Opening ${url}`);
 
-    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
     const page = await browser.newPage();
 
     const { valoriCampiEditabili } = body;
@@ -238,6 +238,39 @@ const create = ({ puppeteer, logger }) => {
         bottom: 40
       };
     }
+
+    return {
+      page,
+      config
+    };
+  };
+
+  const pdf = async ({
+    templateId,
+    recordId,
+    tenantId,
+    token,
+    timeZone,
+    body,
+    domain,
+    loginV2 = false
+  }) => {
+    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
+
+    const {
+      page,
+      config
+    } = await preparePage({
+      browser,
+      templateId,
+      recordId,
+      tenantId,
+      token,
+      timeZone,
+      body,
+      domain,
+      loginV2
+    });
 
     const buffer = await page.pdf(config);
 
