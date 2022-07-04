@@ -279,8 +279,81 @@ const create = ({ puppeteer, logger }) => {
     return buffer;
   };
 
+  const image = async ({
+    templateId,
+    recordId,
+    tenantId,
+    token,
+    timeZone,
+    body,
+    domain,
+    loginV2 = false
+  }) => {
+    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
+
+    const {
+      page
+    } = await preparePage({
+      browser,
+      templateId,
+      recordId,
+      tenantId,
+      token,
+      timeZone,
+      body,
+      domain,
+      loginV2
+    });
+
+    const buffer = await await page.screenshot({
+      type: 'jpeg',
+      encoding: 'binary',
+      quality: 100,
+      omitBackground: false,
+      fullPage: true
+    });
+
+    await browser.close();
+
+    return buffer;
+  };
+
+  const print = async ({
+    templateId,
+    recordId,
+    tenantId,
+    token,
+    timeZone,
+    body,
+    domain,
+    loginV2 = false
+  }) => {
+    const {
+      printImage
+    } = body;
+
+    const generator = printImage ? image : pdf;
+    const contentType = printImage ? 'image/jpeg' : 'application/pdf';
+
+    const buffer = await generator({
+      templateId,
+      recordId,
+      tenantId,
+      token,
+      timeZone,
+      body,
+      domain,
+      loginV2
+    });
+
+    return {
+      contentType,
+      buffer
+    };
+  };
+
   return {
-    pdf
+    print
   };
 };
 
