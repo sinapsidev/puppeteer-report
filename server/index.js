@@ -60,7 +60,7 @@ app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
 
     const token = authorization.split(' ')[1];
 
-    const buffer = await printer.pdf({
+    const result = await printer.print({
       body: req.body,
       tenantId,
       templateId,
@@ -71,7 +71,12 @@ app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
       loginV2: profile.authVersion === 2
     });
 
-    res.type('application/pdf');
+    const {
+      buffer,
+      contentType
+    } = result;
+
+    res.type(contentType);
     res.send(buffer);
   } catch (e) {
     console.error(e.message);
