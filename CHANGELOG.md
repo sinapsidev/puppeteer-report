@@ -1,5 +1,9 @@
 Change Log
 =========
+1.9.0 - 27/07/2022
+----------
+* stampa report come immagini
+
 1.8.0 - 29/06/2022
 ----------
 * gestione campi editabili
