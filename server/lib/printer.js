@@ -1,4 +1,6 @@
-const create = ({ puppeteer, logger }) => {
+const create = async ({ puppeteer, logger }) => {
+  const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
+
   const preparePage = async ({
     browser,
     templateId,
@@ -255,8 +257,6 @@ const create = ({ puppeteer, logger }) => {
     domain,
     loginV2 = false
   }) => {
-    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
-
     const {
       page,
       config
@@ -289,8 +289,6 @@ const create = ({ puppeteer, logger }) => {
     domain,
     loginV2 = false
   }) => {
-    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
-
     const {
       page
     } = await preparePage({
