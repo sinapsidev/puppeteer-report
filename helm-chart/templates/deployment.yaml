@@ -15,9 +15,10 @@ spec:
     metadata:
       labels:
         app: {{ .Release.Name }}
-      {{ if .Values.generated }}
+        run-on: fargate
+      {{ if .Values.buildId }}
       annotations:
-        generatedAt: {{ .Values.generated | quote }}
+        buildId: {{ .Values.buildId | quote }}
       {{ end }}
     spec:
       imagePullSecrets:
