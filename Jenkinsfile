@@ -87,8 +87,8 @@ pipeline {
                         mkdir -p ~/.aws
                         cp $CREDENTIALS ~/.aws/credentials
                         ~/login-dev.sh
-                        helm upgrade --install puppeteer-report-dev ./helm-chart --values=./helm-chart/values.dev.yaml --set-string buildId=${env.BUILD_NUMBER}
-                        kubectl rollout status deploy puppeteer-report-dev --namespace=logica-dev
+                        helm upgrade --install xdb-puppeteer-report-dev ./helm-chart --values=./helm-chart/values.dev.yaml --set-string buildId=${env.BUILD_NUMBER}
+                        kubectl rollout status deploy xdb-puppeteer-report-dev --namespace=logica-dev
                         """
                     }
                 }
