@@ -56,14 +56,14 @@ const factory = ({ fetch, baseUrl, logger }) => {
 
   return {
     getProfile: async ({ token, timeZone, tenantId }) => {
-      const profileV1 = await checkV1(token, timeZone);
-      if (profileV1) {
-        return profileV1;
+      const profileV2 = await checkV2(tenantId, token, timeZone);
+      if(profileV2) {
+        return profileV2;
       }
 
-      const profileV2 = await checkV2(tenantId, token, timeZone);
-
-      return profileV2;
+      const profileV1 = await checkV1(token, timeZone);
+      
+      return profileV1;
     }
   };
 };
