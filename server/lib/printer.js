@@ -16,6 +16,7 @@ const create = async ({ puppeteer, logger }) => {
     logger.info(`Opening ${url}`);
 
     const page = await browser.newPage();
+    await page.setDefaultNavigationTimeout(0); // disable timeout
 
     const { valoriCampiEditabili } = body;
 

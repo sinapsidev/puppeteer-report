@@ -26,7 +26,7 @@ t.test('auth', t => {
       token: '', timeZone: '', tenantId: ''
     });
 
-    t.equal(result.authVersion,2);
+    t.equal(result.authVersion, 2);
 
     t.end();
   });
