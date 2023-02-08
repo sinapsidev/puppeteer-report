@@ -12,8 +12,7 @@ const create = async ({ puppeteer, logger }) => {
   }) => {
     const url = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}?token=${token}`;
     logger.info(`Opening ${url}`);
-    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
-  
+
     const page = await browser.newPage();
     await page.setDefaultNavigationTimeout(0); // disable timeout
 
@@ -248,6 +247,7 @@ const create = async ({ puppeteer, logger }) => {
   };
 
   const pdf = async ({
+    browser,
     templateId,
     recordId,
     tenantId,
@@ -280,6 +280,7 @@ const create = async ({ puppeteer, logger }) => {
   };
 
   const image = async ({
+    browser,
     templateId,
     recordId,
     tenantId,
@@ -326,6 +327,8 @@ const create = async ({ puppeteer, logger }) => {
     domain,
     loginV2 = false
   }) => {
+    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
+
     const {
       printImage
     } = body;
@@ -334,6 +337,7 @@ const create = async ({ puppeteer, logger }) => {
     const contentType = printImage ? 'image/jpeg' : 'application/pdf';
 
     const buffer = await generator({
+      browser,
       templateId,
       recordId,
       tenantId,
@@ -343,6 +347,8 @@ const create = async ({ puppeteer, logger }) => {
       domain,
       loginV2
     });
+
+    await browser.close();
 
     return {
       contentType,
