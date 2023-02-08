@@ -1,6 +1,4 @@
 const create = async ({ puppeteer, logger }) => {
-  const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
-
   const preparePage = async ({
     browser,
     templateId,
@@ -14,7 +12,8 @@ const create = async ({ puppeteer, logger }) => {
   }) => {
     const url = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}?token=${token}`;
     logger.info(`Opening ${url}`);
-
+    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
+  
     const page = await browser.newPage();
     await page.setDefaultNavigationTimeout(0); // disable timeout
 
