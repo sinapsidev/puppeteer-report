@@ -1,5 +1,5 @@
 apiVersion: v2
-name: puppeteer-report
+name: xdb-puppeteer-report
 description: Puppeteer Report generator
 
 # A chart can be either an 'application' or a 'library' chart.
