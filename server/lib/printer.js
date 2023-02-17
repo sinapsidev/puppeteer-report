@@ -1,4 +1,4 @@
-const create = ({ puppeteer, logger }) => {
+const create = async ({ puppeteer, logger }) => {
   const preparePage = async ({
     browser,
     templateId,
@@ -14,6 +14,7 @@ const create = ({ puppeteer, logger }) => {
     logger.info(`Opening ${url}`);
 
     const page = await browser.newPage();
+    await page.setDefaultNavigationTimeout(0); // disable timeout
 
     const { valoriCampiEditabili } = body;
 
@@ -246,6 +247,7 @@ const create = ({ puppeteer, logger }) => {
   };
 
   const pdf = async ({
+    browser,
     templateId,
     recordId,
     tenantId,
@@ -255,8 +257,6 @@ const create = ({ puppeteer, logger }) => {
     domain,
     loginV2 = false
   }) => {
-    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
-
     const {
       page,
       config
@@ -280,6 +280,7 @@ const create = ({ puppeteer, logger }) => {
   };
 
   const image = async ({
+    browser,
     templateId,
     recordId,
     tenantId,
@@ -289,8 +290,6 @@ const create = ({ puppeteer, logger }) => {
     domain,
     loginV2 = false
   }) => {
-    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
-
     const {
       page
     } = await preparePage({
@@ -328,6 +327,8 @@ const create = ({ puppeteer, logger }) => {
     domain,
     loginV2 = false
   }) => {
+    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
+
     const {
       printImage
     } = body;
@@ -336,6 +337,7 @@ const create = ({ puppeteer, logger }) => {
     const contentType = printImage ? 'image/jpeg' : 'application/pdf';
 
     const buffer = await generator({
+      browser,
       templateId,
       recordId,
       tenantId,
@@ -345,6 +347,8 @@ const create = ({ puppeteer, logger }) => {
       domain,
       loginV2
     });
+
+    await browser.close();
 
     return {
       contentType,

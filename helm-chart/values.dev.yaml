@@ -1,6 +1,6 @@
 env: dev
 resources:
-  limitMem: 2G
+  limitMem: 500M
   limitCpu: 1.5
-  requestMemory: 50M
-  requestCpu: 0.3
+  requestMemory: 500M
+  requestCpu: 1.5

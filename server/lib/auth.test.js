@@ -7,7 +7,7 @@ const logger = {
 };
 
 t.test('auth', t => {
-  t.test('when a v1 check works, returns the v1 element', async t => {
+  t.test('when a v2 check works, returns the v2 element', async t => {
     const mockFetch = (url) => {
       return Promise.resolve({
         ok: true,
@@ -26,14 +26,14 @@ t.test('auth', t => {
       token: '', timeZone: '', tenantId: ''
     });
 
-    t.equal(result.authVersion, 1);
+    t.equal(result.authVersion, 2);
 
     t.end();
   });
 
-  t.test('when a v1 check does not work, returns the v2 element if working', async t => {
+  t.test('when a v2 check does not work, returns the v1 element if working', async t => {
     const mockFetch = (url) => {
-      if (url.includes('v2')) {
+      if (!url.includes('v2')) {
         return Promise.resolve({
           ok: true,
           status: 200,
@@ -58,7 +58,7 @@ t.test('auth', t => {
       token: '', timeZone: '', tenantId: ''
     });
 
-    t.equal(result.authVersion, 2);
+    t.equal(result.authVersion, 1);
 
     t.end();
   });

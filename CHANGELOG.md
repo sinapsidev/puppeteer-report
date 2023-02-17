@@ -1,5 +1,9 @@
 Change Log
 =========
+1.10.0 - 16/02/2023
+----------
+* gestione loginv2
+
 1.9.0 - 27/07/2022
 ----------
 * stampa report come immagini
