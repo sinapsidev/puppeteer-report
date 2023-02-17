@@ -1,0 +1,6 @@
+env: prod
+resources:
+  limitMem: 1G
+  limitCpu: 2
+  requestMemory: 1G
+  requestCpu: 2

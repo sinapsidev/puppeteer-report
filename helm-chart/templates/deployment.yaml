@@ -46,23 +46,25 @@ spec:
                 configMapKeyRef:
                   name: service-discovery-configmap
                   key: uri.gateway
-            - name: DOMAIN
+            - name: CMDOMAIN
               valueFrom:
                 configMapKeyRef:
                   name: common-configmap
                   key: domain
+            - name: DOMAIN
+              value: https://$(CMDOMAIN)
           livenessProbe:
             httpGet:
               path: /
               port: http-port
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             timeoutSeconds: 30
             periodSeconds: 45
           readinessProbe:
             httpGet:
               path: /
               port: http-port
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             periodSeconds: 45
             timeoutSeconds: 30
             failureThreshold: 5
