@@ -3,6 +3,9 @@ const puppeteer = require('puppeteer');
 const bodyParser = require('body-parser');
 const pino = require('pino-http')();
 const fetch = require('node-fetch');
+const request = require('request');
+const DOPPIO_TOKEN = '3651be64a62c0b2dac6d10cf';
+
 const logger = require('pino')({
   transport: {
     target: 'pino-pretty'
@@ -32,6 +35,46 @@ printerFactory({
 }).then(printer => {
   app.get('/', function (req, res) {
     res.send('Hello from Puppeteer Report');
+  });
+
+  app.post('/print2/:tenantId/:templateId/:recordId', async (req, res) => {
+    const authorization = req.headers.authorization;
+    const token = authorization.split(' ')[1];
+
+    const {
+      templateId,
+      recordId,
+      tenantId
+    } = req.params;
+
+    const url = `${DOMAIN}/#!/${tenantId}/report/${templateId}/${recordId}?token=${token}`;
+
+    const options = {
+      encoding: null,
+      method: 'POST',
+      url: 'https://api.doppio.sh/v1/render/pdf/direct',
+      headers: {
+        Authorization: `Bearer ${DOPPIO_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        page: {
+          pdf: {
+            printBackground: true
+          },
+          goto: {
+            url
+          }
+        }
+      })
+    };
+
+    request(options, function (error, response) {
+      if (error) throw new Error(error);
+      console.log(response.body);
+      res.type('application/pdf');
+      res.send(response.body);
+    });
   });
 
   app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
