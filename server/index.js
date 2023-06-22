@@ -63,7 +63,10 @@ printerFactory({
             printBackground: true
           },
           goto: {
-            url
+            url,
+            options: {
+              waitUntil: ['networkidle0']
+            }
           }
         }
       })
