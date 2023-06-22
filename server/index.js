@@ -37,7 +37,7 @@ printerFactory({
     res.send('Hello from Puppeteer Report');
   });
 
-  app.post('/print2/:tenantId/:templateId/:recordId', async (req, res) => {
+  app.post('/print/test/:tenantId/:templateId/:recordId', async (req, res) => {
     const authorization = req.headers.authorization;
     const token = authorization.split(' ')[1];
 
