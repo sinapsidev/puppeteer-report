@@ -222,7 +222,8 @@ const create = async ({ puppeteer, logger }) => {
 
     const config = {
       preferCSSPageSize: true,
-      printBackground: true
+      printBackground: true,
+      timeout: 0
     };
 
     if (IS_LANDSCAPE) {

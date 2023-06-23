@@ -1,5 +1,8 @@
 Change Log
 =========
+1.10.2 - 23/06/2023
+* aggiunto timeout 0 in config printToPDF
+
 1.10.0-1.10.1 - 16/02/2023
 ----------
 * gestione loginv2
