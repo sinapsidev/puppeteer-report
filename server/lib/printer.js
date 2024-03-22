@@ -214,8 +214,6 @@ const create = async ({ puppeteer, logger }) => {
 
     const PAGE_CSS = `@page { size: ${WIDTH} ${HEIGHT} ${(IS_LANDSCAPE ? 'landscape' : '')}; }`;
 
-    console.log(PAGE_CSS);
-
     await page.addStyleTag(
       { content: PAGE_CSS }
     );
