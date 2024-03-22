@@ -311,32 +311,39 @@ const create = async ({ puppeteer, logger }) => {
     body,
     domain
   }) => {
-    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
+    let browser;
+    try {
+      browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
 
-    const {
-      printImage
-    } = body;
+      const {
+        printImage
+      } = body;
 
-    const generator = printImage ? image : pdf;
-    const contentType = printImage ? 'image/jpeg' : 'application/pdf';
+      const generator = printImage ? image : pdf;
+      const contentType = printImage ? 'image/jpeg' : 'application/pdf';
 
-    const buffer = await generator({
-      browser,
-      templateId,
-      recordId,
-      tenantId,
-      token,
-      timeZone,
-      body,
-      domain
-    });
+      const buffer = await generator({
+        browser,
+        templateId,
+        recordId,
+        tenantId,
+        token,
+        timeZone,
+        body,
+        domain
+      });
 
-    await browser.close();
+      await browser.close();
 
-    return {
-      contentType,
-      buffer
-    };
+      return {
+        contentType,
+        buffer
+      };
+    } finally {
+      if (browser) {
+        await browser.close();
+      }
+    }
   };
 
   return {
