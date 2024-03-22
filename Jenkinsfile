@@ -65,63 +65,6 @@ pipeline {
                 build(job: 'xdbDeployer/develop', wait: false)
             }
         }
-        stage('Trigger deployment AWS logica-dev') {
-            agent {
-                docker {
-                    image 'docker.snps.it/snps/logica-devops-tools'
-                    registryUrl 'https://docker.snps.it'
-                    registryCredentialsId 'nexus3'
-                    args '-u root:root'
-                    alwaysPull true
-                }
-            }
-            when {
-                anyOf {
-                    branch 'develop'
-                }
-            }
-            steps {
-                script {
-                    withCredentials([file(credentialsId: 'aws-jenkins-credential', variable: 'CREDENTIALS')]) {
-                        sh """
-                        mkdir -p ~/.aws
-                        cp $CREDENTIALS ~/.aws/credentials
-                        ~/login-dev.sh
-                        helm upgrade --install xdb-puppeteer-report-dev ./helm-chart --values=./helm-chart/values.dev.yaml --set-string buildId=${env.BUILD_NUMBER}
-                        kubectl rollout status deploy xdb-puppeteer-report-dev --namespace=logica-dev
-                        """
-                    }
-                }
-            }
-        }
-        stage('Trigger deployment AWS logica-prod') {
-            agent {
-                docker {
-                    image 'docker.snps.it/snps/logica-devops-tools'
-                    registryUrl 'https://docker.snps.it'
-                    registryCredentialsId 'nexus3'
-                    args '-u root:root'
-                    alwaysPull true
-                }
-            }
-            when {
-                branch 'master'
-            }
-            steps {
-                script {
-                    withCredentials([file(credentialsId: 'aws-jenkins-credential', variable: 'CREDENTIALS')]) {
-                        sh """
-                        mkdir -p ~/.aws
-                        cp $CREDENTIALS ~/.aws/credentials
-                        ~/login-prod.sh
-                        helm package --dependency-update ./helm-chart --version ${env.VERSION} --app-version ${env.VERSION}
-                        helm upgrade --install xdb-puppeteer-report-prod ./xdb-puppeteer-report-${env.VERSION}.tgz --values=./helm-chart/values.prod.yaml -n logica-prod
-                        kubectl rollout status deploy xdb-puppeteer-report-prod --namespace=logica-prod
-                        """
-                    }
-                }
-            }
-        }
     }
     post {
         always {
