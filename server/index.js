@@ -69,8 +69,7 @@ printerFactory({
         recordId,
         token,
         domain: DOMAIN,
-        timeZone,
-        loginV2: profile.authVersion === 2
+        timeZone
       });
 
       const {

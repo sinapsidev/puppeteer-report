@@ -7,8 +7,7 @@ const create = async ({ puppeteer, logger }) => {
     token,
     timeZone,
     body,
-    domain,
-    loginV2 = false
+    domain
   }) => {
     const url = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}?token=${token}`;
     logger.info(`Opening ${url}`);
@@ -24,15 +23,6 @@ const create = async ({ puppeteer, logger }) => {
       const VALORI_KEY = 'ngStorage-__valoriCampiEditabili';
       window.localStorage.setItem(VALORI_KEY, JSON.stringify(valoriCampiEditabili));
     }, valoriCampiEditabili || {});
-
-    await page.evaluateOnNewDocument((loginV2) => {
-      try {
-        const LOGINV2_KEY = 'ngStorage-__loginV2';
-        window.localStorage.setItem(LOGINV2_KEY, loginV2);
-      } catch (e) {
-        console.error(e);
-      }
-    }, loginV2);
 
     await page.emulateTimezone(timeZone);
 
@@ -253,8 +243,7 @@ const create = async ({ puppeteer, logger }) => {
     token,
     timeZone,
     body,
-    domain,
-    loginV2 = false
+    domain
   }) => {
     const {
       page,
@@ -267,8 +256,7 @@ const create = async ({ puppeteer, logger }) => {
       token,
       timeZone,
       body,
-      domain,
-      loginV2
+      domain
     });
 
     const buffer = await page.pdf(config);
@@ -286,8 +274,7 @@ const create = async ({ puppeteer, logger }) => {
     token,
     timeZone,
     body,
-    domain,
-    loginV2 = false
+    domain
   }) => {
     const {
       page
@@ -299,8 +286,7 @@ const create = async ({ puppeteer, logger }) => {
       token,
       timeZone,
       body,
-      domain,
-      loginV2
+      domain
     });
 
     const buffer = await await page.screenshot({
@@ -323,8 +309,7 @@ const create = async ({ puppeteer, logger }) => {
     token,
     timeZone,
     body,
-    domain,
-    loginV2 = false
+    domain
   }) => {
     const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
 
@@ -343,8 +328,7 @@ const create = async ({ puppeteer, logger }) => {
       token,
       timeZone,
       body,
-      domain,
-      loginV2
+      domain
     });
 
     await browser.close();
