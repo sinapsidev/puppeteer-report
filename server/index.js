@@ -1,8 +1,8 @@
 const express = require('express');
-const puppeteer = require('puppeteer');
 const bodyParser = require('body-parser');
 const pino = require('pino-http')();
 const fetch = require('node-fetch');
+const browserFactory = require('./lib/browser');
 
 const logger = require('pino')({
   transport: {
@@ -28,7 +28,7 @@ app.use(bodyParser.json());
 app.use(pino);
 
 printerFactory({
-  puppeteer,
+  browserFactory,
   logger
 }).then(printer => {
   app.get('/', function (req, res) {

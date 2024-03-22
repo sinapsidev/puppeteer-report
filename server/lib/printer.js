@@ -1,4 +1,6 @@
-const create = async ({ puppeteer, logger }) => {
+const create = async ({ browserFactory, logger }) => {
+  const browser = await browserFactory();
+
   const preparePage = async ({
     browser,
     templateId,
@@ -245,25 +247,29 @@ const create = async ({ puppeteer, logger }) => {
     body,
     domain
   }) => {
-    const {
-      page,
-      config
-    } = await preparePage({
-      browser,
-      templateId,
-      recordId,
-      tenantId,
-      token,
-      timeZone,
-      body,
-      domain
-    });
+    let page;
+    try {
+      const data = await preparePage({
+        browser,
+        templateId,
+        recordId,
+        tenantId,
+        token,
+        timeZone,
+        body,
+        domain
+      });
 
-    const buffer = await page.pdf(config);
+      page = data.page;
 
-    await browser.close();
+      const buffer = await page.pdf(data.config);
 
-    return buffer;
+      return buffer;
+    } finally {
+      if (page) {
+        await page.close();
+      }
+    }
   };
 
   const image = async ({
@@ -276,30 +282,35 @@ const create = async ({ puppeteer, logger }) => {
     body,
     domain
   }) => {
-    const {
-      page
-    } = await preparePage({
-      browser,
-      templateId,
-      recordId,
-      tenantId,
-      token,
-      timeZone,
-      body,
-      domain
-    });
+    let page;
+    try {
+      const data = await preparePage({
+        browser,
+        templateId,
+        recordId,
+        tenantId,
+        token,
+        timeZone,
+        body,
+        domain
+      });
 
-    const buffer = await await page.screenshot({
-      type: 'jpeg',
-      encoding: 'binary',
-      quality: 100,
-      omitBackground: false,
-      fullPage: true
-    });
+      page = data.page;
 
-    await browser.close();
+      const buffer = await await page.screenshot({
+        type: 'jpeg',
+        encoding: 'binary',
+        quality: 100,
+        omitBackground: false,
+        fullPage: true
+      });
 
-    return buffer;
+      return buffer;
+    } finally {
+      if (page) {
+        await page.close();
+      }
+    }
   };
 
   const print = async ({
@@ -311,10 +322,7 @@ const create = async ({ puppeteer, logger }) => {
     body,
     domain
   }) => {
-    let browser;
     try {
-      browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
-
       const {
         printImage
       } = body;
@@ -333,16 +341,13 @@ const create = async ({ puppeteer, logger }) => {
         domain
       });
 
-      await browser.close();
-
       return {
         contentType,
         buffer
       };
-    } finally {
-      if (browser) {
-        await browser.close();
-      }
+    } catch (e) {
+      logger.error(e.message);
+      throw e;
     }
   };
 
