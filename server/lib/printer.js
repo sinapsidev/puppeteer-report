@@ -1,4 +1,6 @@
-const create = async ({ puppeteer, logger }) => {
+const create = async ({ browserFactory, logger }) => {
+  const browser = await browserFactory();
+
   const preparePage = async ({
     browser,
     templateId,
@@ -7,8 +9,7 @@ const create = async ({ puppeteer, logger }) => {
     token,
     timeZone,
     body,
-    domain,
-    loginV2 = false
+    domain
   }) => {
     const url = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}?token=${token}`;
     logger.info(`Opening ${url}`);
@@ -24,15 +25,6 @@ const create = async ({ puppeteer, logger }) => {
       const VALORI_KEY = 'ngStorage-__valoriCampiEditabili';
       window.localStorage.setItem(VALORI_KEY, JSON.stringify(valoriCampiEditabili));
     }, valoriCampiEditabili || {});
-
-    await page.evaluateOnNewDocument((loginV2) => {
-      try {
-        const LOGINV2_KEY = 'ngStorage-__loginV2';
-        window.localStorage.setItem(LOGINV2_KEY, loginV2);
-      } catch (e) {
-        console.error(e);
-      }
-    }, loginV2);
 
     await page.emulateTimezone(timeZone);
 
@@ -214,8 +206,6 @@ const create = async ({ puppeteer, logger }) => {
 
     const PAGE_CSS = `@page { size: ${WIDTH} ${HEIGHT} ${(IS_LANDSCAPE ? 'landscape' : '')}; }`;
 
-    console.log(PAGE_CSS);
-
     await page.addStyleTag(
       { content: PAGE_CSS }
     );
@@ -255,29 +245,31 @@ const create = async ({ puppeteer, logger }) => {
     token,
     timeZone,
     body,
-    domain,
-    loginV2 = false
+    domain
   }) => {
-    const {
-      page,
-      config
-    } = await preparePage({
-      browser,
-      templateId,
-      recordId,
-      tenantId,
-      token,
-      timeZone,
-      body,
-      domain,
-      loginV2
-    });
+    let page;
+    try {
+      const data = await preparePage({
+        browser,
+        templateId,
+        recordId,
+        tenantId,
+        token,
+        timeZone,
+        body,
+        domain
+      });
 
-    const buffer = await page.pdf(config);
+      page = data.page;
 
-    await browser.close();
+      const buffer = await page.pdf(data.config);
 
-    return buffer;
+      return buffer;
+    } finally {
+      if (page) {
+        await page.close();
+      }
+    }
   };
 
   const image = async ({
@@ -288,34 +280,37 @@ const create = async ({ puppeteer, logger }) => {
     token,
     timeZone,
     body,
-    domain,
-    loginV2 = false
+    domain
   }) => {
-    const {
-      page
-    } = await preparePage({
-      browser,
-      templateId,
-      recordId,
-      tenantId,
-      token,
-      timeZone,
-      body,
-      domain,
-      loginV2
-    });
+    let page;
+    try {
+      const data = await preparePage({
+        browser,
+        templateId,
+        recordId,
+        tenantId,
+        token,
+        timeZone,
+        body,
+        domain
+      });
 
-    const buffer = await await page.screenshot({
-      type: 'jpeg',
-      encoding: 'binary',
-      quality: 100,
-      omitBackground: false,
-      fullPage: true
-    });
+      page = data.page;
 
-    await browser.close();
+      const buffer = await await page.screenshot({
+        type: 'jpeg',
+        encoding: 'binary',
+        quality: 100,
+        omitBackground: false,
+        fullPage: true
+      });
 
-    return buffer;
+      return buffer;
+    } finally {
+      if (page) {
+        await page.close();
+      }
+    }
   };
 
   const print = async ({
@@ -325,36 +320,35 @@ const create = async ({ puppeteer, logger }) => {
     token,
     timeZone,
     body,
-    domain,
-    loginV2 = false
+    domain
   }) => {
-    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'] });
+    try {
+      const {
+        printImage
+      } = body;
 
-    const {
-      printImage
-    } = body;
+      const generator = printImage ? image : pdf;
+      const contentType = printImage ? 'image/jpeg' : 'application/pdf';
 
-    const generator = printImage ? image : pdf;
-    const contentType = printImage ? 'image/jpeg' : 'application/pdf';
+      const buffer = await generator({
+        browser,
+        templateId,
+        recordId,
+        tenantId,
+        token,
+        timeZone,
+        body,
+        domain
+      });
 
-    const buffer = await generator({
-      browser,
-      templateId,
-      recordId,
-      tenantId,
-      token,
-      timeZone,
-      body,
-      domain,
-      loginV2
-    });
-
-    await browser.close();
-
-    return {
-      contentType,
-      buffer
-    };
+      return {
+        contentType,
+        buffer
+      };
+    } catch (e) {
+      logger.error(e.message);
+      throw e;
+    }
   };
 
   return {

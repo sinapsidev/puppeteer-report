@@ -1,8 +1,9 @@
 const express = require('express');
-const puppeteer = require('puppeteer');
 const bodyParser = require('body-parser');
 const pino = require('pino-http')();
 const fetch = require('node-fetch');
+const browserFactory = require('./lib/browser');
+
 const logger = require('pino')({
   transport: {
     target: 'pino-pretty'
@@ -27,7 +28,7 @@ app.use(bodyParser.json());
 app.use(pino);
 
 printerFactory({
-  puppeteer,
+  browserFactory,
   logger
 }).then(printer => {
   app.get('/', function (req, res) {
@@ -68,8 +69,7 @@ printerFactory({
         recordId,
         token,
         domain: DOMAIN,
-        timeZone,
-        loginV2: profile.authVersion === 2
+        timeZone
       });
 
       const {
