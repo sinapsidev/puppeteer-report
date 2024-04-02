@@ -1,6 +1,10 @@
 # Change Log
 
-1.12.2 - 26/03/2024
+1.13.0 - 02/04/2024
+
+- Migliorati log e gestione timeout
+
+  1.12.2 - 26/03/2024
 
 - Aggiunto finally per chiusura browser
 - aggiornato node
