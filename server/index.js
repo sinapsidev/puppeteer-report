@@ -1,13 +1,13 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const fetch = require('node-fetch');
-const browserFactory = require('./lib/browser');
-
 const logger = require('pino')({
   transport: {
     target: 'pino-pretty'
   }
 });
+
+const express = require('express');
+const bodyParser = require('body-parser');
+const fetch = require('node-fetch');
+const browserFactory = require('./lib/browser')(logger);
 
 const PORT = process.env.PORT || 5000;
 const URL = process.env.URL || 'http://localhost:8080';

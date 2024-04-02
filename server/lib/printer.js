@@ -1,15 +1,7 @@
+const timeout = require('./timeout');
+
 const create = async ({ browserFactory, logger }) => {
-  const browser = await browserFactory();
-
-  const TIMEOUT = 30 * 1000;
-
-  function timeout (ms, message) {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        reject(new Error(message));
-      }, ms);
-    });
-  }
+  const TIMEOUT = 60 * 1000;
 
   const preparePage = async ({
     page,
@@ -239,86 +231,32 @@ const create = async ({ browserFactory, logger }) => {
     };
   };
 
-  const pdf = async ({
-    browser,
-    templateId,
-    recordId,
-    tenantId,
-    token,
-    timeZone,
-    body,
-    domain
-  }) => {
-    let page;
-    try {
-      const baseUrl = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}`;
-      const url = `${baseUrl}?token=${token}`;
-
-      logger.info(`Opening ${baseUrl}`);
-
-      page = await browser.newPage();
-
-      const data = await Promise.race([preparePage({
-        page,
-        url,
-        timeZone,
-        body
-      }), timeout(TIMEOUT, 'Timeout')]);
-
-      const buffer = await page.pdf(data.config);
-
-      return buffer;
-    } finally {
-      if (page) {
-        logger.info('Closing page');
-        await page.close();
-        logger.info(`Page closed: ${page.isClosed()}`);
-      }
-    }
+  const _image = (page) => {
+    return page.screenshot({
+      type: 'jpeg',
+      encoding: 'binary',
+      quality: 100,
+      omitBackground: false,
+      fullPage: true
+    });
   };
 
-  const image = async ({
-    browser,
-    templateId,
-    recordId,
-    tenantId,
-    token,
+  const _pdf = (page, config) => {
+    return page.pdf(config);
+  };
+
+  const processPage = ({
+    page,
+    url,
     timeZone,
-    body,
-    domain
+    body
   }) => {
-    let page;
-    try {
-      const baseUrl = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}`;
-      const url = `${baseUrl}?token=${token}`;
-
-      logger.info(`Opening ${baseUrl}`);
-
-      page = await browser.newPage();
-
-      await Promise.race([preparePage({
-        page,
-        url,
-        timeZone,
-        body
-      }), timeout(TIMEOUT, 'Timeout')]);
-
-      const buffer = await page.screenshot({
-        type: 'jpeg',
-        encoding: 'binary',
-        quality: 100,
-        omitBackground: false,
-        fullPage: true
-      });
-
-      return buffer;
-    } finally {
-      if (page) {
-        logger.info('Closing page');
-        await page.close();
-        logger.info(`Page closed: ${page.isClosed()}`);
-      }
-    }
+    return Promise.race([preparePage({
+      page,
+      url,
+      timeZone,
+      body
+    }), timeout(TIMEOUT)]);
   };
 
   const print = async ({
@@ -331,28 +269,49 @@ const create = async ({ browserFactory, logger }) => {
     domain
   }) => {
     try {
+      const start = Date.now();
       const {
         printImage
       } = body;
 
-      const generator = printImage ? image : pdf;
+      const generator = printImage ? _image : _pdf;
       const contentType = printImage ? 'image/jpeg' : 'application/pdf';
 
-      const buffer = await generator({
-        browser,
-        templateId,
-        recordId,
-        tenantId,
-        token,
-        timeZone,
-        body,
-        domain
-      });
+      let page;
 
-      return {
-        contentType,
-        buffer
-      };
+      const baseUrl = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}`;
+      const url = `${baseUrl}?token=${token}`;
+
+      try {
+        const browser = await browserFactory();
+
+        logger.info(`Opening ${baseUrl}`);
+
+        page = await browser.newPage();
+
+        const { config } = await processPage({
+          page,
+          url,
+          timeZone,
+          body
+        });
+
+        const buffer = await generator(page, config);
+
+        const end = Date.now();
+
+        logger.info(`Processed page ${baseUrl} in ${end - start}ms`);
+
+        return {
+          contentType,
+          buffer
+        };
+      } finally {
+        if (page) {
+          await page.close();
+          logger.info(`Page closed ${baseUrl}`);
+        }
+      }
     } catch (e) {
       logger.error(e.message);
       throw e;
