@@ -2,7 +2,7 @@ const factory = ({ fetch, baseUrl, logger }) => {
   const checkV2 = async (tenantId, token, timeZone) => {
     const url = `${baseUrl}/api/v2/${tenantId}/data/me`;
 
-    logger.info(`Checking token ${token} with v2 on ${url}`);
+    logger.debug(`Checking token ${token} with v2 on ${url}`);
     try {
       const response = await fetch(url, {
         method: 'GET',

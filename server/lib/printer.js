@@ -1,25 +1,27 @@
 const create = async ({ browserFactory, logger }) => {
   const browser = await browserFactory();
 
-  const preparePage = async ({
-    browser,
-    templateId,
-    recordId,
-    tenantId,
-    token,
-    timeZone,
-    body,
-    domain
-  }) => {
-    const url = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}?token=${token}`;
-    logger.info(`Opening ${url}`);
+  const TIMEOUT = 30 * 1000;
 
-    const page = await browser.newPage();
+  function timeout (ms, message) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        reject(new Error(message));
+      }, ms);
+    });
+  }
+
+  const preparePage = async ({
+    page,
+    url,
+    timeZone,
+    body
+  }) => {
     await page.setDefaultNavigationTimeout(0); // disable timeout
 
     const { valoriCampiEditabili } = body;
 
-    logger.info(`Passing fields to the page: ${JSON.stringify(valoriCampiEditabili)}`);
+    logger.debug(`Passing fields to the page: ${JSON.stringify(valoriCampiEditabili)}`);
 
     await page.evaluateOnNewDocument((valoriCampiEditabili) => {
       const VALORI_KEY = 'ngStorage-__valoriCampiEditabili';
@@ -249,25 +251,28 @@ const create = async ({ browserFactory, logger }) => {
   }) => {
     let page;
     try {
-      const data = await preparePage({
-        browser,
-        templateId,
-        recordId,
-        tenantId,
-        token,
-        timeZone,
-        body,
-        domain
-      });
+      const baseUrl = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}`;
+      const url = `${baseUrl}?token=${token}`;
 
-      page = data.page;
+      logger.info(`Opening ${baseUrl}`);
+
+      page = await browser.newPage();
+
+      const data = await Promise.race([preparePage({
+        page,
+        url,
+        timeZone,
+        body
+      }), timeout(TIMEOUT, 'Timeout')]);
 
       const buffer = await page.pdf(data.config);
 
       return buffer;
     } finally {
       if (page) {
+        logger.info('Closing page');
         await page.close();
+        logger.info(`Page closed: ${page.isClosed()}`);
       }
     }
   };
@@ -284,20 +289,21 @@ const create = async ({ browserFactory, logger }) => {
   }) => {
     let page;
     try {
-      const data = await preparePage({
-        browser,
-        templateId,
-        recordId,
-        tenantId,
-        token,
+      const baseUrl = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}`;
+      const url = `${baseUrl}?token=${token}`;
+
+      logger.info(`Opening ${baseUrl}`);
+
+      page = await browser.newPage();
+
+      await Promise.race([preparePage({
+        page,
+        url,
         timeZone,
-        body,
-        domain
-      });
+        body
+      }), timeout(TIMEOUT, 'Timeout')]);
 
-      page = data.page;
-
-      const buffer = await await page.screenshot({
+      const buffer = await page.screenshot({
         type: 'jpeg',
         encoding: 'binary',
         quality: 100,
@@ -308,7 +314,9 @@ const create = async ({ browserFactory, logger }) => {
       return buffer;
     } finally {
       if (page) {
+        logger.info('Closing page');
         await page.close();
+        logger.info(`Page closed: ${page.isClosed()}`);
       }
     }
   };
