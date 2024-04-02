@@ -1,6 +1,5 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const pino = require('pino-http')();
 const fetch = require('node-fetch');
 const browserFactory = require('./lib/browser');
 
@@ -25,7 +24,6 @@ const auth = require('./lib/auth')({
 const app = express();
 
 app.use(bodyParser.json());
-app.use(pino);
 
 printerFactory({
   browserFactory,
@@ -36,7 +34,6 @@ printerFactory({
   });
 
   app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
-    req.log.info('Print Request started');
     try {
       const authorization = req.headers.authorization;
       const timeZone = req.headers['time-zone'];
