@@ -1,4 +1,4 @@
-const timeout = (ms, message = 'Timeout') => {
+const rejectTimeout = (ms, message = 'Timeout') => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       reject(new Error(message));
@@ -6,4 +6,15 @@ const timeout = (ms, message = 'Timeout') => {
   });
 };
 
-module.exports = timeout;
+const resolveTimeout = async (ms, value) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(value);
+    }, ms);
+  });
+};
+
+module.exports = {
+  reject: rejectTimeout,
+  resolve: resolveTimeout
+};

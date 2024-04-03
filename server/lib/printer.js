@@ -1,8 +1,6 @@
-const timeout = require('./timeout');
+const timeoutUtils = require('./timeout');
 
-const create = async ({ browserFactory, logger }) => {
-  const TIMEOUT = 60 * 1000;
-
+const create = async ({ timeout, browserFactory, logger }) => {
   const preparePage = async ({
     page,
     url,
@@ -256,7 +254,7 @@ const create = async ({ browserFactory, logger }) => {
       url,
       timeZone,
       body
-    }), timeout(TIMEOUT)]);
+    }), timeoutUtils.resolve(timeout, page)]);
   };
 
   const print = async ({

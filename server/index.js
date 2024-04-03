@@ -12,6 +12,7 @@ const browserFactory = require('./lib/browser')(logger);
 const PORT = process.env.PORT || 5000;
 const URL = process.env.URL || 'http://localhost:8080';
 const DOMAIN = process.env.DOMAIN || 'http://localhost:8080';
+const PRINT_TIMEOUT = process.env.PRINT_TIMEOUT || 15 * 1000;
 
 const printerFactory = require('./lib/printer');
 
@@ -26,6 +27,7 @@ const app = express();
 app.use(bodyParser.json());
 
 printerFactory({
+  timeout: PRINT_TIMEOUT,
   browserFactory,
   logger
 }).then(printer => {
