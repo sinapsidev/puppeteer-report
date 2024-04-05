@@ -4,8 +4,7 @@ const logger = require('pino')({
   }
 });
 
-const express = require('express');
-const bodyParser = require('body-parser');
+const Fastify = require('fastify');
 const fetch = require('node-fetch');
 const browserFactory = require('./lib/browser')(logger);
 
@@ -22,17 +21,17 @@ const auth = require('./lib/auth')({
   logger
 });
 
-const app = express();
-
-app.use(bodyParser.json());
+const app = Fastify({
+  logger: true
+});
 
 printerFactory({
   timeout: PRINT_TIMEOUT,
   browserFactory,
   logger
-}).then(printer => {
-  app.get('/', function (req, res) {
-    res.send('Hello from Puppeteer Report');
+}).then(async (printer) => {
+  app.get('/', async function (req, res) {
+    return { hello: 'Hello from Puppeteer Report' };
   });
 
   app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
@@ -41,9 +40,9 @@ printerFactory({
       const timeZone = req.headers['time-zone'];
 
       const {
+        tenantId,
         templateId,
-        recordId,
-        tenantId
+        recordId
       } = req.params;
 
       const profile = await auth.getProfile({
@@ -53,9 +52,8 @@ printerFactory({
       });
 
       if (!profile) {
-        res.status(401);
-        res.send();
         logger.error('Unauthorized');
+        res.code(401).send({});
         return;
       }
 
@@ -76,16 +74,19 @@ printerFactory({
         contentType
       } = result;
 
-      res.type(contentType);
-      res.send(buffer);
+      res.type(contentType).send(buffer);
     } catch (e) {
       console.error(e.message);
-      res.status(500);
-      res.send(e.message);
+      res.code(500).send(e.message);
     }
   });
 
-  app.listen(PORT, function () {
-    console.log('Puppeteer Report ready on port ', PORT);
-  });
+  try {
+    await app.listen({ port: PORT });
+    console.log('Puppeteer Report ready with Fastify on port ', PORT);
+  } catch (e) {
+    app.log.error(e);
+    logger.error(e);
+    process.exit(1);
+  }
 });
