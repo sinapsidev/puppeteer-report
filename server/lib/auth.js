@@ -34,5 +34,4 @@ const factory = ({ fetch, baseUrl, logger }) => {
   };
 };
 
-module.exports = factory
-;
+module.exports = factory;
