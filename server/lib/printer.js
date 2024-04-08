@@ -1,6 +1,45 @@
 const timeoutUtils = require('./timeout');
 
-const create = async ({ timeout, browserFactory, logger }) => {
+const URL_BLACKLIST = [
+  '.stripe',
+  '.maps.googleapis'
+];
+
+const applyNetworkLogging = async (page, logger) => {
+  const cdp = await page.target().createCDPSession();
+  await page.setRequestInterception(true);
+
+  await cdp.send('Log.enable');
+
+  cdp.on('Log.entryAdded', async ({ entry }) => {
+    const {
+      source,
+      text,
+      url
+    } = entry;
+
+    if (source === 'network' && text.includes('Failed to load resource')) {
+      logger.error(url + ' ' + text);
+    }
+  });
+
+  page.on('request', async (request) => {
+    if (URL_BLACKLIST.some((url) => request.url().includes(url))) {
+      logger.info('Aborting request to ' + request.url() + ' because it is blacklisted');
+      request.abort();
+    } else {
+      request.continue();
+    }
+  });
+
+  page.on('requestfailed', async (request) => {
+    if (!URL_BLACKLIST.some((url) => request.url().includes(url))) {
+      logger.error(request.url() + ' ' + request.failure().errorText);
+    }
+  });
+};
+
+const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
   const preparePage = async ({
     page,
     url,
@@ -8,6 +47,9 @@ const create = async ({ timeout, browserFactory, logger }) => {
     body
   }) => {
     await page.setDefaultNavigationTimeout(0); // disable timeout
+    if (networkLogging) {
+      await applyNetworkLogging(page, logger);
+    }
 
     const { valoriCampiEditabili } = body;
 
@@ -249,12 +291,16 @@ const create = async ({ timeout, browserFactory, logger }) => {
     timeZone,
     body
   }) => {
-    return Promise.race([preparePage({
-      page,
-      url,
-      timeZone,
-      body
-    }), timeoutUtils.resolve(timeout, page)]);
+    return Promise.race([
+      preparePage({
+        page,
+        url,
+        timeZone,
+        body
+      }),
+      timeoutUtils.resolve(timeout, page),
+      page.waitForSelector('#madewithlove', { timeout: 0, visible: true })
+    ]);
   };
 
   const print = async ({
