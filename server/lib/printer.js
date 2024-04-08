@@ -41,6 +41,7 @@ const applyNetworkLogging = async (page, logger) => {
 
 const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
   const preparePage = async ({
+    token,
     page,
     url,
     timeZone,
@@ -54,6 +55,32 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
     const { valoriCampiEditabili } = body;
 
     logger.debug(`Passing fields to the page: ${JSON.stringify(valoriCampiEditabili)}`);
+
+    await page.evaluateOnNewDocument((token) => {
+      function writeCookie (name, value, options = {}) {
+        if (!name) {
+          return '';
+        }
+
+        if (!value) {
+          return '';
+        }
+
+        const expires = options.expires;
+        const path = '/';
+
+        let str = encodeURIComponent(name) + '=' + encodeURIComponent(value);
+        str += path ? ';path=' + path : '';
+        str += options.domain ? ';domain=' + options.domain : '';
+        str += expires ? ';expires=' + expires.toUTCString() : '';
+        str += options.secure ? ';secure' : '';
+        str += options.samesite ? ';samesite=' + options.samesite : '';
+
+        document.cookie = str;
+      }
+
+      writeCookie('_t_052022', token, { secure: true });
+    }, token || '');
 
     await page.evaluateOnNewDocument((valoriCampiEditabili) => {
       const VALORI_KEY = 'ngStorage-__valoriCampiEditabili';
@@ -286,6 +313,7 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
   };
 
   const processPage = ({
+    token,
     page,
     url,
     timeZone,
@@ -293,6 +321,7 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
   }) => {
     return Promise.race([
       preparePage({
+        token,
         page,
         url,
         timeZone,
@@ -323,17 +352,17 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
 
       let page;
 
-      const baseUrl = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}`;
-      const url = `${baseUrl}?token=${token}`;
+      const url = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}`;
 
       try {
         const browser = await browserFactory();
 
-        logger.info(`Opening ${baseUrl}`);
+        logger.info(`Opening ${url}`);
 
         page = await browser.newPage();
 
         const { config } = await processPage({
+          token,
           page,
           url,
           timeZone,
@@ -344,7 +373,7 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
 
         const end = Date.now();
 
-        logger.info(`Processed page ${baseUrl} in ${end - start}ms`);
+        logger.info(`Processed page ${url} in ${end - start}ms`);
 
         return {
           contentType,
@@ -353,7 +382,7 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
       } finally {
         if (page) {
           await page.close();
-          logger.info(`Page closed ${baseUrl}`);
+          logger.info(`Page closed ${url}`);
         }
       }
     } catch (e) {
