@@ -9,7 +9,7 @@ const create = (logger) => {
     if (!pool[index]) {
       logger.info(`Launching browser at ${index}`);
       const browser = await puppeteer.launch({
-        headless: 'shell',
+        headless: true,
         userDataDir: './tmp',
         args: [
           '--disable-dev-shm-usage',
