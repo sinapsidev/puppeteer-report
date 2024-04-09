@@ -1,6 +1,10 @@
 # Change Log
 
-1.15.0 - 08/04/2024
+1.16.0 - 09/04/2024
+
+- aggiunge try/catch in set timezone
+
+  1.15.0 - 08/04/2024
 
 - downgrade puppeteer
 - Aggiunto Logging network url
