@@ -11,7 +11,7 @@ const browserFactory = require('./lib/browser')(logger);
 // async functions
 const jobs = require('./lib/async-queue/jobs.js');
 const startDashboard = require('./lib/async-queue/uiDashboard.js')(jobs.getQueue());
-jobs.startWorker()
+
 
 const PORT = process.env.PORT || 5000;
 const URL = process.env.URL || 'https://logicadev2.snps.it';
@@ -39,6 +39,8 @@ printerFactory({
   browserFactory,
   logger
 }).then(async (printer) => {
+  jobs.startWorker(printer.print);
+
   app.get('/', async function (req, res) {
     return { hello: 'Hello from Puppeteer Report' };
   });
@@ -123,16 +125,15 @@ printerFactory({
       const token = authorization.split(' ')[1];
 
       const { status, jobId } = await jobs.startJob({
-        args: {
+        printerArgs: {
           body: req.body,
-        tenantId,
-        templateId,
-        recordId,
-        token,
-        domain: DOMAIN,
-        timeZone
+          tenantId,
+          templateId,
+          recordId,
+          token,
+          domain: DOMAIN,
+          timeZone
         },
-        printer: printer,
       }, 10);
 
       res.send({

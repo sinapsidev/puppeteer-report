@@ -29,12 +29,12 @@ module.exports = (function () {
                 status: await job.getState(),
             }
         },
-        startWorker: async function () {
+        startWorker: async function (print) {
             if(!printingJobsQueue) this.getQueue();
             printingJobsQueue.process(MAX_CONCURRENT_PROCESS, async (job, done) => {
                 job.progress(0);
                 
-                const result = await job.data.printer.print(job.data.args);
+                const result = await print(job.data.printerArgs);
 
                 job.progress(100);
                 done(null, result);
