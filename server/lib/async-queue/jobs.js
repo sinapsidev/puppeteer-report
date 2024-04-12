@@ -1,9 +1,10 @@
 const Queue = require('bull');
-const { uploadDocumentOnS3, getPresignedUrl, getMailAddress, sendMail } = require('./mailingAWS.js');
+const { uploadDocumentOnS3, getPresignedUrl, getMailAddress, sendMail, TTL } = require('./mailingAWS.js');
 
-const MAX_CONCURRENT_PROCESS = 2
+const MAX_CONCURRENT_PROCESSES = 2
+const MAX_FINISHED_PROCESSES = 1000
 const REDIS_HOST = '192.168.0.40'
-// const REDIS_HOST = '127.0.0.1'  per il test in locale
+// const REDIS_HOST = '127.0.0.1' // per il test in locale
 const DEFALUT_NOTIFY = false
 
 
@@ -24,9 +25,20 @@ module.exports = (function () {
             }
             return printingJobsQueue;
         },
+        /* nei test i job non vengono rimossi dopo TTL secondi come dovuto */
         startJob: async function (jobData, priority = 10) {
             if (!printingJobsQueue) this.getQueue();
-            const job = await printingJobsQueue.add(jobData, { priority });
+            const job = await printingJobsQueue.add(jobData, { 
+                removeOnComplete: {
+                    age: TTL,
+                    count: MAX_FINISHED_PROCESSES,
+                },
+                removeOnFail: {
+                    age: TTL,
+                    count: MAX_FINISHED_PROCESSES,
+                },
+                priority
+             });
             return {
                 jobId: job.id,
                 status: await job.getState(),
@@ -34,7 +46,7 @@ module.exports = (function () {
         },
         startWorker: async function (print) {
             if (!printingJobsQueue) this.getQueue();
-            printingJobsQueue.process(MAX_CONCURRENT_PROCESS, async (job, done) => {
+            printingJobsQueue.process(MAX_CONCURRENT_PROCESSES, async (job, done) => {
                 job.progress(0);
 
                 if (job.data['printerArgs']) {
@@ -89,6 +101,11 @@ module.exports = (function () {
             }
             else
                 throw new Error("No job with id " + id);
+        },
+        /* if performed needs to restart the queue and reconnect to redis*/
+        clearQueue: async function () {
+            await printingJobsQueue.close();
+            console.log('closed');
         },
         defaultNotify: DEFALUT_NOTIFY,
     };

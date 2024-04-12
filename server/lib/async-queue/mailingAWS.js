@@ -6,13 +6,14 @@
 const AWS = require('aws-sdk');
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { S3Client, GetObjectCommand } = require("@aws-sdk/client-s3");
-const { decodeToken } = require('./tokenHelper')
+const { decodeToken } = require('./tokenHelper');
 
 let s3 = new AWS.S3();
 const client = new S3Client();
-const S3_BUCKET_NAME = 'snps-puppeteer-reports'
-const S3_REGION = 'eu-central-1'
-const MAILING_SERVER_URL = 'https://logicadev2.snps.it/services/mail'
+const S3_BUCKET_NAME = 'snps-puppeteer-reports';
+const S3_REGION = 'eu-central-1';
+const MAILING_SERVER_URL = 'https://logicadev2.snps.it/services/mail';
+const TTL = 86400;
 
 // ttl 24 h
 module.exports.uploadDocumentOnS3 = function uploadDocumentOnS3(jobId, fileContent) {
@@ -54,7 +55,7 @@ module.exports.getPresignedUrl = async function getPresignedUrl(fileName) {
             Bucket: S3_BUCKET_NAME,
             Key: fileName,
         });
-        const url = await getSignedUrl(client, command, { expiresIn: 86400 });
+        const url = await getSignedUrl(client, command, { expiresIn: TTL });
 
         return url
     } catch (e) {
@@ -92,6 +93,9 @@ module.exports.sendMail = async function sendMail(address, url, args) {
     console.log('notified '+address+' with status '+es.status)
 }
 
+module.exports.ttl = TTL;
+
+// TODO: cambiare il template del corpo e l'oggetto della mail
 function mailTemplate(url) {
     return `Il report richiesto è disponibile al seguente link \n${url}`;
 }
