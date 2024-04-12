@@ -25,17 +25,17 @@ module.exports = (function () {
             }
             return printingJobsQueue;
         },
-        /* nei test i job non vengono rimossi dopo TTL secondi come dovuto */
+        /* nei test i job non vengono rimossi dopo TTL secondi ma al successivo job completato */
         startJob: async function (jobData, priority = 10) {
             if (!printingJobsQueue) this.getQueue();
             const job = await printingJobsQueue.add(jobData, { 
                 removeOnComplete: {
                     age: TTL,
-                    count: MAX_FINISHED_PROCESSES,
+                    // count: MAX_FINISHED_PROCESSES,
                 },
                 removeOnFail: {
                     age: TTL,
-                    count: MAX_FINISHED_PROCESSES,
+                    // count: MAX_FINISHED_PROCESSES,
                 },
                 priority
              });

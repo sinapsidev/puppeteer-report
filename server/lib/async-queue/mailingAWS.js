@@ -45,12 +45,6 @@ module.exports.uploadDocumentOnS3 = function uploadDocumentOnS3(jobId, fileConte
 // valido 24 h
 module.exports.getPresignedUrl = async function getPresignedUrl(fileName) {
     try {
-        // const url = s3.getSignedUrl('getObject', {
-        //     Bucket: S3_BUCKET_NAME,
-        //     Key: fileName,
-        //     Expires: 86400,
-        // })
-
         const command = new GetObjectCommand({
             Bucket: S3_BUCKET_NAME,
             Key: fileName,
