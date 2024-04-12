@@ -1,24 +1,98 @@
 const timeoutUtils = require('./timeout');
 
-const create = async ({ timeout, browserFactory, logger }) => {
+const URL_BLACKLIST = [
+  '.stripe',
+  '.maps.googleapis'
+];
+
+const applyNetworkLogging = async (page, logger) => {
+  const cdp = await page.target().createCDPSession();
+  await page.setRequestInterception(true);
+
+  await cdp.send('Log.enable');
+
+  cdp.on('Log.entryAdded', async ({ entry }) => {
+    const {
+      source,
+      text,
+      url
+    } = entry;
+
+    if (source === 'network' && text.includes('Failed to load resource')) {
+      logger.error(url + ' ' + text);
+    }
+  });
+
+  page.on('request', async (request) => {
+    if (URL_BLACKLIST.some((url) => request.url().includes(url))) {
+      logger.info('Aborting request to ' + request.url() + ' because it is blacklisted');
+      request.abort();
+    } else {
+      request.continue();
+    }
+  });
+
+  page.on('requestfailed', async (request) => {
+    if (!URL_BLACKLIST.some((url) => request.url().includes(url))) {
+      logger.error(request.url() + ' ' + request.failure().errorText);
+    }
+  });
+};
+
+const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
   const preparePage = async ({
+    token,
     page,
     url,
     timeZone,
     body
   }) => {
     await page.setDefaultNavigationTimeout(0); // disable timeout
+    if (networkLogging) {
+      await applyNetworkLogging(page, logger);
+    }
 
     const { valoriCampiEditabili } = body;
 
     logger.debug(`Passing fields to the page: ${JSON.stringify(valoriCampiEditabili)}`);
+
+    await page.evaluateOnNewDocument((token) => {
+      function writeCookie (name, value, options = {}) {
+        if (!name) {
+          return '';
+        }
+
+        if (!value) {
+          return '';
+        }
+
+        const expires = options.expires;
+        const path = '/';
+
+        let str = encodeURIComponent(name) + '=' + encodeURIComponent(value);
+        str += path ? ';path=' + path : '';
+        str += options.domain ? ';domain=' + options.domain : '';
+        str += expires ? ';expires=' + expires.toUTCString() : '';
+        str += options.secure ? ';secure' : '';
+        str += options.samesite ? ';samesite=' + options.samesite : '';
+
+        document.cookie = str;
+      }
+
+      writeCookie('_t_052022', token, { secure: true });
+    }, token || '');
 
     await page.evaluateOnNewDocument((valoriCampiEditabili) => {
       const VALORI_KEY = 'ngStorage-__valoriCampiEditabili';
       window.localStorage.setItem(VALORI_KEY, JSON.stringify(valoriCampiEditabili));
     }, valoriCampiEditabili || {});
 
-    await page.emulateTimezone(timeZone);
+    try {
+      await page.emulateTimezone(timeZone);
+    } catch(error) {
+      console.error(error);
+    }
+    
 
     await page.goto(url, { waitUntil: 'networkidle0', timeout: 0 });
 
@@ -244,17 +318,23 @@ const create = async ({ timeout, browserFactory, logger }) => {
   };
 
   const processPage = ({
+    token,
     page,
     url,
     timeZone,
     body
   }) => {
-    return Promise.race([preparePage({
-      page,
-      url,
-      timeZone,
-      body
-    }), timeoutUtils.resolve(timeout, page)]);
+    return Promise.race([
+      preparePage({
+        token,
+        page,
+        url,
+        timeZone,
+        body
+      }),
+      timeoutUtils.resolve(timeout, page),
+      page.waitForSelector('#madewithlove', { timeout: 0, visible: true })
+    ]);
   };
 
   const print = async ({
@@ -277,17 +357,17 @@ const create = async ({ timeout, browserFactory, logger }) => {
 
       let page;
 
-      const baseUrl = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}`;
-      const url = `${baseUrl}?token=${token}`;
+      const url = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}`;
 
       try {
         const browser = await browserFactory();
 
-        logger.info(`Opening ${baseUrl}`);
+        logger.info(`Opening ${url}`);
 
         page = await browser.newPage();
 
         const { config } = await processPage({
+          token,
           page,
           url,
           timeZone,
@@ -298,7 +378,7 @@ const create = async ({ timeout, browserFactory, logger }) => {
 
         const end = Date.now();
 
-        logger.info(`Processed page ${baseUrl} in ${end - start}ms`);
+        logger.info(`Processed page ${url} in ${end - start}ms`);
 
         return {
           contentType,
@@ -307,7 +387,7 @@ const create = async ({ timeout, browserFactory, logger }) => {
       } finally {
         if (page) {
           await page.close();
-          logger.info(`Page closed ${baseUrl}`);
+          logger.info(`Page closed ${url}`);
         }
       }
     } catch (e) {

@@ -16,7 +16,10 @@ jobs.startWorker()
 const PORT = process.env.PORT || 5000;
 const URL = process.env.URL || 'https://logicadev2.snps.it';
 const DOMAIN = process.env.DOMAIN || 'https://logicadev2.snps.it';
-const PRINT_TIMEOUT = process.env.PRINT_TIMEOUT || 15 * 1000;
+const PRINT_TIMEOUT = process.env.PRINT_TIMEOUT || 45 * 1000;
+const NETWORK_LOGGING = process.env.NETWORK_LOGGING || true;
+const CLIENT_ID = process.env.CLIENT_ID || 'puppeteerReport';
+const CLIENT_SECRET = process.env.CLIENT_SECRET || '951259b6-69a3-4c45-8f5b-3ed06e5103d9';
 
 const printerFactory = require('./lib/printer');
 
@@ -31,6 +34,7 @@ const app = Fastify({
 });
 
 printerFactory({
+  networkLogging: NETWORK_LOGGING,
   timeout: PRINT_TIMEOUT,
   browserFactory,
   logger
@@ -63,7 +67,12 @@ printerFactory({
         return;
       }
 
-      const token = authorization.split(' ')[1];
+      const authResult = await auth.serviceAuth({
+        clientId: CLIENT_ID,
+        clientSecret: CLIENT_SECRET
+      });
+
+      const token = authResult.access_token;
 
       const result = await printer.print({
         body: req.body,
