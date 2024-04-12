@@ -10,7 +10,7 @@ const browserFactory = require('./lib/browser')(logger);
 
 // async functions
 const jobs = require('./lib/async-queue/jobs.js');
-const startDashboard = require('./lib/async-queue/uiDashboard.js')(jobs.getQueue());
+require('./lib/async-queue/uiDashboard.js')(jobs.getQueue());
 
 
 const PORT = process.env.PORT || 5000;
@@ -103,6 +103,7 @@ printerFactory({
     try {
       const authorization = req.headers.authorization;
       const timeZone = req.headers['time-zone'];
+      const requireNotification = !!(req.query.notify === 'true' || req.query.needNotification === 'true' || req.query.requireNotification === 'true' || jobs.defaultNotify === 'true')
 
       const {
         tenantId,
@@ -134,6 +135,7 @@ printerFactory({
           domain: DOMAIN,
           timeZone
         },
+        requireNotification,
       }, 10);
 
       res.send({
