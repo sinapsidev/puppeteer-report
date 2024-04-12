@@ -10,7 +10,8 @@ const browserFactory = require('./lib/browser')(logger);
 
 // async functions
 const jobs = require('./lib/async-queue/jobs.js');
-require('./lib/async-queue/uiDashboard.js')(jobs.getQueue());
+if(process.env.NODE_ENV !== 'production')
+  require('./lib/async-queue/uiDashboard.js')(jobs.getQueue());
 
 
 const PORT = process.env.PORT || 5000;

@@ -5,6 +5,9 @@ const { ExpressAdapter } = require('@bull-board/express');
 
 
 module.exports = function (printingJobsQueue) {
+    if(process.env.NODE_ENV == 'production')
+        return 
+    
     const serverAdapter = new ExpressAdapter();
     serverAdapter.setBasePath('/admin/queues');
 
