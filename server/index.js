@@ -11,11 +11,11 @@ const browserFactory = require('./lib/browser')(logger);
 // async functions
 const jobs = require('./lib/async-queue/jobs.js');
 const startDashboard = require('./lib/async-queue/uiDashboard.js')(jobs.getQueue());
-await jobs.startWorker()
+jobs.startWorker()
 
 const PORT = process.env.PORT || 5000;
-const URL = process.env.URL || 'http://localhost:8080';
-const DOMAIN = process.env.DOMAIN || 'http://localhost:8080';
+const URL = process.env.URL || 'https://logicadev2.snps.it';
+const DOMAIN = process.env.DOMAIN || 'https://logicadev2.snps.it';
 const PRINT_TIMEOUT = process.env.PRINT_TIMEOUT || 15 * 1000;
 
 const printerFactory = require('./lib/printer');
@@ -141,7 +141,7 @@ printerFactory({
 
       const { jobId } = req.params;
 
-      const status = jobs.getJobStaus(jobId);
+      const status = await jobs.getJobStaus(jobId);
 
       res.send({ status })
 
@@ -156,7 +156,7 @@ printerFactory({
 
       const { jobId } = req.params;
 
-      const result = jobs.getJobResult(jobId);
+      const result = await jobs.getJobResult(jobId);
 
       res.send({ result })
 

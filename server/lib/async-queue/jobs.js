@@ -1,10 +1,7 @@
 const Queue = require('bull');
 const MAX_CONCURRENT_PROCESS = 2
 const REDIS_HOST = '192.168.0.40'
-// const REDIS_HOST = '127.0.0.1'
-
-
-// const printingJobsQueue = new Queue('printing-jobs-queue', 'redis://' + REDIS_HOST); //, {limiter: {max: 1000,duration: 45000}}
+// const REDIS_HOST = '127.0.0.1'  per il test in locale
 
 
 module.exports = (function () {
