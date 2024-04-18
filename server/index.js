@@ -10,9 +10,7 @@ const browserFactory = require('./lib/browser')(logger);
 
 // async functions
 const jobs = require('./lib/async-queue/jobs.js');
-if(process.env.NODE_ENV !== 'production')
-  require('./lib/async-queue/uiDashboard.js')(jobs.getQueue());
-
+if (process.env.NODE_ENV !== 'production') { require('./lib/async-queue/uiDashboard.js')(jobs.getQueue()); }
 
 const PORT = process.env.PORT || 5000;
 const URL = process.env.URL || 'https://logicadev2.snps.it';
@@ -46,8 +44,7 @@ printerFactory({
     return { hello: 'Hello from Puppeteer Report' };
   });
 
-  /* sync call */
-  app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
+  const doPrintRequest = async (req, res, v2) => {
     try {
       const authorization = req.headers.authorization;
       const timeZone = req.headers['time-zone'];
@@ -78,6 +75,7 @@ printerFactory({
       const token = authResult.access_token;
 
       const result = await printer.print({
+        v2,
         body: req.body,
         tenantId,
         templateId,
@@ -97,6 +95,14 @@ printerFactory({
       console.error(e.message);
       res.code(500).send(e.message);
     }
+  };
+
+  app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
+    await doPrintRequest(req, res, false);
+  });
+
+  app.post('/print/v2/:tenantId/:templateId/:recordId', async (req, res) => {
+    await doPrintRequest(req, res, true);
   });
 
   /* async calls */
@@ -104,7 +110,7 @@ printerFactory({
     try {
       const authorization = req.headers.authorization;
       const timeZone = req.headers['time-zone'];
-      const requireNotification = !!(req.query.notify === 'true' || req.query.needNotification === 'true' || req.query.requireNotification === 'true' || jobs.defaultNotify === 'true')
+      const requireNotification = !!(req.query.notify === 'true' || req.query.needNotification === 'true' || req.query.requireNotification === 'true' || jobs.defaultNotify === 'true');
 
       const {
         tenantId,
@@ -136,12 +142,12 @@ printerFactory({
           domain: DOMAIN,
           timeZone
         },
-        requireNotification,
+        requireNotification
       }, 10);
 
       res.send({
         status,
-        jobId,
+        jobId
       });
     } catch (e) {
       console.error(e.message);
@@ -151,13 +157,11 @@ printerFactory({
 
   app.get('/jobs/status/:jobId', async (req, res) => {
     try {
-
       const { jobId } = req.params;
 
       const status = await jobs.getJobStaus(jobId);
 
-      res.send({ status })
-
+      res.send({ status });
     } catch (e) {
       console.error(e.message);
       res.code(500).send(e.message);
@@ -166,19 +170,16 @@ printerFactory({
 
   app.get('/jobs/:jobId', async (req, res) => {
     try {
-
       const { jobId } = req.params;
 
       const result = await jobs.getJobResult(jobId);
 
-      res.send({ result })
-
+      res.send({ result });
     } catch (e) {
       console.error(e.message);
       res.code(500).send(e.message);
     }
   });
-
 
   try {
     await app.listen({ port: PORT });

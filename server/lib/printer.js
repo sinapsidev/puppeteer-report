@@ -1,4 +1,5 @@
 const timeoutUtils = require('./timeout');
+const urlBuilder = require('./urlBuilder');
 
 const URL_BLACKLIST = [
   '.stripe',
@@ -89,10 +90,9 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
 
     try {
       await page.emulateTimezone(timeZone);
-    } catch(error) {
+    } catch (error) {
       console.error(error);
     }
-    
 
     await page.goto(url, { waitUntil: 'networkidle0', timeout: 0 });
 
@@ -344,7 +344,8 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
     token,
     timeZone,
     body,
-    domain
+    domain,
+    v2
   }) => {
     try {
       const start = Date.now();
@@ -357,7 +358,13 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
 
       let page;
 
-      const url = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}`;
+      const url = urlBuilder({
+        domain,
+        tenantId,
+        templateId,
+        recordId,
+        v2
+      });
 
       try {
         const browser = await browserFactory();
