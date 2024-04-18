@@ -13,8 +13,8 @@ const jobs = require('./lib/async-queue/jobs.js');
 if (process.env.NODE_ENV !== 'production') { require('./lib/async-queue/uiDashboard.js')(jobs.getQueue()); }
 
 const PORT = process.env.PORT || 5000;
-const URL = process.env.URL || 'https://logicadev2.snps.it';
-const DOMAIN = process.env.DOMAIN || 'https://logicadev2.snps.it';
+const URL = process.env.URL || 'http://localhost:8080';
+const DOMAIN = process.env.DOMAIN || 'http://localhost:8080';
 const PRINT_TIMEOUT = process.env.PRINT_TIMEOUT || 45 * 1000;
 const NETWORK_LOGGING = process.env.NETWORK_LOGGING || true;
 const CLIENT_ID = process.env.CLIENT_ID || 'puppeteerReport';
