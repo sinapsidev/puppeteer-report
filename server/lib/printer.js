@@ -88,11 +88,11 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
       window.localStorage.setItem(VALORI_KEY, JSON.stringify(valoriCampiEditabili));
     }, valoriCampiEditabili || {});
 
-    // try {
-    //   await page.emulateTimezone(timeZone);
-    // } catch (error) {
-    //   console.error(error);
-    // }
+    try {
+      await page.emulateTimezone(timeZone);
+    } catch (error) {
+      console.error(error);
+    }
 
     await page.goto(url, { waitUntil: 'networkidle0', timeout: 0 });
 
