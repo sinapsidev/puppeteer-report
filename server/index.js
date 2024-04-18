@@ -130,7 +130,12 @@ printerFactory({
         return;
       }
 
-      const token = authorization.split(' ')[1];
+      const authResult = await auth.serviceAuth({
+        clientId: CLIENT_ID,
+        clientSecret: CLIENT_SECRET
+      });
+
+      const token = authResult.access_token;
 
       const { status, jobId } = await jobs.startJob({
         printerArgs: {
