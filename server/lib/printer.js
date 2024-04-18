@@ -90,10 +90,9 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
 
     try {
       await page.emulateTimezone(timeZone);
-    } catch(error) {
+    } catch (error) {
       console.error(error);
     }
-    
 
     await page.goto(url, { waitUntil: 'networkidle0', timeout: 0 });
 
