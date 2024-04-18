@@ -38,7 +38,7 @@ printerFactory({
     return { hello: 'Hello from Puppeteer Report' };
   });
 
-  app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
+  const doPrintRequest = async (req, res, v2) => {
     try {
       const authorization = req.headers.authorization;
       const timeZone = req.headers['time-zone'];
@@ -69,6 +69,7 @@ printerFactory({
       const token = authResult.access_token;
 
       const result = await printer.print({
+        v2,
         body: req.body,
         tenantId,
         templateId,
@@ -88,6 +89,14 @@ printerFactory({
       console.error(e.message);
       res.code(500).send(e.message);
     }
+  };
+
+  app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
+    await doPrintRequest(req, res, false);
+  });
+
+  app.post('/print/v2/:tenantId/:templateId/:recordId', async (req, res) => {
+    await doPrintRequest(req, res, true);
   });
 
   try {
