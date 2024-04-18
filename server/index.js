@@ -101,90 +101,90 @@ printerFactory({
     await doPrintRequest(req, res, false);
   });
 
-  app.post('/print/v2/:tenantId/:templateId/:recordId', async (req, res) => {
-    await doPrintRequest(req, res, true);
-  });
+  // app.post('/print/v2/:tenantId/:templateId/:recordId', async (req, res) => {
+  //   await doPrintRequest(req, res, true);
+  // });
 
-  /* async calls */
-  app.post('/jobs/:tenantId/:templateId/:recordId', async (req, res) => {
-    try {
-      const authorization = req.headers.authorization;
-      const timeZone = req.headers['time-zone'];
-      const requireNotification = !!(req.query.notify === 'true' || req.query.needNotification === 'true' || req.query.requireNotification === 'true' || jobs.defaultNotify === 'true');
+  // /* async calls */
+  // app.post('/jobs/:tenantId/:templateId/:recordId', async (req, res) => {
+  //   try {
+  //     const authorization = req.headers.authorization;
+  //     const timeZone = req.headers['time-zone'];
+  //     const requireNotification = !!(req.query.notify === 'true' || req.query.needNotification === 'true' || req.query.requireNotification === 'true' || jobs.defaultNotify === 'true');
 
-      const {
-        tenantId,
-        templateId,
-        recordId
-      } = req.params;
+  //     const {
+  //       tenantId,
+  //       templateId,
+  //       recordId
+  //     } = req.params;
 
-      const profile = await auth.getProfile({
-        timeZone,
-        token: authorization,
-        tenantId
-      });
+  //     const profile = await auth.getProfile({
+  //       timeZone,
+  //       token: authorization,
+  //       tenantId
+  //     });
 
-      if (!profile) {
-        logger.error('Unauthorized');
-        res.code(401).send({});
-        return;
-      }
+  //     if (!profile) {
+  //       logger.error('Unauthorized');
+  //       res.code(401).send({});
+  //       return;
+  //     }
 
-      const authResult = await auth.serviceAuth({
-        clientId: CLIENT_ID,
-        clientSecret: CLIENT_SECRET
-      });
+  //     const authResult = await auth.serviceAuth({
+  //       clientId: CLIENT_ID,
+  //       clientSecret: CLIENT_SECRET
+  //     });
 
-      const token = authResult.access_token;
+  //     const token = authResult.access_token;
 
-      const { status, jobId } = await jobs.startJob({
-        printerArgs: {
-          body: req.body,
-          tenantId,
-          templateId,
-          recordId,
-          token,
-          domain: DOMAIN,
-          timeZone
-        },
-        requireNotification
-      }, 10);
+  //     const { status, jobId } = await jobs.startJob({
+  //       printerArgs: {
+  //         body: req.body,
+  //         tenantId,
+  //         templateId,
+  //         recordId,
+  //         token,
+  //         domain: DOMAIN,
+  //         timeZone
+  //       },
+  //       requireNotification
+  //     }, 10);
 
-      res.send({
-        status,
-        jobId
-      });
-    } catch (e) {
-      console.error(e.message);
-      res.code(500).send(e.message);
-    }
-  });
+  //     res.send({
+  //       status,
+  //       jobId
+  //     });
+  //   } catch (e) {
+  //     console.error(e.message);
+  //     res.code(500).send(e.message);
+  //   }
+  // });
 
-  app.get('/jobs/status/:jobId', async (req, res) => {
-    try {
-      const { jobId } = req.params;
+  // app.get('/jobs/status/:jobId', async (req, res) => {
+  //   try {
+  //     const { jobId } = req.params;
 
-      const status = await jobs.getJobStaus(jobId);
+  //     const status = await jobs.getJobStaus(jobId);
 
-      res.send({ status });
-    } catch (e) {
-      console.error(e.message);
-      res.code(500).send(e.message);
-    }
-  });
+  //     res.send({ status });
+  //   } catch (e) {
+  //     console.error(e.message);
+  //     res.code(500).send(e.message);
+  //   }
+  // });
 
-  app.get('/jobs/:jobId', async (req, res) => {
-    try {
-      const { jobId } = req.params;
+  // app.get('/jobs/:jobId', async (req, res) => {
+  //   try {
+  //     const { jobId } = req.params;
 
-      const result = await jobs.getJobResult(jobId);
+  //     const result = await jobs.getJobResult(jobId);
 
-      res.send({ result });
-    } catch (e) {
-      console.error(e.message);
-      res.code(500).send(e.message);
-    }
-  });
+  //     res.send({ result });
+  //   } catch (e) {
+  //     console.error(e.message);
+  //     res.code(500).send(e.message);
+  //   }
+  // });
 
   try {
     await app.listen({ port: PORT });
