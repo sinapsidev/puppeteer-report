@@ -3,24 +3,23 @@ const { createBullBoard } = require('@bull-board/api');
 const { BullAdapter } = require('@bull-board/api/bullAdapter');
 const { ExpressAdapter } = require('@bull-board/express');
 
-
 module.exports = function (printingJobsQueue) {
-    if(process.env.NODE_ENV == 'production')
-        return 
-    
-    const serverAdapter = new ExpressAdapter();
-    serverAdapter.setBasePath('/admin/queues');
+  if (process.env.NODE_ENV === 'production') { return; }
 
-    createBullBoard({
-        queues: [new BullAdapter(printingJobsQueue)],
-        serverAdapter: serverAdapter,
-    });
+  const serverAdapter = new ExpressAdapter();
+  serverAdapter.setBasePath('/admin/queues');
 
-    const app = express();
+  createBullBoard({
+    queues: [new BullAdapter(printingJobsQueue)],
+    serverAdapter: serverAdapter
+  });
 
-    app.use('/admin/queues', serverAdapter.getRouter());
+  const app = express();
 
-    app.listen(3000, () => {
-        console.log('For the UI, open http://localhost:3000/admin/queues');
-    });
+  app.use('/admin/queues', serverAdapter.getRouter());
+
+  app.listen(3000, () => {
+    console.log('For the UI, open http://localhost:3000/admin/queues');
+  });
 }
+;
