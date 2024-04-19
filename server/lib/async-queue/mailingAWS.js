@@ -7,9 +7,13 @@ const { decodeToken } = require('./tokenHelper');
 const client = new S3Client();
 const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME || 'snps-puppeteer-reports';
 const S3_REGION = process.env.S3_REGION || 'eu-central-1';
-const MAILING_SERVER_URL = process.env.MAILING_SERVER_URL || 'https://logicadev2.snps.it/services/mail';
+const MAILING_SERVER_URL = process.env.MAILING_SERVER_URL || 'https://logicadev2.snps.it/';
+const ACCESS_KEY_ID = process.env.ACCESS_KEY_ID || '';
+const SECRET_ACCESS_KEY = process.env.SECRET_ACCESS_KEY || '';
 const s3 = new AWS.S3({
-  region: S3_REGION
+  region: S3_REGION,
+  accessKeyId=ACCESS_KEY_ID,
+  secretAccessKey=SECRET_ACCESS_KEY,
 });
 const TTL = 86400;
 
@@ -70,7 +74,7 @@ module.exports.sendMail = async function sendMail (address, url, args) {
     userName: ''
   };
 
-  const res = await fetch(MAILING_SERVER_URL, {
+  const res = await fetch(MAILING_SERVER_URL+'services/mail', {
     method: 'POST',
     body: JSON.stringify(mail),
     headers: {
