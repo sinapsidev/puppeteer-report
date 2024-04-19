@@ -106,7 +106,7 @@ printerFactory({
   });
 
   /* async calls */
-  app.post('/jobs/:tenantId/:templateId/:recordId', async (req, res) => {
+  app.post('/print/jobs/:tenantId/:templateId/:recordId', async (req, res) => {
     try {
       const authorization = req.headers.authorization;
       const timeZone = req.headers['time-zone'];
@@ -160,7 +160,7 @@ printerFactory({
     }
   });
 
-  app.get('/jobs/status/:jobId', async (req, res) => {
+  app.get('/print/jobs/status/:jobId', async (req, res) => {
     try {
       const { jobId } = req.params;
 
@@ -173,7 +173,7 @@ printerFactory({
     }
   });
 
-  app.get('/jobs/:jobId', async (req, res) => {
+  app.get('/print/jobs/:jobId', async (req, res) => {
     try {
       const { jobId } = req.params;
 
