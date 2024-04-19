@@ -4,12 +4,14 @@ const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3');
 const { decodeToken } = require('./tokenHelper');
 
-const client = new S3Client();
 const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME || 'snps-puppeteer-reports';
 const S3_REGION = process.env.S3_REGION || 'eu-central-1';
 const MAILING_SERVER_URL = process.env.MAILING_SERVER_URL || 'https://logicadev2.snps.it/';
 const ACCESS_KEY_ID = process.env.ACCESS_KEY_ID || '';
 const SECRET_ACCESS_KEY = process.env.SECRET_ACCESS_KEY || '';
+
+const client = new S3Client({region: S3_REGION});
+
 const s3 = new AWS.S3({
   region: S3_REGION,
   accessKeyId: ACCESS_KEY_ID,
