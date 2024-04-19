@@ -1,6 +1,11 @@
 # Change Log
 
-1.16.0 - 09/04/2024
+1.17.0 - 19/04/2024
+
+- sistema gestione timezone (Rif Int 2024/1466)
+- aggiunge gestione async
+
+  1.16.0 - 09/04/2024
 
 - aggiunge try/catch in set timezone
 
