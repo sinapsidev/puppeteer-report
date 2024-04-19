@@ -1,16 +1,20 @@
 const Queue = require('bull');
 const { uploadDocumentOnS3, getPresignedUrl, getMailAddress, sendMail, TTL } = require('./mailingAWS.js');
 
-const MAX_CONCURRENT_PROCESSES = 2;
 const REDIS_HOST = process.env.REDIS_HOST || '192.168.0.40';
 const REDIS_PORT = process.env.REDIS_PORT || '6379';
+const MAX_CONCURRENT_PROCESSES = 2;
 const DEFALUT_NOTIFY = true;
 
 module.exports = (function () {
   function SingletonClass () {
     return new Queue('printing-jobs-queue', {
       redis: { host: REDIS_HOST, port: REDIS_PORT },
-      limiter: { max: 10, duration: 10000 }
+      limiter: { max: 10, duration: 10000 },
+      defaultJobOptions: {
+        attempts: 1,
+        backoff: 10000,
+      }
     });
   }
   let printingJobsQueue;
@@ -23,7 +27,7 @@ module.exports = (function () {
       }
       return printingJobsQueue;
     },
-    /* nei test i job non vengono rimossi dopo TTL secondi ma al successivo job completato */
+    /* i job non vengono rimossi dopo TTL secondi ma al successivo job completato */
     startJob: async function (jobData, priority = 10) {
       if (!printingJobsQueue) this.getQueue();
       const job = await printingJobsQueue.add(jobData, {
