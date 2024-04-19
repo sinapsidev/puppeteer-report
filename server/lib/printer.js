@@ -1,4 +1,5 @@
 const timeoutUtils = require('./timeout');
+const urlBuilder = require('./urlBuilder');
 
 const URL_BLACKLIST = [
   '.stripe',
@@ -57,7 +58,7 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
     logger.debug(`Passing fields to the page: ${JSON.stringify(valoriCampiEditabili)}`);
 
     await page.evaluateOnNewDocument((token) => {
-      function writeCookie (name, value, options = {}) {
+      function writeCookie(name, value, options = {}) {
         if (!name) {
           return '';
         }
@@ -89,10 +90,9 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
 
     try {
       await page.emulateTimezone(timeZone);
-    } catch(error) {
+    } catch (error) {
       console.error(error);
     }
-    
 
     await page.goto(url, { waitUntil: 'networkidle0', timeout: 0 });
 
@@ -183,6 +183,12 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
             tfoot {display: table-footer-group;}
             button {display: none;}
             body {margin: 0;}
+          }
+
+          div[data-ng-repeat] table tbody {
+            -webkit-column-break-inside: avoid;
+            page-break-inside: avoid;
+            break-inside: avoid;
           }
   
           `;
@@ -344,7 +350,8 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
     token,
     timeZone,
     body,
-    domain
+    domain,
+    v2
   }) => {
     try {
       const start = Date.now();
@@ -357,7 +364,13 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
 
       let page;
 
-      const url = `${domain}/#!/${tenantId}/report/${templateId}/${recordId}`;
+      const url = urlBuilder({
+        domain,
+        tenantId,
+        templateId,
+        recordId,
+        v2
+      });
 
       try {
         const browser = await browserFactory();

@@ -19,7 +19,10 @@ const create = (logger) => {
           '--no-sandbox',
           '--no-zygote',
           '--single-process'
-        ]
+        ],
+        env: {
+          TZ: 'Europe/Rome'
+        }
       });
 
       pool[index] = browser;
