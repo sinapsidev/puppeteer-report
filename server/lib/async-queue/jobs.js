@@ -58,7 +58,7 @@ module.exports = (function () {
             const { fileName } = uploadDocumentOnS3(job.id, result.buffer);
             const documentUrl = await getPresignedUrl(fileName);
 
-            const mailAddress = getMailAddress(job.data.printerArgs.token);
+            const mailAddress = getMailAddress(job.data.printerArgs.tokenUser);
             await sendMail(mailAddress, documentUrl, job.data.printerArgs);
           }
 

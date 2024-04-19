@@ -145,7 +145,8 @@ printerFactory({
           recordId,
           token,
           domain: DOMAIN,
-          timeZone
+          timeZone,
+          tokenUser: authorization.split(' ')[1]
         },
         requireNotification
       }, 10);
