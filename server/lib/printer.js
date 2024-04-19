@@ -58,7 +58,7 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
     logger.debug(`Passing fields to the page: ${JSON.stringify(valoriCampiEditabili)}`);
 
     await page.evaluateOnNewDocument((token) => {
-      function writeCookie (name, value, options = {}) {
+      function writeCookie(name, value, options = {}) {
         if (!name) {
           return '';
         }
@@ -183,6 +183,12 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
             tfoot {display: table-footer-group;}
             button {display: none;}
             body {margin: 0;}
+          }
+
+          div[data-ng-repeat] table tbody {
+            -webkit-column-break-inside: avoid;
+            page-break-inside: avoid;
+            break-inside: avoid;
           }
   
           `;
