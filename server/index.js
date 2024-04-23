@@ -161,9 +161,21 @@ printerFactory({
     }
   });
 
-  app.get('/print/jobs/status/:jobId', async (req, res) => {
+  app.get('/print/jobs/status/:jobId/:tenantId', async (req, res) => {
     try {
-      const { jobId } = req.params;
+      const { jobId, tenantId } = req.params;
+
+      const profile = await auth.getProfile({
+        timeZone,
+        token: authorization,
+        tenantId
+      });
+
+      if (!profile) {
+        logger.error('Unauthorized');
+        res.code(401).send({});
+        return;
+      }
 
       const status = await jobs.getJobStaus(jobId);
 
@@ -174,9 +186,21 @@ printerFactory({
     }
   });
 
-  app.get('/print/jobs/:jobId', async (req, res) => {
+  app.get('/print/jobs/:jobId/:tenantId', async (req, res) => {
     try {
-      const { jobId } = req.params;
+      const { jobId, tenantId } = req.params;
+
+      const profile = await auth.getProfile({
+        timeZone,
+        token: authorization,
+        tenantId
+      });
+
+      if (!profile) {
+        logger.error('Unauthorized');
+        res.code(401).send({});
+        return;
+      }
 
       const result = await jobs.getJobResult(jobId);
 

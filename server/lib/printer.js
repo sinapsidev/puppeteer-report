@@ -138,6 +138,10 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
             margin-top: 0;
             page-break-after: always !important;
           }
+
+          tbody {
+            padding-bottom: 40px;
+          }
   
           .page-header, .page-header-space {
             height: ${headerHeight ? headerHeight + SBECCO : '0'}px;
@@ -185,10 +189,12 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
             body {margin: 0;}
           }
 
-          div[data-ng-repeat] table tbody {
+          div[data-ng-repeat] {
             -webkit-column-break-inside: avoid;
             page-break-inside: avoid;
             break-inside: avoid;
+            orphans: 0;
+            widows: 4;
           }
   
           `;
