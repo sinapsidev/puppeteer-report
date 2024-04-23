@@ -1,5 +1,9 @@
 # Change Log
 
+1.18.0 - 23/04/2024
+
+- applica break-inside: avoid al div che wrappa i vari elementi
+
 1.17.0 - 19/04/2024
 
 - sistema gestione timezone (Rif Int 2024/1466)
