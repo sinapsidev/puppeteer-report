@@ -7,14 +7,15 @@ const logger = require('pino')({
 const Fastify = require('fastify');
 const fetch = require('node-fetch');
 const browserFactory = require('./lib/browser')(logger);
+const doppio = require('./lib/doppio.js');
 
 // async functions
 const jobs = require('./lib/async-queue/jobs.js');
 if (process.env.NODE_ENV !== 'production') { require('./lib/async-queue/uiDashboard.js')(jobs.getQueue()); }
 
 const PORT = process.env.PORT || 5000;
-const URL = process.env.URL || 'http://localhost:8080';
-const DOMAIN = process.env.DOMAIN || 'http://localhost:8080';
+const URL = process.env.URL || 'https://logicadev2.snps.it';
+const DOMAIN = process.env.DOMAIN || 'https://logicadev2.snps.it';
 const PRINT_TIMEOUT = process.env.PRINT_TIMEOUT || 45 * 1000;
 const NETWORK_LOGGING = process.env.NETWORK_LOGGING || true;
 const CLIENT_ID = process.env.CLIENT_ID || 'puppeteerReport';
@@ -44,7 +45,7 @@ printerFactory({
     return { hello: 'Hello from Puppeteer Report' };
   });
 
-  const doPrintRequest = async (req, res, v2) => {
+  const doPrintRequest = async (req, res, version) => {
     try {
       const authorization = req.headers.authorization;
       const timeZone = req.headers['time-zone'];
@@ -74,16 +75,45 @@ printerFactory({
 
       const token = authResult.access_token;
 
-      const result = await printer.print({
-        v2,
-        body: req.body,
-        tenantId,
-        templateId,
-        recordId,
-        token,
-        domain: DOMAIN,
-        timeZone
-      });
+      let result
+      switch (version) {
+        case 2:
+          result = await printer.print({
+            v2: true,
+            body: req.body,
+            tenantId,
+            templateId,
+            recordId,
+            token,
+            domain: DOMAIN,
+            timeZone
+          });
+          break;
+        case 3:
+          result = await doppio.print(logger, {
+            body: req.body,
+            tenantId,
+            templateId,
+            recordId,
+            token,
+            domain: DOMAIN,
+            timeZone
+          });
+          break;
+
+        default:
+          result = await printer.print({
+            v2: false,
+            body: req.body,
+            tenantId,
+            templateId,
+            recordId,
+            token,
+            domain: DOMAIN,
+            timeZone
+          });
+          break;
+      }
 
       const {
         buffer,
@@ -97,12 +127,19 @@ printerFactory({
     }
   };
 
+  /* sync calls */
   app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
-    await doPrintRequest(req, res, false);
+    await doPrintRequest(req, res, 1);
   });
 
   app.post('/print/v2/:tenantId/:templateId/:recordId', async (req, res) => {
-    await doPrintRequest(req, res, true);
+    await doPrintRequest(req, res, 2);
+  });
+
+  app.post('/print/v3/:tenantId/:templateId/:recordId', async (req, res) => {
+    await doPrintRequest(req, res, 3);
+  //   const r = await doppio.print(logger, {})
+  //   res.type(r.contentType||'content/pdf').send(r.buffer);
   });
 
   /* async calls */
@@ -212,7 +249,7 @@ printerFactory({
   });
 
   try {
-    await app.listen({ port: PORT,  host: '0.0.0.0' });
+    await app.listen({ port: PORT, host: '0.0.0.0' });
     console.log('Puppeteer Report ready with Fastify on port ', PORT);
   } catch (e) {
     app.log.error(e);

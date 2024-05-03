@@ -6,10 +6,15 @@ https://github.com/puppeteer/puppeteer
 
 
 ## Routes
+
 ### /print/:tenantId/:templateId/:recordId
-chiamata sincrona 
+generea il pdf con la v1
 ### /print/v2/:tenantId/:templateId/:recordId
-ritorna il report v2
+generea il pdf con la v2
+### /print/v3/:tenantId/:templateId/:recordId
+generea il pdf con la v3  
+viene chiamata l'api di Doppio.sh in modo sincrono con renderScreenshotDirect o renderPdfDirect  
+tutti i parametri sono quelli di default (width, heigth, displayHeaderFooter, printBackground, format)
 
 ### /print/jobs/:tenantId/:templateId/:recordId
 Inizia l'elaborazione asincrona del report
