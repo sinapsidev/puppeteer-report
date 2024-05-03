@@ -17,17 +17,11 @@ const doppio = async (logger, {
     try {
         const start = Date.now();
 
-        const { printImage } = body;
+        const { printImage, width, height, insertPageNumber } = body;
 
         const contentType = printImage ? 'image/jpeg' : 'application/pdf';
 
-        const url = urlBuilder({
-            domain,
-            tenantId,
-            templateId,
-            recordId,
-            v2
-        });
+        const url = urlBuilder({ domain, tenantId, templateId, recordId, v2 });
 
         logger.info(`Fetching ${url} to Doppio`);
 
@@ -55,12 +49,23 @@ const doppio = async (logger, {
         else {
             response = await doppioClient.renderPdfDirect({
                 pdf: {
-                    printBackground: true
+                    printBackground: true,
+                    width,
+                    height,
+                    landscape: !!(width > height),
+                    displayHeaderFooter: insertPageNumber,
+                    footerTemplate:  insertPageNumber ? '<div style="width: 100%; font-size: 9px; text-align: center; padding: 5px 0 0 0; font-family: Arial; color: #444;">Pagina <span class="pageNumber"></span> di <span class="totalPages"></span></div>': '',
+                    margin: insertPageNumber ? {
+                        top: 0,
+                        right: 0,
+                        left: 0,
+                        bottom: 40
+                    } : {},
                 },
                 goto: {
                     url,
                     options: {
-                        waitUntil: ['networkidle2']
+                        waitUntil: ['networkidle0']
                     }
                 },
                 setCookies: [
