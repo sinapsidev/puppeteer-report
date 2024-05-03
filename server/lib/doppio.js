@@ -2,7 +2,7 @@ const { Doppio } = require('doppio-nodejs');
 const urlBuilder = require('./urlBuilder');
 
 
-const doppioClient = new Doppio("process.env.DOPPIO_API_KEY");
+const doppioClient = new Doppio(process.env.DOPPIO_API_KEY);
 
 
 const doppio = async (logger, {
