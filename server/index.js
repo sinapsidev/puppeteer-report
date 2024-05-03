@@ -138,8 +138,6 @@ printerFactory({
 
   app.post('/print/v3/:tenantId/:templateId/:recordId', async (req, res) => {
     await doPrintRequest(req, res, 3);
-  //   const r = await doppio.print(logger, {})
-  //   res.type(r.contentType||'content/pdf').send(r.buffer);
   });
 
   /* async calls */
