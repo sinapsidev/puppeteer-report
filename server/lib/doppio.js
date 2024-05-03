@@ -63,13 +63,6 @@ const doppio = async (logger, {
                         waitUntil: ['networkidle2']
                     }
                 },
-                // setExtraHTTPHeaders: {
-                //     Authorization: `Bearer ${token}`,
-                // },
-                // "authenticate": {
-                //     "username": "string",
-                //     "password": "string"
-                //   },
                 setCookies: [
                     {
                         name: '_t_052022',
