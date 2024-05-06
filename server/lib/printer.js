@@ -19,8 +19,8 @@ const applyNetworkLogging = async (page, logger) => {
       url
     } = entry;
 
-    if (source === 'network' && text.includes('Failed to load resource')) {
-      logger.error(url + ' ' + text);
+    if (source === 'network') {
+      logger.info(url + ' ' + text);
     }
   });
 
@@ -58,7 +58,7 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
     logger.debug(`Passing fields to the page: ${JSON.stringify(valoriCampiEditabili)}`);
 
     await page.evaluateOnNewDocument((token) => {
-      function writeCookie(name, value, options = {}) {
+      function writeCookie (name, value, options = {}) {
         if (!name) {
           return '';
         }
