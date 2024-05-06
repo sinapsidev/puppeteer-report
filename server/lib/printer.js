@@ -334,7 +334,8 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
         body
       }),
       timeoutUtils.resolve(timeout, page),
-      page.waitForSelector('#madewithlove', { timeout: 0, visible: true })
+      page.waitForSelector('#madewithlove', { timeout: 0, visible: true }),
+      page.waitForSelector('#report-error', { timeout: 0, visible: true })
     ]);
   };
 
