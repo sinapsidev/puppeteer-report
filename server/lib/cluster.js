@@ -6,7 +6,23 @@ const create = async () => {
     maxConcurrency: 2,
     retryDelay: 5000,
     retryLimit: 3,
-    timeout: 90000
+    timeout: 90000,
+    puppeteerOptions: {
+      headless: true,
+      waitForInitialPage: false,
+      args: [
+        '--no-startup-window',
+        '--disable-dev-shm-usage',
+        '--disable-setuid-sandbox',
+        '--ignore-certificate-errors',
+        '--no-first-run',
+        '--no-sandbox',
+        '--no-zygote'
+      ],
+      env: {
+        TZ: 'Europe/Rome'
+      }
+    }
   });
 
   return cluster;
