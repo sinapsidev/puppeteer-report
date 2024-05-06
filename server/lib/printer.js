@@ -29,7 +29,7 @@ const applyNetworkLogging = async (page, logger) => {
   });
 };
 
-const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
+const create = async ({ timeout, logger, networkLogging, cluster }) => {
   const preparePage = async ({
     token,
     page,
@@ -339,6 +339,56 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
     ]);
   };
 
+  cluster.task(async ({
+    page, data: {
+      templateId,
+      recordId,
+      tenantId,
+      token,
+      timeZone,
+      body,
+      domain,
+      v2
+    }
+  }) => {
+    const start = Date.now();
+    const {
+      printImage
+    } = body;
+
+    const generator = printImage ? _image : _pdf;
+    const contentType = printImage ? 'image/jpeg' : 'application/pdf';
+
+    const url = urlBuilder({
+      domain,
+      tenantId,
+      templateId,
+      recordId,
+      v2
+    });
+
+    logger.info(`Opening ${url}`);
+
+    const { config } = await processPage({
+      token,
+      page,
+      url,
+      timeZone,
+      body
+    });
+
+    const buffer = await generator(page, config);
+
+    const end = Date.now();
+
+    logger.info(`Processed page ${url} in ${end - start}ms`);
+
+    return {
+      contentType,
+      buffer
+    };
+  });
+
   const print = async ({
     templateId,
     recordId,
@@ -349,60 +399,16 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
     domain,
     v2
   }) => {
-    try {
-      const start = Date.now();
-      const {
-        printImage
-      } = body;
-
-      const generator = printImage ? _image : _pdf;
-      const contentType = printImage ? 'image/jpeg' : 'application/pdf';
-
-      let page;
-
-      const url = urlBuilder({
-        domain,
-        tenantId,
-        templateId,
-        recordId,
-        v2
-      });
-
-      try {
-        const browser = await browserFactory();
-
-        logger.info(`Opening ${url}`);
-
-        page = await browser.newPage();
-
-        const { config } = await processPage({
-          token,
-          page,
-          url,
-          timeZone,
-          body
-        });
-
-        const buffer = await generator(page, config);
-
-        const end = Date.now();
-
-        logger.info(`Processed page ${url} in ${end - start}ms`);
-
-        return {
-          contentType,
-          buffer
-        };
-      } finally {
-        if (page && !page.isClosed()) {
-          await page.close();
-          logger.info(`Page closed ${url}`);
-        }
-      }
-    } catch (e) {
-      logger.error(e.message);
-      throw e;
-    }
+    return await cluster.execute({
+      templateId,
+      recordId,
+      tenantId,
+      token,
+      timeZone,
+      body,
+      domain,
+      v2
+    });
   };
 
   return {
