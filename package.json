@@ -21,7 +21,7 @@
     "pino": "^7.2.0",
     "pino-http": "^6.0.0",
     "pino-pretty": "^7.2.0",
-    "puppeteer": "^10.0.0"
+    "puppeteer": "22.8.0"
   },
   "devDependencies": {
     "@bull-board/api": "^5.15.3",
