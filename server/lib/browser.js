@@ -18,8 +18,7 @@ const create = (logger) => {
           '--ignore-certificate-errors',
           '--no-first-run',
           '--no-sandbox',
-          '--no-zygote',
-          '--single-process'
+          '--no-zygote'
         ],
         env: {
           TZ: 'Europe/Rome'
