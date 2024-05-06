@@ -7,22 +7,11 @@ const URL_BLACKLIST = [
 ];
 
 const applyNetworkLogging = async (page, logger) => {
-  const cdp = await page.target().createCDPSession();
   await page.setRequestInterception(true);
 
-  await cdp.send('Log.enable');
-
-  cdp.on('Log.entryAdded', async ({ entry }) => {
-    const {
-      source,
-      text,
-      url
-    } = entry;
-
-    if (source === 'network') {
-      logger.info(url + ' ' + text);
-    }
-  });
+  page
+    .on('console', message =>
+      console.log(`${message.type().substr(0, 3).toUpperCase()}: ${message.text()}`));
 
   page.on('request', async (request) => {
     if (URL_BLACKLIST.some((url) => request.url().includes(url))) {
@@ -404,7 +393,7 @@ const create = async ({ timeout, browserFactory, logger, networkLogging }) => {
           buffer
         };
       } finally {
-        if (page) {
+        if (page && !page.isClosed()) {
           await page.close();
           logger.info(`Page closed ${url}`);
         }
