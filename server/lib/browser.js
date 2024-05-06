@@ -9,8 +9,10 @@ const create = (logger) => {
     if (!pool[index]) {
       logger.info(`Launching browser at ${index}`);
       const browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
+        waitForInitialPage: false,
         args: [
+          '--no-startup-window',
           '--disable-dev-shm-usage',
           '--disable-setuid-sandbox',
           '--ignore-certificate-errors',
