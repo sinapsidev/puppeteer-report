@@ -15,6 +15,7 @@ const URL = process.env.URL || 'http://localhost:8080';
 const DOMAIN = process.env.DOMAIN || 'http://localhost:8080';
 const PRINT_TIMEOUT = process.env.PRINT_TIMEOUT || 45 * 1000;
 const NETWORK_LOGGING = process.env.NETWORK_LOGGING || true;
+const MONITORING = process.env.MONITORING || false;
 const CLIENT_ID = process.env.CLIENT_ID || 'puppeteerReport';
 const CLIENT_SECRET = process.env.CLIENT_SECRET || '951259b6-69a3-4c45-8f5b-3ed06e5103d9';
 
@@ -31,7 +32,7 @@ const app = Fastify({
   logger: true
 });
 
-clusterFactory().then(async (cluster) => {
+clusterFactory(MONITORING).then(async (cluster) => {
   printerFactory({
     networkLogging: NETWORK_LOGGING,
     timeout: PRINT_TIMEOUT,
