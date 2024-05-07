@@ -7,6 +7,7 @@ const create = async () => {
     retryDelay: 5000,
     retryLimit: 3,
     timeout: 90000,
+    monitor: true,
     puppeteerOptions: {
       headless: true,
       waitForInitialPage: false,
