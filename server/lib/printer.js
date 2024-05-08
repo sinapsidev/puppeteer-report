@@ -178,7 +178,15 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             body {margin: 0;}
           }
 
-          div[data-ng-repeat] {
+          div[data-ng-repeat]:not(:has(div.avoid-break)) {
+            -webkit-column-break-inside: avoid;
+            page-break-inside: avoid;
+            break-inside: avoid;
+            orphans: 0;
+            widows: 4;
+          }
+
+          div.avoid-break {
             -webkit-column-break-inside: avoid;
             page-break-inside: avoid;
             break-inside: avoid;
