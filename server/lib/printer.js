@@ -355,8 +355,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       token,
       timeZone,
       body,
-      domain,
-      v2
+      domain
     }
   }) => {
     const start = Date.now();
@@ -371,8 +370,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       domain,
       tenantId,
       templateId,
-      recordId,
-      v2
+      recordId
     });
 
     logger.info(`Opening ${url}`);

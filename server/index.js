@@ -45,7 +45,7 @@ clusterFactory(MONITORING).then(async (cluster) => {
       return { hello: 'Hello from Puppeteer Report' };
     });
 
-    const doPrintRequest = async (req, res, v2) => {
+    const doPrintRequest = async (req, res) => {
       try {
         const authorization = req.headers.authorization;
         const timeZone = req.headers['time-zone'];
@@ -76,7 +76,6 @@ clusterFactory(MONITORING).then(async (cluster) => {
         const token = authResult.access_token;
 
         const result = await printer.print({
-          v2,
           body: req.body,
           tenantId,
           templateId,
@@ -99,11 +98,11 @@ clusterFactory(MONITORING).then(async (cluster) => {
     };
 
     app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
-      await doPrintRequest(req, res, false);
+      await doPrintRequest(req, res);
     });
 
     app.post('/print/v2/:tenantId/:templateId/:recordId', async (req, res) => {
-      await doPrintRequest(req, res, true);
+      await doPrintRequest(req, res);
     });
 
     /* async calls */
