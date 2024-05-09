@@ -2,13 +2,9 @@ const build = ({
   domain,
   tenantId,
   templateId,
-  recordId,
-  v2
+  recordId
 }) => {
-  if (v2) {
-    return `${domain}/report/index.html?idTemplate=${templateId}&idRecord=${recordId}&tenantId=${tenantId}`;
-  }
-  return `${domain}/#!/${tenantId}/report/${templateId}/${recordId}`;
+  return `${domain}/report/index.html?idTemplate=${templateId}&idRecord=${recordId}&tenantId=${tenantId}`;
 };
 
 module.exports = build
