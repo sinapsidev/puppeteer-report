@@ -1,3 +1,4 @@
+const path = require('node:path');
 const logger = require('pino')({
   transport: {
     target: 'pino-pretty'
@@ -6,7 +7,6 @@ const logger = require('pino')({
 
 const Fastify = require('fastify');
 const fetch = require('node-fetch');
-// async functions
 const jobs = require('./lib/async-queue/jobs.js');
 if (process.env.NODE_ENV !== 'production') { require('./lib/async-queue/uiDashboard.js')(jobs.getQueue()); }
 
@@ -32,6 +32,11 @@ const app = Fastify({
   logger: true
 });
 
+app.register(require('@fastify/static'), {
+  root: path.join(__dirname, 'public'),
+  prefix: '/public/'
+});
+
 clusterFactory(MONITORING).then(async (cluster) => {
   printerFactory({
     networkLogging: NETWORK_LOGGING,
@@ -40,6 +45,10 @@ clusterFactory(MONITORING).then(async (cluster) => {
     logger
   }).then(async (printer) => {
     jobs.startWorker(printer.print);
+
+    app.get('/public', async (req, res) => {
+      return res.sendFile('index.html');
+    });
 
     app.get('/', async function (req, res) {
       return { hello: 'Hello from Puppeteer Report' };
@@ -76,6 +85,7 @@ clusterFactory(MONITORING).then(async (cluster) => {
         const token = authResult.access_token;
 
         const result = await printer.print({
+          port: PORT,
           body: req.body,
           tenantId,
           templateId,

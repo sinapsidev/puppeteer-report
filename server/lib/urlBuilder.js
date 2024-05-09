@@ -1,10 +1,11 @@
 const build = ({
+  port,
   domain,
   tenantId,
   templateId,
   recordId
 }) => {
-  return `${domain}/report/index.html?idTemplate=${templateId}&idRecord=${recordId}&tenantId=${tenantId}`;
+  return `http://localhost:${port}/public/index.html?idTemplate=${templateId}&idRecord=${recordId}&tenantId=${tenantId}&domain=${encodeURIComponent(domain)}`;
 };
 
 module.exports = build
