@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html ng-app="reportApp" lang="it">
+
+<head>
+    <title>Logica</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <!-- App CSS -->
+    <link
+        href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Symbols+Outlined|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp"
+        rel="stylesheet">
+    <link id="main-css" rel="stylesheet" href="https://logicaweb.snps.it/assets/css/app.css">
+
+    <script src="./assets/angular/angular.min.js"></script>
+    <script src="./assets/angular-cookies/angular-cookies.min.js"></script>
+    <script src="./assets/ngstorage/ngStorage.min.js"></script>
+    <script src="./assets/moment/moment.js"></script>
+    <script src="./assets/moment/locale/it.js"></script>
+    <script
+        src="./assets/moment-timezone/builds/moment-timezone-with-data-1970-2030.min.js"></script>
+    <script src="./assets/angular-moment/angular-moment.js"></script>
+    
+    <script src="./modules/common/index.js"></script>
+    <script src="./modules/auth/index.js"></script>
+    <script src="./modules/files/index.js"></script>
+    <script src="./modules/report/index.js"></script>
+    <script src="./modules/xdb/index.js"></script>
+
+    <script src="./modules/common/service/apiURLs.js"></script>
+    <script src="./modules/common/service/configService.js"></script>
+    <script src="./modules/common/service/domUtilsService.js"></script>
+    <script src="./modules/common/service/fetch.js"></script>
+    <script src="./modules/common/service/ID_SCHEDE.js"></script>
+    <script src="./modules/common/service/prepareHeaders.js"></script>
+    <script src="./modules/common/service/storageService.js"></script>
+    <script src="./modules/common/service/xdbHttpService.js"></script>
+
+    <script src="./modules/auth/service/currentUser.js"></script>
+    <script src="./modules/auth/service/token.js"></script>
+    <script src="./modules/auth/service/tokenService.js"></script>
+
+    <script src="./modules/files/service/filesPerCampo.js"></script>
+
+    <script src="./modules/report/service/campiEditabiliReport.js"></script>
+    <script src="./modules/report/service/reportService.js"></script>
+
+    <script src="./modules/xdb/service/avatars.js"></script>
+    <script src="./modules/xdb/service/xdbApiConstants.js"></script>
+    <script src="./modules/xdb/service/xdbApiService.js"></script>
+
+    <!-- App JS -->
+    <script src="./app.js"></script>
+</head>
+
+<body ng-controller="myController">
+    <div ng-show="!loading && !error">
+        <div class="report-wrapper"></div>
+    </div>
+
+    <style>
+        .report-wrapper {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #footer,
+        #header {
+            flex: none;
+            padding: 10px 10px;
+        }
+
+        #body {
+            flex: 1 1 auto;
+            overflow-x: hidden;
+            overflow-y: auto;
+            position: relative;
+            padding: 10px 10px;
+        }
+
+        span {
+            white-space: pre-line;
+        }
+    </style>
+
+    <div ng-if="loading" class="p-4">
+        <p class="text-center" style="font-size: 30px;">Generazione report in corso...</p>
+    </div>
+
+    <div ng-if="error" class="p-4">
+        <p class="text-center text-danger" style="font-size: 30px;">Ops... qualcosa è andato storto</p>
+        <p class="text-danger" style="font-size: 12px;">{{error}}</p>
+    </div>
+</body>
+
+</html>
