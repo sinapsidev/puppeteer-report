@@ -1,5 +1,9 @@
 # Change Log
 
+1.20.0 - 09/05/2024
+
+- Aggiunta app client direttamente dentro puppeteer
+
 1.19.0 - 09/05/2024
 
 - Aggiunto cluster di puppeteer

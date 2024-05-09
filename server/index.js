@@ -1,3 +1,4 @@
+const path = require('node:path');
 const logger = require('pino')({
   transport: {
     target: 'pino-pretty'
@@ -6,13 +7,10 @@ const logger = require('pino')({
 
 const Fastify = require('fastify');
 const fetch = require('node-fetch');
-// async functions
 const jobs = require('./lib/async-queue/jobs.js');
 if (process.env.NODE_ENV !== 'production') { require('./lib/async-queue/uiDashboard.js')(jobs.getQueue()); }
 
 const PORT = process.env.PORT || 5000;
-const URL = process.env.URL || 'http://localhost:8080';
-const DOMAIN = process.env.DOMAIN || 'http://localhost:8080';
 const PRINT_TIMEOUT = process.env.PRINT_TIMEOUT || 45 * 1000;
 const NETWORK_LOGGING = process.env.NETWORK_LOGGING || true;
 const MONITORING = process.env.MONITORING || false;
@@ -24,12 +22,16 @@ const clusterFactory = require('./lib/cluster');
 
 const auth = require('./lib/auth')({
   fetch,
-  baseUrl: URL,
   logger
 });
 
 const app = Fastify({
   logger: true
+});
+
+app.register(require('@fastify/static'), {
+  root: path.join(__dirname, 'public'),
+  prefix: '/public/'
 });
 
 clusterFactory(MONITORING).then(async (cluster) => {
@@ -41,6 +43,10 @@ clusterFactory(MONITORING).then(async (cluster) => {
   }).then(async (printer) => {
     jobs.startWorker(printer.print);
 
+    app.get('/public', async (req, res) => {
+      return res.sendFile('index.html');
+    });
+
     app.get('/', async function (req, res) {
       return { hello: 'Hello from Puppeteer Report' };
     });
@@ -49,6 +55,7 @@ clusterFactory(MONITORING).then(async (cluster) => {
       try {
         const authorization = req.headers.authorization;
         const timeZone = req.headers['time-zone'];
+        const domain = req.headers['x-domain'] || 'logicadev2.snps.it';
 
         const {
           tenantId,
@@ -57,6 +64,7 @@ clusterFactory(MONITORING).then(async (cluster) => {
         } = req.params;
 
         const profile = await auth.getProfile({
+          domain,
           timeZone,
           token: authorization,
           tenantId
@@ -69,6 +77,7 @@ clusterFactory(MONITORING).then(async (cluster) => {
         }
 
         const authResult = await auth.serviceAuth({
+          domain,
           clientId: CLIENT_ID,
           clientSecret: CLIENT_SECRET
         });
@@ -76,12 +85,13 @@ clusterFactory(MONITORING).then(async (cluster) => {
         const token = authResult.access_token;
 
         const result = await printer.print({
+          port: PORT,
           body: req.body,
           tenantId,
           templateId,
           recordId,
           token,
-          domain: DOMAIN,
+          domain,
           timeZone
         });
 
@@ -105,7 +115,7 @@ clusterFactory(MONITORING).then(async (cluster) => {
       await doPrintRequest(req, res);
     });
 
-    /* async calls */
+    /* async calls
     app.post('/print/jobs/:tenantId/:templateId/:recordId', async (req, res) => {
       try {
         const authorization = req.headers.authorization;
@@ -144,7 +154,7 @@ clusterFactory(MONITORING).then(async (cluster) => {
             templateId,
             recordId,
             token,
-            domain: DOMAIN,
+            domain,
             timeZone,
             tokenUser: authorization.split(' ')[1]
           },
@@ -214,6 +224,7 @@ clusterFactory(MONITORING).then(async (cluster) => {
         res.code(500).send(e.message);
       }
     });
+    */
 
     try {
       await app.listen({ port: PORT, host: '0.0.0.0' });

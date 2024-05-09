@@ -349,6 +349,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
 
   cluster.task(async ({
     page, data: {
+      port,
       templateId,
       recordId,
       tenantId,
@@ -367,6 +368,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     const contentType = printImage ? 'image/jpeg' : 'application/pdf';
 
     const url = urlBuilder({
+      port,
       domain,
       tenantId,
       templateId,
@@ -396,6 +398,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
   });
 
   const print = async ({
+    port,
     templateId,
     recordId,
     tenantId,
@@ -406,6 +409,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     v2
   }) => {
     return await cluster.execute({
+      port,
       templateId,
       recordId,
       tenantId,
