@@ -1,5 +1,13 @@
 # Change Log
 
+1.19.0 - 09/05/2024
+
+- Aggiunto cluster di puppeteer
+- Aggiunte opzioni puppeteer
+- Aggiunto monitoring parametrico
+- Aggiunge gestione "avoid-break" per interruzione di pagina
+- rimossa v2 parametrica
+
 1.18.0 - 23/04/2024
 
 - applica break-inside: avoid al div che wrappa i vari elementi
