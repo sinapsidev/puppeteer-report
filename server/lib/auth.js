@@ -1,6 +1,6 @@
-const factory = ({ fetch, baseUrl, logger }) => {
-  const checkV2 = async (tenantId, token, timeZone) => {
-    const url = `${baseUrl}/api/v2/${tenantId}/data/me`;
+const factory = ({ fetch, logger }) => {
+  const checkV2 = async (domain, tenantId, token, timeZone) => {
+    const url = `https://${domain}/api/v2/${tenantId}/data/me`;
 
     logger.debug(`Checking token ${token} with v2 on ${url}`);
     try {
@@ -28,7 +28,7 @@ const factory = ({ fetch, baseUrl, logger }) => {
   };
 
   return {
-    serviceAuth: ({ clientId, clientSecret }) => {
+    serviceAuth: ({ domain, clientId, clientSecret }) => {
       const options = {
         method: 'POST',
         headers: {
@@ -42,14 +42,14 @@ const factory = ({ fetch, baseUrl, logger }) => {
         })
       };
 
-      const url = `${baseUrl}/login`;
+      const url = `https://${domain}/login`;
 
       return fetch(url, options)
         .then(response => response.json())
         .catch(err => logger.error(err));
     },
-    getProfile: ({ token, timeZone, tenantId }) => {
-      return checkV2(tenantId, token, timeZone);
+    getProfile: ({ token, timeZone, tenantId, domain }) => {
+      return checkV2(domain, tenantId, token, timeZone);
     }
   };
 };
