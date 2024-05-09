@@ -58,6 +58,7 @@ clusterFactory(MONITORING).then(async (cluster) => {
       try {
         const authorization = req.headers.authorization;
         const timeZone = req.headers['time-zone'];
+        const domain = req.headers['x-domain'] || 'logicadev2.snps.it';
 
         const {
           tenantId,
@@ -91,7 +92,7 @@ clusterFactory(MONITORING).then(async (cluster) => {
           templateId,
           recordId,
           token,
-          domain: DOMAIN,
+          domain,
           timeZone
         });
 
