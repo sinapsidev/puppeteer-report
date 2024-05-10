@@ -4,6 +4,8 @@ const urlBuilder = require('./urlBuilder');
 
 const doppioClient = new Doppio(process.env.DOPPIO_API_KEY);
 
+const footerTemplate = '<div style="width: 100%; font-size: 9px; text-align: center; padding: 5px 0 0 0; font-family: Arial; color: #444;">Pagina <span class="pageNumber"></span> di <span class="totalPages"></span></div>';
+const footerTemplateEncoded = Buffer.from(footerTemplate).toString('base64')
 
 const doppio = async (logger, {
     templateId,
@@ -50,11 +52,11 @@ const doppio = async (logger, {
             response = await doppioClient.renderPdfDirect({
                 pdf: {
                     printBackground: true,
-                    width,
-                    height,
-                    landscape: !!(width > height),
+                    // width,
+                    // height,
+                    // landscape: !!(width > height),
                     displayHeaderFooter: insertPageNumber,
-                    footerTemplate:  insertPageNumber ? '<div style="width: 100%; font-size: 9px; text-align: center; padding: 5px 0 0 0; font-family: Arial; color: #444;">Pagina <span class="pageNumber"></span> di <span class="totalPages"></span></div>': '',
+                    footerTemplate:  insertPageNumber ? footerTemplateEncoded: '',
                     margin: insertPageNumber ? {
                         top: 0,
                         right: 0,
@@ -72,7 +74,7 @@ const doppio = async (logger, {
                     {
                         name: '_t_052022',
                         value: token,
-                        domain: domain.split("://")[1],
+                        domain: domain.split("://")[1],     // domain non va bene perchè contine 'https://...'
                         path: '/',
                         secure: true,
                     }
