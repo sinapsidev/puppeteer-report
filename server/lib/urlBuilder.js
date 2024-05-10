@@ -1,14 +1,12 @@
 const build = ({
+  port,
   domain,
   tenantId,
   templateId,
-  recordId,
-  v2
+  recordId
 }) => {
-  if (v2) {
-    return `${domain}/report/index.html?idTemplate=${templateId}&idRecord=${recordId}&tenantId=${tenantId}`;
-  }
-  return `${domain}/#!/${tenantId}/report/${templateId}/${recordId}`;
+  const _domain = `https://${domain}`;
+  return `http://localhost:${port}/public/index.html?idTemplate=${templateId}&idRecord=${recordId}&tenantId=${tenantId}&domain=${encodeURIComponent(_domain)}`;
 };
 
 module.exports = build

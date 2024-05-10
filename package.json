@@ -1,6 +1,6 @@
 {
   "name": "puppeteer-report",
-  "version": "1.19.0",
+  "version": "1.21.0",
   "description": "",
   "main": "server/index.js",
   "scripts": {
@@ -13,6 +13,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.554.0",
     "@aws-sdk/s3-request-presigner": "^3.554.0",
+    "@fastify/static": "^7.0.4",
     "aws-sdk": "^2.1598.0",
     "body-parser": "^1.19.0",
     "bull": "^4.12.2",
@@ -22,7 +23,8 @@
     "pino": "^7.2.0",
     "pino-http": "^6.0.0",
     "pino-pretty": "^7.2.0",
-    "puppeteer": "^10.0.0"
+    "puppeteer": "22.8.0",
+    "puppeteer-cluster": "^0.24.0"
   },
   "devDependencies": {
     "@bull-board/api": "^5.15.3",
