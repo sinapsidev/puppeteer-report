@@ -7,12 +7,11 @@ const logger = require('pino')({
 
 const Fastify = require('fastify');
 const fetch = require('node-fetch');
-const browserFactory = require('./lib/browser')(logger);
 const doppio = require('./lib/doppio.js');
 
 // async functions
-const jobs = require('./lib/async-queue/jobs.js');
-if (process.env.NODE_ENV !== 'production') { require('./lib/async-queue/uiDashboard.js')(jobs.getQueue()); }
+// const jobs = require('./lib/async-queue/jobs.js');
+// if (process.env.NODE_ENV !== 'production') { require('./lib/async-queue/uiDashboard.js')(jobs.getQueue()); }
 
 const PORT = process.env.PORT || 5000;
 const PRINT_TIMEOUT = process.env.PRINT_TIMEOUT || 45 * 1000;
@@ -45,7 +44,7 @@ clusterFactory(MONITORING).then(async (cluster) => {
     cluster,
     logger
   }).then(async (printer) => {
-    jobs.startWorker(printer.print);
+    // jobs.startWorker(printer.print);
 
     app.get('/public', async (req, res) => {
       return res.sendFile('index.html');
@@ -111,20 +110,11 @@ clusterFactory(MONITORING).then(async (cluster) => {
       }
     };
 
-    app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
-      await doPrintRequest(req, res);
-    });
-
-    app.post('/print/v2/:tenantId/:templateId/:recordId', async (req, res) => {
-      await doPrintRequest(req, res);
-    });
-
-    /* async calls
-    app.post('/print/jobs/:tenantId/:templateId/:recordId', async (req, res) => {
+    const doDoppioPrintRequest = async (req, res) => {
       try {
         const authorization = req.headers.authorization;
         const timeZone = req.headers['time-zone'];
-        const requireNotification = !!(req.query.notify === 'true' || req.query.needNotification === 'true' || req.query.requireNotification === 'true' || jobs.defaultNotify === 'true');
+        const domain = req.headers['x-domain'] || 'logicadev2.snps.it';
 
         const {
           tenantId,
@@ -133,6 +123,7 @@ clusterFactory(MONITORING).then(async (cluster) => {
         } = req.params;
 
         const profile = await auth.getProfile({
+          domain,
           timeZone,
           token: authorization,
           tenantId
@@ -145,12 +136,102 @@ clusterFactory(MONITORING).then(async (cluster) => {
         }
 
         const authResult = await auth.serviceAuth({
+          domain,
           clientId: CLIENT_ID,
           clientSecret: CLIENT_SECRET
         });
 
         const token = authResult.access_token;
 
+        const result = await doppio.print(logger, {
+          port: PORT,
+          body: req.body,
+          tenantId,
+          templateId,
+          recordId,
+          token,
+          domain,
+          timeZone
+        });
+
+        const {
+          buffer,
+          contentType
+        } = result;
+
+        res.type(contentType).send(buffer);
+      } catch (e) {
+        console.error(e.message);
+        res.code(500).send(e.message);
+      }
+    };
+
+    app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
+      await doPrintRequest(req, res);
+    });
+
+    app.post('/print/v2/:tenantId/:templateId/:recordId', async (req, res) => {
+      await doPrintRequest(req, res);
+    });
+
+    app.post('/print/doppio/:tenantId/:templateId/:recordId', async (req, res) => {
+      await doDoppioPrintRequest(req, res);
+    });
+
+
+    // app.get('/b', async (req, res) => {
+    //   async function sleep(ms) {
+    //     return new Promise((resolve) => {
+    //       setTimeout(resolve, ms);
+    //     });
+    //   }
+    //   await sleep(5000);
+    // });
+    // app.get('/a', async (req, res) => {
+    //   async function sleep(ms) {
+    //     return new Promise((resolve) => {
+    //       setTimeout(resolve, ms);
+    //     });
+    //   }
+    //   await sleep(5000);
+
+    //   const r = await fetch('http://localhost:5000/b');
+
+    //   res.send(r.status);
+    // })
+
+    /* async calls
+    app.post('/print/jobs/:tenantId/:templateId/:recordId', async (req, res) => {
+      try {
+        const authorization = req.headers.authorization;
+        const timeZone = req.headers['time-zone'];
+        const requireNotification = !!(req.query.notify === 'true' || req.query.needNotification === 'true' || req.query.requireNotification === 'true' || jobs.defaultNotify === 'true');
+ 
+        const {
+          tenantId,
+          templateId,
+          recordId
+        } = req.params;
+ 
+        const profile = await auth.getProfile({
+          timeZone,
+          token: authorization,
+          tenantId
+        });
+ 
+        if (!profile) {
+          logger.error('Unauthorized');
+          res.code(401).send({});
+          return;
+        }
+ 
+        const authResult = await auth.serviceAuth({
+          clientId: CLIENT_ID,
+          clientSecret: CLIENT_SECRET
+        });
+ 
+        const token = authResult.access_token;
+ 
         const { status, jobId } = await jobs.startJob({
           printerArgs: {
             body: req.body,
@@ -164,7 +245,7 @@ clusterFactory(MONITORING).then(async (cluster) => {
           },
           requireNotification
         }, 10);
-
+ 
         res.send({
           status,
           jobId
@@ -174,54 +255,54 @@ clusterFactory(MONITORING).then(async (cluster) => {
         res.code(500).send(e.message);
       }
     });
-
+ 
     app.get('/print/jobs/status/:jobId/:tenantId', async (req, res) => {
       try {
         const { jobId, tenantId } = req.params;
         const authorization = req.headers.authorization;
         const timeZone = req.headers['time-zone'];
-
+ 
         const profile = await auth.getProfile({
           timeZone,
           token: authorization,
           tenantId
         });
-
+ 
         if (!profile) {
           logger.error('Unauthorized');
           res.code(401).send({});
           return;
         }
-
+ 
         const status = await jobs.getJobStaus(jobId);
-
+ 
         res.send({ status });
       } catch (e) {
         console.error(e.message);
         res.code(500).send(e.message);
       }
     });
-
+ 
     app.get('/print/jobs/:jobId/:tenantId', async (req, res) => {
       try {
         const { jobId, tenantId } = req.params;
         const authorization = req.headers.authorization;
         const timeZone = req.headers['time-zone'];
-
+ 
         const profile = await auth.getProfile({
           timeZone,
           token: authorization,
           tenantId
         });
-
+ 
         if (!profile) {
           logger.error('Unauthorized');
           res.code(401).send({});
           return;
         }
-
+ 
         const result = await jobs.getJobResult(jobId);
-
+ 
         res.send({ result });
       } catch (e) {
         console.error(e.message);
