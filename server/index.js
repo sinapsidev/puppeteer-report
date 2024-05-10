@@ -34,13 +34,16 @@ app.register(require('@fastify/static'), {
   prefix: '/public/'
 });
 
-clusterFactory(MONITORING).then(async (cluster) => {
-  printerFactory({
-    networkLogging: NETWORK_LOGGING,
-    timeout: PRINT_TIMEOUT,
-    cluster,
-    logger
-  }).then(async (printer) => {
+const boot = async (app) => {
+  try {
+    const cluster = await clusterFactory(MONITORING);
+    const printer = await printerFactory({
+      networkLogging: NETWORK_LOGGING,
+      timeout: PRINT_TIMEOUT,
+      cluster,
+      logger
+    });
+
     jobs.startWorker(printer.print);
 
     app.get('/public', async (req, res) => {
@@ -226,13 +229,13 @@ clusterFactory(MONITORING).then(async (cluster) => {
     });
     */
 
-    try {
-      await app.listen({ port: PORT, host: '0.0.0.0' });
-      console.log('Puppeteer Report ready with Fastify on port ', PORT);
-    } catch (e) {
-      app.log.error(e);
-      logger.error(e);
-      process.exit(1);
-    }
-  });
-});
+    await app.listen({ port: PORT, host: '0.0.0.0' });
+    console.log('Puppeteer Report ready with Fastify on port ', PORT);
+  } catch (e) {
+    app.log.error(e);
+    logger.error(e);
+    process.exit(1);
+  }
+};
+
+boot(app);
