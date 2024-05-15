@@ -1,5 +1,9 @@
 # Change Log
 
+1.21.0 - 15/05/2024
+
+- Cambia url preview
+
 1.20.0 - 09/05/2024
 
 - Aggiunta app client direttamente dentro puppeteer
