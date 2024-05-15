@@ -31,7 +31,7 @@ const app = Fastify({
 
 app.register(require('@fastify/static'), {
   root: path.join(__dirname, 'public'),
-  prefix: '/public/'
+  prefix: '/print/public/'
 });
 
 const boot = async (app) => {
