@@ -8,7 +8,7 @@ const logger = require('pino')({
 const Fastify = require('fastify');
 const fetch = require('node-fetch');
 
-const PORT = process.env.PORT || 6001;
+const PORT = process.env.PORT || 5000;
 const PRINT_TIMEOUT = process.env.PRINT_TIMEOUT || 45 * 1000;
 const NETWORK_LOGGING = process.env.NETWORK_LOGGING || true;
 const MONITORING = process.env.MONITORING || false;
