@@ -341,9 +341,15 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
         timeZone,
         body
       }),
-      timeoutUtils.resolve(timeout, page),
-      page.waitForSelector('#madewithlove', { timeout: 0, visible: true }),
-      page.waitForSelector('#report-error', { timeout: 0 })
+      timeoutUtils.resolve(timeout, page).then(() => {
+        throw new Error('timeout');
+      }),
+      page.waitForSelector('#madewithlove', { timeout: 0, visible: true }).then(() => {
+        throw new Error('Logout');
+      }),
+      page.waitForSelector('#report-error', { timeout: 0 }).then(() => {
+        throw new Error('Report error');
+      })
     ]);
   };
 
