@@ -3,6 +3,7 @@ pipeline {
     environment {
         NEXUS3_CREDS = credentials('nexus3')
         IMAGE_NAME='docker.snps.it/snps/puppeteer-report'
+        DOCKER_REGISTRY = "docker.snps.it"
     }
     stages {
         stage('Extract version from package.json') {
@@ -40,7 +41,7 @@ pipeline {
             }
             steps {
                 sh  """
-                    docker login -u ${NEXUS3_CREDS_USR} -p ${NEXUS3_CREDS_PSW} docker.snps.it
+                    docker login -u ${NEXUS3_CREDS_USR} -p ${NEXUS3_CREDS_PSW} ${env.DOCKER_REGISTRY}
                     docker push ${IMAGE_NAME}:${env.VERSION}
                     docker push ${IMAGE_NAME}:latest                
                     """
@@ -63,6 +64,20 @@ pipeline {
             }
             steps {
                 build(job: 'xdbDeployer/develop', wait: false)
+            }
+        }
+        stage('Deploy to ECS') {
+            steps{
+                script {
+                    build(job: 'xdb-aws-deployer/deployToEcs', wait: true, parameters: [
+                                string(name: "deploymentBranch", value: env.BRANCH_NAME),
+                                string(name: "project", value: "logica"),
+                                string(name: "service", value: "puppeteer"),
+                                string(name: "serviceImage", value: "${IMAGE_NAME}:${env.VERSION}"),
+                                string(name: "migration", value: "false"),
+                                string(name: "migrationImage", value: "false")
+                            ])
+                }
             }
         }
     }
