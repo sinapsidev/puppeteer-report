@@ -54,7 +54,7 @@ const boot = async (app) => {
       try {
         const authorization = req.headers.authorization;
         const timeZone = req.headers['time-zone'];
-        const domain = req.headers['x-domain'] || 'logicadev2.snps.it';
+        const domain = req.headers['x-domain'] || 'logicaweb.snps.it';
 
         const {
           tenantId,
