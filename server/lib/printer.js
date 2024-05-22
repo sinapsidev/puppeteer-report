@@ -47,7 +47,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     logger.debug(`Passing fields to the page: ${JSON.stringify(valoriCampiEditabili)}`);
 
     await page.evaluateOnNewDocument((token) => {
-      function writeCookie (name, value, options = {}) {
+      function writeCookie(name, value, options = {}) {
         if (!name) {
           return '';
         }
@@ -128,8 +128,8 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             page-break-after: always !important;
           }
 
-          tbody {
-            padding-bottom: 40px;
+          .page-body {
+            padding-bottom: ${footerHeight ? footerHeight + SBECCO : '0'}px;
           }
   
           .page-header, .page-header-space {
