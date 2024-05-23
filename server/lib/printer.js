@@ -141,7 +141,10 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
           }
   
           .page-footer {
-            width: 100%;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
             background-color: #fff;
           }
   
@@ -190,9 +193,6 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             orphans: 0;
             widows: 4;
           }
-
-          thead { display: table-header-group; }
-          tfoot { display: table-footer-group; }
   
           `;
         return CUSTOM_CSS;
@@ -204,8 +204,13 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
         return `
             <style>${CUSTOM_CSS}</style>
   
+  
             <div id="header" class="page-header">
               <div class="standard-padding">${headerHTML}</div>
+            </div>
+        
+            <div id="footer" class="page-footer">
+              <div class="standard-padding">${footerHTML}</div>
             </div>
   
             <table class="page-body">
@@ -259,9 +264,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
               <tfoot>
                 <tr>
                   <td>
-                    <div id="footer" class="page-footer">
-                      <div class="standard-padding">${footerHTML}</div>
-                    </div>
+                    <div class="page-footer-space"></div>
                   </td>
                 </tr>
               </tfoot>
