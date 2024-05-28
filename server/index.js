@@ -7,8 +7,6 @@ const logger = require('pino')({
 
 const Fastify = require('fastify');
 const fetch = require('node-fetch');
-const jobs = require('./lib/async-queue/jobs.js');
-if (process.env.NODE_ENV !== 'production') { require('./lib/async-queue/uiDashboard.js')(jobs.getQueue()); }
 
 const PORT = process.env.PORT || 5000;
 const PRINT_TIMEOUT = process.env.PRINT_TIMEOUT || 45 * 1000;
@@ -44,8 +42,6 @@ const boot = async (app) => {
       logger
     });
 
-    jobs.startWorker(printer.print);
-
     app.get('/public', async (req, res) => {
       return res.sendFile('index.html');
     });
@@ -58,7 +54,7 @@ const boot = async (app) => {
       try {
         const authorization = req.headers.authorization;
         const timeZone = req.headers['time-zone'];
-        const domain = req.headers['x-domain'] || 'logicadev2.snps.it';
+        const domain = req.headers['x-domain'] || 'logicaweb.snps.it';
 
         const {
           tenantId,
@@ -117,117 +113,6 @@ const boot = async (app) => {
     app.post('/print/v2/:tenantId/:templateId/:recordId', async (req, res) => {
       await doPrintRequest(req, res);
     });
-
-    /* async calls
-    app.post('/print/jobs/:tenantId/:templateId/:recordId', async (req, res) => {
-      try {
-        const authorization = req.headers.authorization;
-        const timeZone = req.headers['time-zone'];
-        const requireNotification = !!(req.query.notify === 'true' || req.query.needNotification === 'true' || req.query.requireNotification === 'true' || jobs.defaultNotify === 'true');
-
-        const {
-          tenantId,
-          templateId,
-          recordId
-        } = req.params;
-
-        const profile = await auth.getProfile({
-          timeZone,
-          token: authorization,
-          tenantId
-        });
-
-        if (!profile) {
-          logger.error('Unauthorized');
-          res.code(401).send({});
-          return;
-        }
-
-        const authResult = await auth.serviceAuth({
-          clientId: CLIENT_ID,
-          clientSecret: CLIENT_SECRET
-        });
-
-        const token = authResult.access_token;
-
-        const { status, jobId } = await jobs.startJob({
-          printerArgs: {
-            body: req.body,
-            tenantId,
-            templateId,
-            recordId,
-            token,
-            domain,
-            timeZone,
-            tokenUser: authorization.split(' ')[1]
-          },
-          requireNotification
-        }, 10);
-
-        res.send({
-          status,
-          jobId
-        });
-      } catch (e) {
-        console.error(e.message);
-        res.code(500).send(e.message);
-      }
-    });
-
-    app.get('/print/jobs/status/:jobId/:tenantId', async (req, res) => {
-      try {
-        const { jobId, tenantId } = req.params;
-        const authorization = req.headers.authorization;
-        const timeZone = req.headers['time-zone'];
-
-        const profile = await auth.getProfile({
-          timeZone,
-          token: authorization,
-          tenantId
-        });
-
-        if (!profile) {
-          logger.error('Unauthorized');
-          res.code(401).send({});
-          return;
-        }
-
-        const status = await jobs.getJobStaus(jobId);
-
-        res.send({ status });
-      } catch (e) {
-        console.error(e.message);
-        res.code(500).send(e.message);
-      }
-    });
-
-    app.get('/print/jobs/:jobId/:tenantId', async (req, res) => {
-      try {
-        const { jobId, tenantId } = req.params;
-        const authorization = req.headers.authorization;
-        const timeZone = req.headers['time-zone'];
-
-        const profile = await auth.getProfile({
-          timeZone,
-          token: authorization,
-          tenantId
-        });
-
-        if (!profile) {
-          logger.error('Unauthorized');
-          res.code(401).send({});
-          return;
-        }
-
-        const result = await jobs.getJobResult(jobId);
-
-        res.send({ result });
-      } catch (e) {
-        console.error(e.message);
-        res.code(500).send(e.message);
-      }
-    });
-    */
 
     await app.listen({ port: PORT, host: '0.0.0.0' });
     console.log('Puppeteer Report ready with Fastify on port ', PORT);

@@ -47,7 +47,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     logger.debug(`Passing fields to the page: ${JSON.stringify(valoriCampiEditabili)}`);
 
     await page.evaluateOnNewDocument((token) => {
-      function writeCookie (name, value, options = {}) {
+      function writeCookie(name, value, options = {}) {
         if (!name) {
           return '';
         }
@@ -103,20 +103,20 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       }));
     });
 
-    await page.evaluate(() => {
+    let { FOOTER_TEMPLATE, HAS_FOOTER, FOOTER_H } = await page.evaluate(() => {
       const SBECCO = 20;
 
-      const HEADER_TEMPLATE = document.querySelector('#header').innerHTML;
       const FOOTER_TEMPLATE = document.querySelector('#footer').innerHTML;
+      const HEADER_TEMPLATE = document.querySelector('#header').innerHTML;
       const BODY_TEMPLATE = document.querySelector('#body').innerHTML;
-
-      const HAS_HEADER = !!HEADER_TEMPLATE;
+      
       const HAS_FOOTER = !!FOOTER_TEMPLATE;
-
-      const HEADER_H = HAS_HEADER ? document.querySelector('#header').getBoundingClientRect().height : 0;
+      const HAS_HEADER = !!HEADER_TEMPLATE;
+      
       const FOOTER_H = HAS_FOOTER ? document.querySelector('#footer').getBoundingClientRect().height : 0;
+      const HEADER_H = HAS_HEADER ? document.querySelector('#header').getBoundingClientRect().height : 0;
 
-      const getCustomCSS = function (headerHeight, footerHeight) {
+      const getCustomCSS = function (headerHeight) {
         const CUSTOM_CSS = `
           .document-preview__frame__page-break-after {
             width: 100%;
@@ -128,17 +128,12 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             page-break-after: always !important;
           }
 
-          tbody {
-            padding-bottom: 40px;
-          }
+          
   
           .page-header, .page-header-space {
             height: ${headerHeight ? headerHeight + SBECCO : '0'}px;
           }
   
-          .page-footer, .page-footer-space {
-            height: ${footerHeight ? footerHeight + SBECCO : '0'}px;
-          }
   
           .page-footer {
             position: fixed;
@@ -198,21 +193,16 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
         return CUSTOM_CSS;
       };
 
-      const CUSTOM_CSS = getCustomCSS(HEADER_H, FOOTER_H);
+      const CUSTOM_CSS = getCustomCSS(HEADER_H);
 
-      const getHTMLReportFromContent = function (bodyHTML, headerHTML, footerHTML) {
+      const getHTMLReportFromContent = function (bodyHTML, headerHTML) {
         return `
             <style>${CUSTOM_CSS}</style>
-  
-  
+        
             <div id="header" class="page-header">
               <div class="standard-padding">${headerHTML}</div>
             </div>
-        
-            <div id="footer" class="page-footer">
-              <div class="standard-padding">${footerHTML}</div>
-            </div>
-  
+
             <table class="page-body">
               <thead>
                 <tr>
@@ -273,8 +263,14 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
           `;
       };
 
-      const TEMPLATE = getHTMLReportFromContent(BODY_TEMPLATE, HEADER_TEMPLATE, FOOTER_TEMPLATE);
+      const TEMPLATE = getHTMLReportFromContent(BODY_TEMPLATE, HEADER_TEMPLATE);
       document.querySelector('body').innerHTML = `${TEMPLATE}`;
+
+      return {
+        FOOTER_TEMPLATE,
+        HAS_FOOTER,
+        FOOTER_H
+      };
     });
 
     const IS_LANDSCAPE = WIDTH > HEIGHT;
@@ -295,15 +291,30 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       config.landscape = true;
     }
 
-    if (IS_PAGE_NUMBER_VISIBLE) {
-      config.displayHeaderFooter = true;
-      config.footerTemplate = '<div style="width: 100%; font-size: 9px; text-align: center; padding: 5px 0 0 0; font-family: Arial; color: #444;">Pagina <span class="pageNumber"></span> di <span class="totalPages"></span></div>';
-      config.margin = {
+    if (HAS_FOOTER) {
+      config.displayHeaderFooter= true,
+      config.margin= {
         top: 0,
         right: 0,
         left: 0,
-        bottom: 40
-      };
+        bottom: FOOTER_H || 40
+      }
+      config.footerTemplate = `<div style="width: 100%; background-color: #fff; font-size: 9px; text-align: center; padding: 5px 0 0 0; font-family: Arial; color: #444;">${FOOTER_TEMPLATE}</div>`;
+    }
+
+    if (IS_PAGE_NUMBER_VISIBLE) {
+      config.margin= {
+        top: 0,
+        right: 0,
+        left: 0,
+        bottom: FOOTER_H ? FOOTER_H + 40 : 40
+      }
+      config.footerTemplate = `<div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        ${config.footerTemplate}
+        <div style="width: 100%; margin-top: 10px; font-size: 9px; text-align: center; padding: 5px 0 0 0; font-family: Arial; color: #444;">
+          Pagina <span class="pageNumber"></span> di <span class="totalPages"></span>
+        </div>
+      </div>`;
     }
 
     return {
@@ -341,9 +352,15 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
         timeZone,
         body
       }),
-      timeoutUtils.resolve(timeout, page),
-      page.waitForSelector('#madewithlove', { timeout: 0, visible: true }),
-      page.waitForSelector('#report-error', { timeout: 0 })
+      timeoutUtils.resolve(timeout, page).then(() => {
+        throw new Error('timeout');
+      }),
+      page.waitForSelector('#madewithlove', { timeout: 0, visible: true }).then(() => {
+        throw new Error('Logout');
+      }),
+      page.waitForSelector('#report-error', { timeout: 0 }).then(() => {
+        throw new Error('Report error');
+      })
     ]);
   };
 
