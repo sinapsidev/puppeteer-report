@@ -99,7 +99,7 @@
     mapVistaToReportData
   };
 
-  angular.module('reportApp', [
+  window.angular.module('reportApp', [
     // MODULES
     'reportApp.auth',
     'reportApp.common',
@@ -108,7 +108,7 @@
     'reportApp.xdb'
   ]);
 
-  angular.module('reportApp')
+  window.angular.module('reportApp')
     .controller('myController', [
       '$scope',
       'avatars',
@@ -159,7 +159,7 @@
 
           currentUser.changeTenant(tenantId);
 
-          $scope.stampaDataOra = () => moment().toDate();
+          $scope.stampaDataOra = () => window.moment().toDate();
 
           let idScheda;
           let infoScheda;
