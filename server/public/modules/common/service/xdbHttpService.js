@@ -4,17 +4,6 @@
     $q,
     prepareHeaders
   ) {
-    let errorListeners = [];
-
-    const addErrorListener = function (cb) {
-      errorListeners.push(cb);
-      return function () {
-        errorListeners = _.filter(errorListeners, function (toCheck) {
-          return toCheck !== cb;
-        });
-      };
-    };
-
     const executeFetch = (args, tryToRefresh = false) => {
       console.time(args.url);
       return fetch(args)
@@ -38,12 +27,11 @@
     };
 
     return {
-      fetch: fetchHttp,
-      addErrorListener
+      fetch: fetchHttp
     };
   };
 
-  angular.module('reportApp.common')
+  window.angular.module('reportApp.common')
     .service('xdbHttpService', [
       'fetch',
       '$q',
