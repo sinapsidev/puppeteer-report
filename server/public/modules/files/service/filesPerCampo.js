@@ -15,7 +15,7 @@
     };
 
     const download = (nomeRisorsa, idRecord, idCampo, revisionId) => {
-      const _revisionId = _.isUndefined(revisionId) ? '' : revisionId;
+      const _revisionId = window._.isUndefined(revisionId) ? '' : revisionId;
 
       const url = `${apiURLs.getBasePath()}/${xdbApiConstants.FILEBASEURL}/${nomeRisorsa}/${idRecord}/campo/${idCampo}?revisionId=${_revisionId}`;
 
@@ -35,7 +35,7 @@
     };
   };
 
-  angular.module('reportApp.files')
+  window.angular.module('reportApp.files')
     .service('filesPerCampo', [
       'xdbApiConstants',
       'xdbHttpService',
