@@ -1,4 +1,4 @@
-angular.module('reportApp.xdb', [
+window.angular.module('reportApp.xdb', [
   'reportApp.common',
   'angularMoment'
 ]);

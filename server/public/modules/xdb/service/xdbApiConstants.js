@@ -13,7 +13,7 @@
   const THREADS_BASE_URL = 'threads';
   const ATTACHMENTS_BASE_URL = 'attachments';
 
-  angular.module('reportApp.xdb')
+  window.angular.module('reportApp.xdb')
     .constant('xdbApiConstants',
       {
         FIRST_INCREMENTAL_PAGE_SIZE,

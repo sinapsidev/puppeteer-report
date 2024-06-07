@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  angular.module('reportApp.report').service('reportService', [
+  window.angular.module('reportApp.report').service('reportService', [
     'xdbHttpService',
     'apiURLs',
     function (

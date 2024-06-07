@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  angular.module('reportApp.report')
+  window.angular.module('reportApp.report')
     .service('campiEditabiliReport', [
       '$q',
       function (

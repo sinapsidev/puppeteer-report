@@ -1,1 +1,1 @@
-angular.module('reportApp.report', []);
+window.angular.module('reportApp.report', []);

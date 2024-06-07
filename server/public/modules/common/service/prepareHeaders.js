@@ -31,7 +31,7 @@
       );
     };
   };
-  angular.module('reportApp.common')
+  window.angular.module('reportApp.common')
     .factory('prepareHeaders', [
       'token',
       'moment',
