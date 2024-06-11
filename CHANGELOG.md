@@ -1,5 +1,9 @@
 # Change Log
 
+1.23.0 - 11/06/2024
+
+- fix: sistema immagini report (Rif Int 2024/2067)
+
 1.22.0 - 28/05/2024
 
 - fix: evita che elementi finiscano sotto il footer
