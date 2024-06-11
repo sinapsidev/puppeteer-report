@@ -1,7 +1,13 @@
 (function () {
   const ONE_HOUR = 60 * 60 * 1000;
 
-  const service = function ($localStorage, $sessionStorage, $cookies, configService) {
+  const service = function (
+    $localStorage,
+    $sessionStorage,
+    $cookies,
+    configService,
+    moment
+  ) {
     const saveSessionStorage = (key, obj) => {
       $sessionStorage[key] = obj;
     };
@@ -76,11 +82,12 @@
     };
   };
 
-  angular.module('reportApp.common')
+  window.angular.module('reportApp.common')
     .service('storageService', [
       '$localStorage',
       '$sessionStorage',
       '$cookies',
       'configService',
+      'moment',
       service]);
 })();

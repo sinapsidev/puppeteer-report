@@ -12,7 +12,7 @@
         method: 'GET',
         responseType: 'blob',
         transformResponse: function (data) {
-          return new Blob([data]);
+          return new window.Blob([data]);
         },
         url
       }).then(response => URL.createObjectURL(response.data));
@@ -23,7 +23,7 @@
     };
   };
 
-  angular
+  window.angular
     .module('reportApp.xdb')
     .service('avatars', [
       'fetch',

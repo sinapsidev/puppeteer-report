@@ -99,7 +99,7 @@
     mapVistaToReportData
   };
 
-  angular.module('reportApp', [
+  window.angular.module('reportApp', [
     // MODULES
     'reportApp.auth',
     'reportApp.common',
@@ -108,7 +108,7 @@
     'reportApp.xdb'
   ]);
 
-  angular.module('reportApp')
+  window.angular.module('reportApp')
     .controller('myController', [
       '$scope',
       'avatars',
@@ -119,7 +119,6 @@
       'campiEditabiliReport',
       'storageService',
       'domUtilsService',
-      'ID_SCHEDE',
       'filesPerCampo',
       function (
         $scope,
@@ -131,9 +130,10 @@
         campiEditabiliReport,
         storageService,
         domUtilsService,
-        ID_SCHEDE,
         filesPerCampo
       ) {
+        const ID_SCHEDA_CONFIGURAZIONE = 90;
+
         const getErrorMessage = (error) => {
           if (error && error.message) {
             return error.message;
@@ -159,7 +159,7 @@
 
           currentUser.changeTenant(tenantId);
 
-          $scope.stampaDataOra = () => moment().toDate();
+          $scope.stampaDataOra = () => window.moment().toDate();
 
           let idScheda;
           let infoScheda;
@@ -246,7 +246,7 @@
 
             domUtilsService.waitForSelector('[data-attach-logo-aziendale]').then((reportCompanyLogo) => {
               const ID_RECORD = 1;
-              avatars.get(ID_SCHEDE.CONFIGURAZIONE, ID_RECORD)
+              avatars.get(ID_SCHEDA_CONFIGURAZIONE, ID_RECORD)
                 .then((url) => {
                   reportCompanyLogo.src = `${url}`;
                 });

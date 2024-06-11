@@ -1,1 +1,1 @@
-angular.module('reportApp.files', ['reportApp.common']);
+window.angular.module('reportApp.files', ['reportApp.common']);

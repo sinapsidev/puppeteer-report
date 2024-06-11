@@ -37,7 +37,7 @@
     };
   };
 
-  angular.module('reportApp.xdb')
+  window.angular.module('reportApp.xdb')
     .service('xdbApiService', [
       'xdbHttpService',
       'xdbApiConstants',

@@ -14,10 +14,8 @@
       return VALID_EXTENSIONS.some(ext => nome.toLowerCase().endsWith(ext));
     };
 
-    const download = (nomeRisorsa, idRecord, idCampo, revisionId) => {
-      const _revisionId = _.isUndefined(revisionId) ? '' : revisionId;
-
-      const url = `${apiURLs.getBasePath()}/${xdbApiConstants.FILEBASEURL}/${nomeRisorsa}/${idRecord}/campo/${idCampo}?revisionId=${_revisionId}`;
+    const download = (nomeRisorsa, idRecord, idCampo) => {
+      const url = `${apiURLs.getBasePath()}/${xdbApiConstants.FILEBASEURL}/${nomeRisorsa}/${idRecord}/campo/${idCampo}`;
 
       return xdbHttpService
         .fetch({
@@ -25,7 +23,7 @@
           url,
           responseType: 'blob',
           transformResponse: function (data) {
-            return new Blob([data]);
+            return new window.Blob([data]);
           }
         }).then(r => window.URL.createObjectURL(r.data));
     };
@@ -35,7 +33,7 @@
     };
   };
 
-  angular.module('reportApp.files')
+  window.angular.module('reportApp.files')
     .service('filesPerCampo', [
       'xdbApiConstants',
       'xdbHttpService',

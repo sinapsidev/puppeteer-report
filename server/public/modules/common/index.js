@@ -1,1 +1,1 @@
-angular.module('reportApp.common', ['ngStorage', 'ngCookies']);
+window.angular.module('reportApp.common', ['ngStorage', 'ngCookies']);

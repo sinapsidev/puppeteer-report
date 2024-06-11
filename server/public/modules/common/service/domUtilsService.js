@@ -39,7 +39,7 @@
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = service;
   } else {
-    angular.module('reportApp.common')
+    window.angular.module('reportApp.common')
       .service('domUtilsService', [
         service]);
   }
