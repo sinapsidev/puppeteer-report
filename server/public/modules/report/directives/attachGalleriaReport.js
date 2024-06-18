@@ -42,14 +42,17 @@
           link: function ($scope, $element) {
             const url = new URL(window.location.href);
             const searchParams = url.searchParams;
-            const idRecord = parseInt(searchParams.get('idRecord'), 10);
+            const _idRecord = parseInt(searchParams.get('idRecord'), 10);
 
             const idVista = $scope.attachGalleriaReport;
             const {
+              record,
               filtro,
               campo,
               risorsa
             } = $element[0].dataset;
+
+            const idRecord = record || _idRecord;
 
             loadImages({
               idVista,
