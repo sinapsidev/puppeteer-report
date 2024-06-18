@@ -22,7 +22,7 @@
     }));
   };
 
-  window.angular.module('reportApp.files')
+  window.angular.module('reportApp.report')
     .directive('attachFiles', [
       'filesPerRecord',
       'filesPerCampo',

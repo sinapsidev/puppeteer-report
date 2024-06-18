@@ -27,7 +27,7 @@
     }));
   };
 
-  window.angular.module('reportApp.files')
+  window.angular.module('reportApp.report')
     .directive('attachGalleriaReport', [
       'xdbApiService',
       'filesPerCampo', function (
