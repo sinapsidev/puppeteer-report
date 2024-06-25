@@ -1,5 +1,9 @@
 # Change Log
 
+1.24.0 - 25/06/2024
+
+- permette di filtrare una vista per galleria con id record custom
+
 1.23.0 - 11/06/2024
 
 - fix: sistema immagini report (Rif Int 2024/2067)
