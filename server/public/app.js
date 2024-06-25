@@ -260,7 +260,6 @@
 
               // genere la query per andare a recuperare i dati per una persona specifica
               const q = filtroPerCampo ? (filtroPerCampo + '=%25=' + idRecord) : null;
-              // getVistaRows mi ritorna la riga di una determinata vista con relativi dati all'interno dai quali ricavo, se presente, l'img dalla quale genero il blob attraverso il metodo filesPerCampo.download
               xdbApiService.getVistaRows(idVista, 1, 0, null, q).then((res) => {
                 const records = res.data.records ?? [];
                 const image = records.filter(file => filesPerCampo.isImage(file.nome));
