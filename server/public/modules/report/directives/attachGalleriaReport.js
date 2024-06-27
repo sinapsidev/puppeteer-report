@@ -37,7 +37,8 @@
         return {
           restrict: 'A',
           scope: {
-            attachGalleriaReport: '='
+            attachGalleriaReport: '=',
+            record: '='
           },
           link: function ($scope, $element) {
             const url = new URL(window.location.href);
@@ -46,13 +47,12 @@
 
             const idVista = $scope.attachGalleriaReport;
             const {
-              record,
               filtro,
               campo,
               risorsa
             } = $element[0].dataset;
 
-            const idRecord = record || _idRecord;
+            const idRecord = $scope.record || _idRecord;
 
             loadImages({
               idVista,
