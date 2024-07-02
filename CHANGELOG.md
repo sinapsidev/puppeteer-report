@@ -1,5 +1,9 @@
 # Change Log
 
+1.25.0 - 02/07/2024
+
+- fix lettura id record da ng-repeat per galleria documenti
+
 1.24.0 - 25/06/2024
 
 - permette di filtrare una vista per galleria con id record custom
