@@ -371,6 +371,18 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     ]);
   };
 
+  const GENERATORS = {
+    jpg: _image,
+    pdf: _pdf,
+    docx: _docx
+  };
+
+  const MIME_TYPES = {
+    jpg: 'image/jpeg',
+    pdf: 'application/pdf',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  };
+
   cluster.task(async ({
     page, data: {
       port,
@@ -385,20 +397,11 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
   }) => {
     const start = Date.now();
     const {
-      printImage
+      printMode
     } = body;
 
-    let generator, contentType;
-    if (printImage === 1) {
-      generator = _image;
-      contentType = 'image/jpeg';
-    } else if (printImage === -1) {
-      generator = _docx;
-      contentType = 'image/docx';
-    } else {
-      generator = _pdf;
-      contentType = 'application/pdf';
-    }
+    const generator = GENERATORS[printMode] || _pdf;
+    const contentType = MIME_TYPES[printMode] || 'application/pdf';
 
     const url = urlBuilder({
       port,
