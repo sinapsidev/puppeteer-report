@@ -48,7 +48,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     logger.debug(`Passing fields to the page: ${JSON.stringify(valoriCampiEditabili)}`);
 
     await page.evaluateOnNewDocument((token) => {
-      function writeCookie(name, value, options = {}) {
+      function writeCookie (name, value, options = {}) {
         if (!name) {
           return '';
         }
@@ -104,7 +104,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       }));
     });
 
-    let { FOOTER_TEMPLATE, HAS_FOOTER, FOOTER_H } = await page.evaluate(() => {
+    const { FOOTER_TEMPLATE, HAS_FOOTER, FOOTER_H } = await page.evaluate(() => {
       const SBECCO = 20;
 
       const FOOTER_TEMPLATE = document.querySelector('#footer').innerHTML;
@@ -293,13 +293,13 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     }
 
     if (HAS_FOOTER) {
-      config.displayHeaderFooter = true,
-        config.margin = {
-          top: 0,
-          right: 0,
-          left: 0,
-          bottom: FOOTER_H || 40
-        }
+      config.displayHeaderFooter = true;
+      config.margin = {
+        top: 0,
+        right: 0,
+        left: 0,
+        bottom: FOOTER_H || 40
+      };
       config.footerTemplate = `<div style="width: 100%; background-color: #fff; font-size: 9px; text-align: center; padding: 5px 0 0 0; font-family: Arial; color: #444;">${FOOTER_TEMPLATE}</div>`;
     }
 
@@ -309,7 +309,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
         right: 0,
         left: 0,
         bottom: FOOTER_H ? FOOTER_H + 40 : 40
-      }
+      };
       config.footerTemplate = `<div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
         ${config.footerTemplate}
         <div style="width: 100%; margin-top: 10px; font-size: 9px; text-align: center; padding: 5px 0 0 0; font-family: Arial; color: #444;">
@@ -389,15 +389,13 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     } = body;
 
     let generator, contentType;
-    if (printImage == 1) {
+    if (printImage === 1) {
       generator = _image;
       contentType = 'image/jpeg';
-    }
-    else if (printImage === -1) {
+    } else if (printImage === -1) {
       generator = _docx;
       contentType = 'image/docx';
-    }
-    else {
+    } else {
       generator = _pdf;
       contentType = 'application/pdf';
     }
