@@ -1,5 +1,6 @@
 const timeoutUtils = require('./timeout');
 const urlBuilder = require('./urlBuilder');
+const CCdocx = require('./cloudConvert');
 
 const URL_BLACKLIST = [
   '.stripe',
@@ -47,7 +48,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     logger.debug(`Passing fields to the page: ${JSON.stringify(valoriCampiEditabili)}`);
 
     await page.evaluateOnNewDocument((token) => {
-      function writeCookie(name, value, options = {}) {
+      function writeCookie (name, value, options = {}) {
         if (!name) {
           return '';
         }
@@ -103,16 +104,16 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       }));
     });
 
-    let { FOOTER_TEMPLATE, HAS_FOOTER, FOOTER_H } = await page.evaluate(() => {
+    const { FOOTER_TEMPLATE, HAS_FOOTER, FOOTER_H } = await page.evaluate(() => {
       const SBECCO = 20;
 
       const FOOTER_TEMPLATE = document.querySelector('#footer').innerHTML;
       const HEADER_TEMPLATE = document.querySelector('#header').innerHTML;
       const BODY_TEMPLATE = document.querySelector('#body').innerHTML;
-      
+
       const HAS_FOOTER = !!FOOTER_TEMPLATE;
       const HAS_HEADER = !!HEADER_TEMPLATE;
-      
+
       const FOOTER_H = HAS_FOOTER ? document.querySelector('#footer').getBoundingClientRect().height : 0;
       const HEADER_H = HAS_HEADER ? document.querySelector('#header').getBoundingClientRect().height : 0;
 
@@ -292,23 +293,23 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     }
 
     if (HAS_FOOTER) {
-      config.displayHeaderFooter= true,
-      config.margin= {
+      config.displayHeaderFooter = true;
+      config.margin = {
         top: 0,
         right: 0,
         left: 0,
         bottom: FOOTER_H || 40
-      }
+      };
       config.footerTemplate = `<div style="width: 100%; background-color: #fff; font-size: 9px; text-align: center; padding: 5px 0 0 0; font-family: Arial; color: #444;">${FOOTER_TEMPLATE}</div>`;
     }
 
     if (IS_PAGE_NUMBER_VISIBLE) {
-      config.margin= {
+      config.margin = {
         top: 0,
         right: 0,
         left: 0,
         bottom: FOOTER_H ? FOOTER_H + 40 : 40
-      }
+      };
       config.footerTemplate = `<div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
         ${config.footerTemplate}
         <div style="width: 100%; margin-top: 10px; font-size: 9px; text-align: center; padding: 5px 0 0 0; font-family: Arial; color: #444;">
@@ -335,6 +336,12 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
 
   const _pdf = (page, config) => {
     return page.pdf(config);
+  };
+
+  const _docx = async (page, config) => {
+    const pdf = await page.pdf(config);
+    const docx = await CCdocx(pdf, 'docx');
+    return docx;
   };
 
   const processPage = ({
@@ -364,6 +371,18 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     ]);
   };
 
+  const GENERATORS = {
+    jpg: _image,
+    pdf: _pdf,
+    docx: _docx
+  };
+
+  const MIME_TYPES = {
+    jpg: 'image/jpeg',
+    pdf: 'application/pdf',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  };
+
   cluster.task(async ({
     page, data: {
       port,
@@ -378,11 +397,11 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
   }) => {
     const start = Date.now();
     const {
-      printImage
+      printMode
     } = body;
 
-    const generator = printImage ? _image : _pdf;
-    const contentType = printImage ? 'image/jpeg' : 'application/pdf';
+    const generator = GENERATORS[printMode] || _pdf;
+    const contentType = MIME_TYPES[printMode] || 'application/pdf';
 
     const url = urlBuilder({
       port,

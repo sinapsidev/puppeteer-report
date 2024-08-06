@@ -32,6 +32,14 @@ app.register(require('@fastify/static'), {
   prefix: '/print/public/'
 });
 
+const getPrintMode = (body, v1) => {
+  if (!v1) {
+    return body.printMode || 'pdf';
+  }
+
+  return body.printImage ? 'jpg' : 'pdf';
+};
+
 const boot = async (app) => {
   try {
     const cluster = await clusterFactory(MONITORING);
@@ -50,7 +58,7 @@ const boot = async (app) => {
       return { hello: 'Hello from Puppeteer Report' };
     });
 
-    const doPrintRequest = async (req, res) => {
+    const doPrintRequest = async (req, res, v1 = true) => {
       try {
         const authorization = req.headers.authorization;
         const timeZone = req.headers['time-zone'];
@@ -83,9 +91,16 @@ const boot = async (app) => {
 
         const token = authResult.access_token;
 
+        const printMode = getPrintMode(req.body, v1);
+
+        const body = {
+          ...req.body,
+          printMode
+        };
+
         const result = await printer.print({
           port: PORT,
-          body: req.body,
+          body,
           tenantId,
           templateId,
           recordId,
@@ -107,11 +122,11 @@ const boot = async (app) => {
     };
 
     app.post('/print/:tenantId/:templateId/:recordId', async (req, res) => {
-      await doPrintRequest(req, res);
+      await doPrintRequest(req, res, true);
     });
 
     app.post('/print/v2/:tenantId/:templateId/:recordId', async (req, res) => {
-      await doPrintRequest(req, res);
+      await doPrintRequest(req, res, false);
     });
 
     await app.listen({ port: PORT, host: '0.0.0.0' });
