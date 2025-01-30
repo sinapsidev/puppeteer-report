@@ -1,4 +1,7 @@
 # Change Log
+1.27.0 - 30/01/2025
+
+- aggiunge path nei config di puppeteer
 
 1.26.0 - 06/08/2024
 
