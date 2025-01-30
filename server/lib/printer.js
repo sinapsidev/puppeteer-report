@@ -1,6 +1,7 @@
 const timeoutUtils = require('./timeout');
 const urlBuilder = require('./urlBuilder');
 const CCdocx = require('./cloudConvert');
+const os = require('os');
 
 const URL_BLACKLIST = [
   '.stripe',
@@ -285,7 +286,8 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     const config = {
       preferCSSPageSize: true,
       printBackground: true,
-      timeout: 0
+      timeout: 0,
+      path: os.tmpdir()
     };
 
     if (IS_LANDSCAPE) {
