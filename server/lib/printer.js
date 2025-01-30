@@ -1,6 +1,8 @@
 const timeoutUtils = require('./timeout');
 const urlBuilder = require('./urlBuilder');
 const CCdocx = require('./cloudConvert');
+const os = require('os');
+const pathNode = require('path');
 
 const URL_BLACKLIST = [
   '.stripe',
@@ -282,10 +284,17 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       { content: PAGE_CSS }
     );
 
+    const {
+      printMode
+    } = body;
+
+    console.log(Date.now());
+
     const config = {
       preferCSSPageSize: true,
       printBackground: true,
-      timeout: 0
+      timeout: 0,
+      path: pathNode.join(os.tmpdir(), printMode == 'pdf' ? Date.now() + '.pdf' : Date.now() + '.jpg')
     };
 
     if (IS_LANDSCAPE) {
