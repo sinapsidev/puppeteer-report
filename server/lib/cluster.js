@@ -10,6 +10,7 @@ const create = async (monitor) => {
       headless: true,
       waitForInitialPage: false,
       args: [
+        '--full-memory-crash-report',
         '--no-startup-window',
         '--disable-dev-shm-usage',
         '--disable-setuid-sandbox',
