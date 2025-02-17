@@ -17,7 +17,9 @@ const create = async (monitor) => {
         '--ignore-certificate-errors',
         '--no-first-run',
         '--no-sandbox',
-        '--no-zygote'
+        '--no-zygote',
+        '--enable-logging',
+        '--v=1'
       ],
       env: {
         TZ: 'Europe/Rome'
