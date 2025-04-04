@@ -1,4 +1,7 @@
 # Change Log
+1.28.0 - 04/04/2025
+- test add argument --disable-gpu
+
 1.27.0 - 30/01/2025
 
 - aggiunge path nei config di puppeteer

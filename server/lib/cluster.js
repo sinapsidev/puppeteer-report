@@ -10,13 +10,17 @@ const create = async (monitor) => {
       headless: true,
       waitForInitialPage: false,
       args: [
+        '--disable-gpu',
+        '--full-memory-crash-report',
         '--no-startup-window',
         '--disable-dev-shm-usage',
         '--disable-setuid-sandbox',
         '--ignore-certificate-errors',
         '--no-first-run',
         '--no-sandbox',
-        '--no-zygote'
+        '--no-zygote',
+        '--enable-logging',
+        '--v=1'
       ],
       env: {
         TZ: 'Europe/Rome'
