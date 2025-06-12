@@ -2,8 +2,9 @@ pipeline {
     agent any
     environment {
         NEXUS3_CREDS = credentials('nexus3')
-        IMAGE_NAME='docker.snps.it/snps/puppeteer-report'
-        DOCKER_REGISTRY = "docker.snps.it"
+        IMAGE_NAME='891377062216.dkr.ecr.eu-central-1.amazonaws.com/logica/puppeteerreport'
+        //DOCKER_REGISTRY = "docker.snps.it"
+        AWS_PROFILE = "jenkins-ecr-shared"
     }
     stages {
         stage('Extract version from package.json') {
@@ -41,7 +42,7 @@ pipeline {
             }
             steps {
                 sh  """
-                    docker login -u ${NEXUS3_CREDS_USR} -p ${NEXUS3_CREDS_PSW} ${env.DOCKER_REGISTRY}
+                    aws ecr get-login-password --region eu-central-1 --profile ${AWS_PROFILE} | docker login --username AWS --password-stdin 891377062216.dkr.ecr.eu-central-1.amazonaws.com
                     docker push ${IMAGE_NAME}:${env.VERSION}
                     docker push ${IMAGE_NAME}:latest                
                     """
