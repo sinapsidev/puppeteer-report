@@ -1,4 +1,7 @@
 # Change Log
+1.29.0 - 26/06/2025
+- aggiorna Jenkinsfile per ECR
+
 1.28.0 - 04/04/2025
 - test add argument --disable-gpu
 
