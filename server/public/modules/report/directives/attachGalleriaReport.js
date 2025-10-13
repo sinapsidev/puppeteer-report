@@ -11,7 +11,7 @@
 
   const loadImages = async ({ idVista, idRecord, nomeRisorsa, foreignKeyVista, xdbApiService, filesPerCampo, idCampo }) => {
     const q = foreignKeyVista ? (foreignKeyVista + '=%25=' + idRecord) : null;
-    const res = await xdbApiService.getVistaRows(idVista, 10, 0, null, q);
+    const res = await xdbApiService.getVistaRows(idVista, -1, 0, null, q);
     const images = (res?.data?.records || []).filter(file => filesPerCampo.isImage(file.nome));
     return Promise.all(images.map(async image => {
       const url = await filesPerCampo
