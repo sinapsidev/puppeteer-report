@@ -10,7 +10,6 @@
     const queryDomain = urlParams.get('domain');
 
     config.BACKENDURL = queryDomain ? queryDomain + '/' : 'https://logicawebdev2.snps.it/';
-    console.log('config.BACKENDURL', config.BACKENDURL);
     config.BASEAPIURL = config.BACKENDURL + 'api';
     config.BASEHUBURL = config.BACKENDURL + 'hub';
 
