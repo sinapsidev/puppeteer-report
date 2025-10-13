@@ -17,15 +17,7 @@
     };
 
     this.getVistaRows = function (idVista, limit, offset, sort, q) {
-      let urlParams = 'limit=' + limit + '&offset=' + offset;
-
-      if (sort) {
-        urlParams += '&orderBy=' + sort;
-      }
-
-      if (q) {
-        urlParams += '&' + q;
-      }
+      const urlParams = [limit ? `limit=${limit}` : "", offset ? `&offset=${offset}` : "", sort ? `&orderBy=${sort}` : "", q ? `&${q}` : ""].filter((string) => string.length > 0).join("");
 
       const url = `${apiURLs.getBasePath()}/${DATABASEURL}/vista-rows/${idVista}?${urlParams}`;
 
