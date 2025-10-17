@@ -58,12 +58,6 @@
 
     <!-- App JS -->
     <script src="./app.js"></script>
-</head>
-
-<body ng-controller="myController">
-    <div ng-show="!loading && !error">
-        <div class="report-wrapper"></div>
-    </div>
 
     <style>
         .report-wrapper {
@@ -94,6 +88,12 @@
             white-space: pre-line;
         }
     </style>
+</head>
+
+<body ng-controller="myController">
+    <div ng-show="!loading && !error">
+        <div class="report-wrapper"></div>
+    </div>
 
     <div ng-if="loading" class="p-4">
         <p class="text-center" style="font-size: 30px;">Generazione report in corso...</p>
