@@ -33,6 +33,14 @@ const applyNetworkLogging = async (page, logger) => {
 };
 
 const create = async ({ timeout, logger, networkLogging, cluster }) => {
+
+  const getApiAddedStyles = async ({ domain, tenantId, templateId, token, timeZone }) => {
+    console.log('cssApi type', typeof getCssApi)
+    console.log('cssApi value', Object.keys(getCssApi))
+    
+    await getApiCss.getApiTemplateCss({ domain, tenantId, templateId, token, timeZone })
+  }
+
   const preparePage = async ({
     token,
     page,
@@ -467,7 +475,8 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
   };
 
   return {
-    print
+    print,
+    getApiAddedStyles
   };
 };
 
