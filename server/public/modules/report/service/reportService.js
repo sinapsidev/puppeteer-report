@@ -40,9 +40,9 @@
             url: url
           })
         
-        const dataJson = await JSON.parse(response); 
+        const customStyle = await response?.data?.customStyle || ""; 
         
-        return dataJson?.customStyle || "";
+        return customStyle;
       }
 
       const getVisteTemplate = function (id) {
