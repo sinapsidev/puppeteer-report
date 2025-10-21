@@ -274,6 +274,12 @@
               });
             });
 
+            reportService.getApiTemplateCss(parseInt(searchParams.get('idTemplate'), 10)).then((res) => {
+              const styleTag = document.createElement("style");
+              styleTag.textContent = `${res}`;
+              document.head.appendChild(styleTag)
+            })
+
             return campiEditabiliReport.applyValues(valoriCampiEditabili).then(() => {
               const images = body.querySelectorAll('[data-avatar-record]');
 
@@ -293,6 +299,7 @@
                   });
               });
             });
+
           }).catch(function (e) {
             printError(e);
           }).finally(function () {
@@ -312,6 +319,7 @@
               }
             });
           });
+
         } catch (error) {
           printError(error);
         }
