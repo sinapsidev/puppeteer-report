@@ -122,7 +122,10 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       }));
     });
 
-    const { FOOTER_TEMPLATE, HAS_FOOTER, FOOTER_H } = await page.evaluate(() => {
+    const { FOOTER_TEMPLATE, HAS_FOOTER, FOOTER_H } = await page.evaluate((addedStyle) => {
+
+      console.log('---PAGE EVALUATE---', addedStyle)
+
       const SBECCO = 20;
 
       const FOOTER_TEMPLATE = document.querySelector('#footer').innerHTML;
@@ -135,7 +138,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       const FOOTER_H = HAS_FOOTER ? document.querySelector('#footer').getBoundingClientRect().height : 0;
       const HEADER_H = HAS_HEADER ? document.querySelector('#header').getBoundingClientRect().height : 0;
 
-      const getCustomCSS = function (headerHeight) {
+      const getCustomCSS = function (headerHeight, addedStyle) {
         const CUSTOM_CSS = `
           .document-preview__frame__page-break-after {
             width: 100%;
@@ -147,8 +150,6 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             page-break-after: always !important;
           }
 
-          
-  
           .page-header, .page-header-space {
             height: ${headerHeight ? headerHeight + SBECCO : '0'}px;
           }
@@ -190,6 +191,8 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             tfoot {display: table-footer-group;}
             button {display: none;}
             body {margin: 0;}
+
+            ${addedStyle ?? ""}
           }
 
           div[data-ng-repeat]:not(:has(div.avoid-break)) {
@@ -207,16 +210,23 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             orphans: 0;
             widows: 4;
           }
+
+          ${addedStyle ?? ""}
           `;
         return CUSTOM_CSS;
       };
 
-      const CUSTOM_CSS = getCustomCSS(HEADER_H);
+      const CUSTOM_CSS = getCustomCSS(HEADER_H, addedStyle);
+      
+      const newStyleTag = document.createElement("style");
+      
+        newStyleTag.innerHTML = CUSTOM_CSS;
+      document.head.appendChild(newStyleTag)
+      
+      console.log('---DOCUMENT---', `${document.head.innerHTML}`)
 
-      const getHTMLReportFromContent = function (bodyHTML, headerHTML) {
+      const getHTMLReportFromContent = function (bodyHTML, headerHTML) {  
         return `
-            <style>${CUSTOM_CSS}</style>
-        
             <div id="header" class="page-header">
               <div class="standard-padding">${headerHTML}</div>
             </div>
@@ -277,7 +287,6 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
                 </tr>
               </tfoot>
             </table>
-  
           `;
       };
 
@@ -289,14 +298,12 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
         HAS_FOOTER,
         FOOTER_H
       };
-    });
+    }, apiCss);
 
     const IS_LANDSCAPE = WIDTH > HEIGHT;
 
-    // const apiAddedStyles = (() => getApiCss.getApiCssCopy())();
     const PAGE_CSS = `@page { size: ${WIDTH} ${HEIGHT} ${(IS_LANDSCAPE ? 'landscape' : '')}; } ${apiCss}`;
     
-    console.log('PREPARE PAGE apiAddedStyles', PAGE_CSS);
     await page.addStyleTag(
       { content: PAGE_CSS }
     );
