@@ -13,37 +13,39 @@ const factory = ({ fetch, logger }) => {
 
 const getApiTemplateCss = async function ({domain, tenantId, templateId, token, timeZone}) {
   
-  const url = `${domain}/api/v2/${tenantId}/${TEMPLATE_BASE_URL}/${templateId}`;
-
+  const url = `https://${domain}/api/v2/${tenantId}/${TEMPLATE_BASE_URL}/${templateId}`;
+  
   try { 
     const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          Authorization: token,
-          'Time-Zone': timeZone
-        }
+      method: 'GET',
+      headers: {
+        Authorization:`Bearer ${token}`,
+        'Time-Zone': timeZone
+      }
     })
+    
+    console.log('---RESPONSE---', response)
+    if (response.status !== 200) throw new Error('Richiesta completata senza successo ', response);
+    
+    const dataJson = await response.json();
 
-    if (response.status !== 200) throw new Error('Richiesta completata senza successo: stato ', response.status);
+    const customStyle = await dataJson.customStyle;
 
-    const data = await response.data.json();
+    console.log('custom style', customStyle)
 
-    const customStyle = await data.customStyle;
-
-    style = customStyle;    
+    return customStyle;  
   } catch (error) {
     logger.error(error)
+
+    return "";
   }  
   }
 
-  const getApiCssCopy = () => style;
-
   return {
-    getApiTemplateCss: ({domain, tenantId, templateId, token, timeZone}) => getApiTemplateCss({domain, tenantId, templateId, token, timeZone}),
-    getApiCssCopy
+    getApiTemplateCss,
   }
 }
 
-const service = factory({fetch, logger});
+const service = factory({ fetch, logger });
 
 module.exports = service;

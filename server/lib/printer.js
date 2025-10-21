@@ -34,12 +34,15 @@ const applyNetworkLogging = async (page, logger) => {
 };
 
 const create = async ({ timeout, logger, networkLogging, cluster }) => {
+  console.log("create getApiCss type", typeof getApiCss);
 
   const getApiAddedStyles = async ({ domain, tenantId, templateId, token, timeZone }) => {
-    console.log('cssApi type', typeof getCssApi)
-    console.log('cssApi value', Object.keys(getCssApi))
+
+    logger.info('GET API ADDED STYLES OK')
     
-    await getApiCss.getApiTemplateCss({ domain, tenantId, templateId, token, timeZone })
+    const style = await getApiCss.getApiTemplateCss({ domain, tenantId, templateId, token, timeZone });
+
+    return style;
   }
 
   const preparePage = async ({
@@ -47,8 +50,12 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     page,
     url,
     timeZone,
-    body
+    body,
+    apiCss
   }) => {
+    // console.log('PREPARE PAGE getApiCss', Object.keys(getApiCss), (() => getApiCss.getApiCssCopy())());
+    console.log('PREPARE PAGE apiCss',apiCss);
+
     await page.setDefaultNavigationTimeout(0); // disable timeout
     if (networkLogging) {
       await applyNetworkLogging(page, logger);
@@ -200,7 +207,6 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             orphans: 0;
             widows: 4;
           }
-  
           `;
         return CUSTOM_CSS;
       };
@@ -287,8 +293,10 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
 
     const IS_LANDSCAPE = WIDTH > HEIGHT;
 
-    const PAGE_CSS = `@page { size: ${WIDTH} ${HEIGHT} ${(IS_LANDSCAPE ? 'landscape' : '')}; }`;
-
+    // const apiAddedStyles = (() => getApiCss.getApiCssCopy())();
+    const PAGE_CSS = `@page { size: ${WIDTH} ${HEIGHT} ${(IS_LANDSCAPE ? 'landscape' : '')}; } ${apiCss}`;
+    
+    console.log('PREPARE PAGE apiAddedStyles', PAGE_CSS);
     await page.addStyleTag(
       { content: PAGE_CSS }
     );
@@ -367,15 +375,20 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     page,
     url,
     timeZone,
-    body
+    body,
+    apiCss
   }) => {
+    console.log('PROCESS PAGE apiCss', apiCss)
+    // console.log('PROCESS PAGE getApiCss', Object.keys(getApiCss), getApiCss.getApiCssCopy())
+
     return Promise.race([
       preparePage({
         token,
         page,
         url,
         timeZone,
-        body
+        body,
+        apiCss
       }),
       timeoutUtils.resolve(timeout, page).then(() => {
         throw new Error('timeout');
@@ -410,9 +423,14 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       token,
       timeZone,
       body,
-      domain
+      domain,
+      apiCss
     }
   }) => {
+
+    console.log('GET API CSS CLUSTER TASK', apiCss)
+    // console.log('GET API CSS CLUSTER TASK', Object.keys(getApiCss), getApiCss.getApiCssCopy())
+
     const start = Date.now();
     const {
       printMode
@@ -436,7 +454,8 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       page,
       url,
       timeZone,
-      body
+      body,
+      apiCss
     });
 
     const buffer = await generator(page, config);
@@ -460,8 +479,12 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     timeZone,
     body,
     domain,
-    v2
+    v2,
+    apiCss
   }) => {
+    // console.log("print getApiCss type", Object.keys(getApiCss), getApiCss.getApiCssCopy());
+    console.log("print apiCss type", apiCss);
+
     return await cluster.execute({
       port,
       templateId,
@@ -471,7 +494,8 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       timeZone,
       body,
       domain,
-      v2
+      v2,
+      apiCss
     });
   };
 

@@ -38,11 +38,11 @@
           .fetch({
             method: 'GET',
             url: url
-          }).then(function (res) {
-            return res.data;
-          });
+          })
         
-        return response.customStyle;
+        const dataJson = await JSON.parse(response); 
+        
+        return dataJson?.customStyle || "";
       }
 
       const getVisteTemplate = function (id) {
