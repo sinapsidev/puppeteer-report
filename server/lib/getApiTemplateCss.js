@@ -9,36 +9,31 @@ const factory = ({ fetch, logger }) => {
 
   const TEMPLATE_BASE_URL = 'templates';
 
-  let style = "";
+  const getApiTemplateCss = async function ({ domain, tenantId, templateId, token, timeZone }) {
 
-const getApiTemplateCss = async function ({domain, tenantId, templateId, token, timeZone}) {
-  
-  const url = `https://${domain}/api/v2/${tenantId}/${TEMPLATE_BASE_URL}/${templateId}`;
-  
-  try { 
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Authorization:`Bearer ${token}`,
-        'Time-Zone': timeZone
-      }
-    })
-    
-    console.log('---RESPONSE---', response)
-    if (response.status !== 200) throw new Error('Richiesta completata senza successo ', response);
-    
-    const dataJson = await response.json();
+    const url = `https://${domain}/api/v2/${tenantId}/${TEMPLATE_BASE_URL}/${templateId}`;
 
-    const customStyle = await dataJson.customStyle;
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Time-Zone': timeZone
+        }
+      })
 
-    console.log('custom style', customStyle)
+      if (response.status !== 200) throw new Error('Richiesta completata senza successo ', response);
 
-    return customStyle;  
-  } catch (error) {
-    logger.error(error)
+      const dataJson = await response.json();
 
-    return "";
-  }  
+      const customStyle = await dataJson.customStyle;
+
+      return customStyle;
+    } catch (error) {
+      logger.error(error)
+
+      return "";
+    }
   }
 
   return {

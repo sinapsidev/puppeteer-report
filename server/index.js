@@ -49,7 +49,7 @@ const boot = async (app) => {
       cluster,
       logger
     });
-    
+
     app.get('/public', async (req, res) => {
       return res.sendFile('index.html');
     });
@@ -91,7 +91,7 @@ const boot = async (app) => {
 
         const token = authResult.access_token;
 
-        const printerApiStyle = await printer.getApiAddedStyles({domain, tenantId, templateId, token: token, timeZone})
+        const printerApiStyle = await printer.getApiAddedStyles({ domain, tenantId, templateId, token: token, timeZone })
 
         const printMode = getPrintMode(req.body, v1);
 
@@ -131,7 +131,7 @@ const boot = async (app) => {
     app.post('/print/v2/:tenantId/:templateId/:recordId', async (req, res) => {
       await doPrintRequest(req, res, false);
     });
-    
+
     await app.listen({ port: PORT, host: '0.0.0.0' });
     console.log('Puppeteer Report ready with Fastify on port ', PORT);
 

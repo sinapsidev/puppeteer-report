@@ -34,12 +34,9 @@ const applyNetworkLogging = async (page, logger) => {
 };
 
 const create = async ({ timeout, logger, networkLogging, cluster }) => {
-  console.log("create getApiCss type", typeof getApiCss);
 
   const getApiAddedStyles = async ({ domain, tenantId, templateId, token, timeZone }) => {
 
-    logger.info('GET API ADDED STYLES OK')
-    
     const style = await getApiCss.getApiTemplateCss({ domain, tenantId, templateId, token, timeZone });
 
     return style;
@@ -53,8 +50,6 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     body,
     apiCss
   }) => {
-    // console.log('PREPARE PAGE getApiCss', Object.keys(getApiCss), (() => getApiCss.getApiCssCopy())());
-    console.log('PREPARE PAGE apiCss',apiCss);
 
     await page.setDefaultNavigationTimeout(0); // disable timeout
     if (networkLogging) {
@@ -66,7 +61,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     logger.debug(`Passing fields to the page: ${JSON.stringify(valoriCampiEditabili)}`);
 
     await page.evaluateOnNewDocument((token) => {
-      function writeCookie (name, value, options = {}) {
+      function writeCookie(name, value, options = {}) {
         if (!name) {
           return '';
         }
@@ -123,8 +118,6 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     });
 
     const { FOOTER_TEMPLATE, HAS_FOOTER, FOOTER_H } = await page.evaluate((addedStyle) => {
-
-      console.log('---PAGE EVALUATE---', addedStyle)
 
       const SBECCO = 20;
 
@@ -217,15 +210,14 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       };
 
       const CUSTOM_CSS = getCustomCSS(HEADER_H, addedStyle);
-      
-      const newStyleTag = document.createElement("style");
-      
-        newStyleTag.innerHTML = CUSTOM_CSS;
-      document.head.appendChild(newStyleTag)
-      
-      console.log('---DOCUMENT---', `${document.head.innerHTML}`)
 
-      const getHTMLReportFromContent = function (bodyHTML, headerHTML) {  
+      const newStyleTag = document.createElement("style");
+
+      newStyleTag.innerHTML = CUSTOM_CSS;
+      document.head.appendChild(newStyleTag)
+
+      const getHTMLReportFromContent = function (bodyHTML, headerHTML) {
+        
         return `
             <div id="header" class="page-header">
               <div class="standard-padding">${headerHTML}</div>
@@ -303,7 +295,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     const IS_LANDSCAPE = WIDTH > HEIGHT;
 
     const PAGE_CSS = `@page { size: ${WIDTH} ${HEIGHT} ${(IS_LANDSCAPE ? 'landscape' : '')}; } ${apiCss}`;
-    
+
     await page.addStyleTag(
       { content: PAGE_CSS }
     );
@@ -311,8 +303,6 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     const {
       printMode
     } = body;
-
-    console.log(Date.now());
 
     const config = {
       preferCSSPageSize: true,
@@ -385,8 +375,6 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     body,
     apiCss
   }) => {
-    console.log('PROCESS PAGE apiCss', apiCss)
-    // console.log('PROCESS PAGE getApiCss', Object.keys(getApiCss), getApiCss.getApiCssCopy())
 
     return Promise.race([
       preparePage({
@@ -434,10 +422,6 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       apiCss
     }
   }) => {
-
-    console.log('GET API CSS CLUSTER TASK', apiCss)
-    // console.log('GET API CSS CLUSTER TASK', Object.keys(getApiCss), getApiCss.getApiCssCopy())
-
     const start = Date.now();
     const {
       printMode
@@ -489,8 +473,6 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     v2,
     apiCss
   }) => {
-    // console.log("print getApiCss type", Object.keys(getApiCss), getApiCss.getApiCssCopy());
-    console.log("print apiCss type", apiCss);
 
     return await cluster.execute({
       port,
