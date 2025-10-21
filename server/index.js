@@ -49,6 +49,29 @@ const boot = async (app) => {
       cluster,
       logger
     });
+    
+    app.get('/:tenantId/templates/:templateId', async function (req, _res) {
+      const timeZone = req.headers['time-zone'];
+      const domain = req.headers['x-domain'] || 'https://logicawebdev2.snps.it';
+
+      const {
+        tenantId,
+        templateId
+      } = req.params;
+
+       const authResult = await auth.serviceAuth({
+        domain,
+        clientId: CLIENT_ID,
+        clientSecret: CLIENT_SECRET
+       });  
+      
+  const token = req.headers.authorization || authResult.access_token;
+
+    
+      await printer.getApiAddedStyles({ domain, templateId, tenantId, timeZone, token })
+
+      return {url, res: response.json()}
+    })
 
     app.get('/public', async (req, res) => {
       return res.sendFile('index.html');
@@ -128,9 +151,40 @@ const boot = async (app) => {
     app.post('/print/v2/:tenantId/:templateId/:recordId', async (req, res) => {
       await doPrintRequest(req, res, false);
     });
+    
+//     app.get('/:tenantId/templates/:templateId', async function (req, _res) {
+//     const timeZone = req.headers['time-zone'];
+//     const domain = req.headers['x-domain'] || 'logicawebdev2.snps.it';
 
+//     const {
+//       tenantId,
+//       templateId
+//     } = req.params;
+
+//      const authResult = await auth.serviceAuth({
+//       domain,
+//       clientId: CLIENT_ID,
+//       clientSecret: CLIENT_SECRET
+//      });
+// const url = `${domain}/${tenantId}/${TEMPLATE_BASE_URL}/${templateId}`;
+      
+     
+//       const token = authResult.access_token;
+      
+//     const response = await fetch(url, {
+//       method: 'GET',
+//       headers: {
+//         Authorization: token,
+//         'Time-Zone': timeZone
+//       }
+//     })
+    
+//     console.log('INDEX RESPONSE', response.data)
+//     })
+    
     await app.listen({ port: PORT, host: '0.0.0.0' });
     console.log('Puppeteer Report ready with Fastify on port ', PORT);
+
   } catch (e) {
     app.log.error(e);
     logger.error(e);

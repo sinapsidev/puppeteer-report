@@ -13,7 +13,7 @@ const factory = ({ fetch, logger }) => {
 
 const getApiTemplateCss = async function ({domain, tenantId, templateId, token, timeZone}) {
   
-  const url = `${domain}/${tenantId}/${TEMPLATE_BASE_URL}/${templateId}`;
+  const url = `${domain}/api/v2/${tenantId}/${TEMPLATE_BASE_URL}/${templateId}`;
 
   try { 
     const response = await fetch(url, {
@@ -23,10 +23,10 @@ const getApiTemplateCss = async function ({domain, tenantId, templateId, token, 
           'Time-Zone': timeZone
         }
     })
-    
+
     if (response.status !== 200) throw new Error('Richiesta completata senza successo: stato ', response.status);
 
-    const data = await response.data;
+    const data = await response.data.json();
 
     const customStyle = await data.customStyle;
 

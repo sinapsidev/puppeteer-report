@@ -3,6 +3,7 @@ const urlBuilder = require('./urlBuilder');
 const CCdocx = require('./cloudConvert');
 const os = require('os');
 const pathNode = require('path');
+const getApiCss = require('./getApiTemplateCss')
 
 const URL_BLACKLIST = [
   '.stripe',
