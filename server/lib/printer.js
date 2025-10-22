@@ -3,6 +3,7 @@ const urlBuilder = require('./urlBuilder');
 const CCdocx = require('./cloudConvert');
 const os = require('os');
 const pathNode = require('path');
+const getApiCss = require('./getApiTemplateCss')
 
 const URL_BLACKLIST = [
   '.stripe',
@@ -33,13 +34,23 @@ const applyNetworkLogging = async (page, logger) => {
 };
 
 const create = async ({ timeout, logger, networkLogging, cluster }) => {
+
+  const getApiAddedStyles = async ({ domain, tenantId, templateId, token, timeZone }) => {
+
+    const style = await getApiCss.getApiTemplateCss({ domain, tenantId, templateId, token, timeZone });
+
+    return style;
+  }
+
   const preparePage = async ({
     token,
     page,
     url,
     timeZone,
-    body
+    body,
+    apiCss
   }) => {
+
     await page.setDefaultNavigationTimeout(0); // disable timeout
     if (networkLogging) {
       await applyNetworkLogging(page, logger);
@@ -50,7 +61,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     logger.debug(`Passing fields to the page: ${JSON.stringify(valoriCampiEditabili)}`);
 
     await page.evaluateOnNewDocument((token) => {
-      function writeCookie (name, value, options = {}) {
+      function writeCookie(name, value, options = {}) {
         if (!name) {
           return '';
         }
@@ -106,7 +117,8 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       }));
     });
 
-    const { FOOTER_TEMPLATE, HAS_FOOTER, FOOTER_H } = await page.evaluate(() => {
+    const { FOOTER_TEMPLATE, HAS_FOOTER, FOOTER_H } = await page.evaluate((addedStyle) => {
+
       const SBECCO = 20;
 
       const FOOTER_TEMPLATE = document.querySelector('#footer').innerHTML;
@@ -119,7 +131,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       const FOOTER_H = HAS_FOOTER ? document.querySelector('#footer').getBoundingClientRect().height : 0;
       const HEADER_H = HAS_HEADER ? document.querySelector('#header').getBoundingClientRect().height : 0;
 
-      const getCustomCSS = function (headerHeight) {
+      const getCustomCSS = function (headerHeight, addedStyle) {
         const CUSTOM_CSS = `
           .document-preview__frame__page-break-after {
             width: 100%;
@@ -131,8 +143,6 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             page-break-after: always !important;
           }
 
-          
-  
           .page-header, .page-header-space {
             height: ${headerHeight ? headerHeight + SBECCO : '0'}px;
           }
@@ -174,6 +184,8 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             tfoot {display: table-footer-group;}
             button {display: none;}
             body {margin: 0;}
+
+            ${addedStyle ?? ""}
           }
 
           div[data-ng-repeat]:not(:has(div.avoid-break)) {
@@ -191,17 +203,22 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             orphans: 0;
             widows: 4;
           }
-  
+
+          ${addedStyle ?? ""}
           `;
         return CUSTOM_CSS;
       };
 
-      const CUSTOM_CSS = getCustomCSS(HEADER_H);
+      const CUSTOM_CSS = getCustomCSS(HEADER_H, addedStyle);
+
+      const newStyleTag = document.createElement("style");
+
+      newStyleTag.innerHTML = CUSTOM_CSS;
+      document.head.appendChild(newStyleTag)
 
       const getHTMLReportFromContent = function (bodyHTML, headerHTML) {
-        return `
-            <style>${CUSTOM_CSS}</style>
         
+        return `
             <div id="header" class="page-header">
               <div class="standard-padding">${headerHTML}</div>
             </div>
@@ -262,7 +279,6 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
                 </tr>
               </tfoot>
             </table>
-  
           `;
       };
 
@@ -274,11 +290,11 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
         HAS_FOOTER,
         FOOTER_H
       };
-    });
+    }, apiCss);
 
     const IS_LANDSCAPE = WIDTH > HEIGHT;
 
-    const PAGE_CSS = `@page { size: ${WIDTH} ${HEIGHT} ${(IS_LANDSCAPE ? 'landscape' : '')}; }`;
+    const PAGE_CSS = `@page { size: ${WIDTH} ${HEIGHT} ${(IS_LANDSCAPE ? 'landscape' : '')}; } ${apiCss}`;
 
     await page.addStyleTag(
       { content: PAGE_CSS }
@@ -287,8 +303,6 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     const {
       printMode
     } = body;
-
-    console.log(Date.now());
 
     const config = {
       preferCSSPageSize: true,
@@ -358,15 +372,18 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     page,
     url,
     timeZone,
-    body
+    body,
+    apiCss
   }) => {
+
     return Promise.race([
       preparePage({
         token,
         page,
         url,
         timeZone,
-        body
+        body,
+        apiCss
       }),
       timeoutUtils.resolve(timeout, page).then(() => {
         throw new Error('timeout');
@@ -401,7 +418,8 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       token,
       timeZone,
       body,
-      domain
+      domain,
+      apiCss
     }
   }) => {
     const start = Date.now();
@@ -427,7 +445,8 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       page,
       url,
       timeZone,
-      body
+      body,
+      apiCss
     });
 
     const buffer = await generator(page, config);
@@ -451,8 +470,10 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     timeZone,
     body,
     domain,
-    v2
+    v2,
+    apiCss
   }) => {
+
     return await cluster.execute({
       port,
       templateId,
@@ -462,12 +483,14 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       timeZone,
       body,
       domain,
-      v2
+      v2,
+      apiCss
     });
   };
 
   return {
-    print
+    print,
+    getApiAddedStyles
   };
 };
 

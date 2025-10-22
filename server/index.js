@@ -62,7 +62,7 @@ const boot = async (app) => {
       try {
         const authorization = req.headers.authorization;
         const timeZone = req.headers['time-zone'];
-        const domain = req.headers['x-domain'] || 'logicaweb.snps.it';
+        const domain = req.headers['x-domain'] || 'logicawebdev2.snps.it';
 
         const {
           tenantId,
@@ -91,6 +91,8 @@ const boot = async (app) => {
 
         const token = authResult.access_token;
 
+        const printerApiStyle = await printer.getApiAddedStyles({ domain, tenantId, templateId, token: token, timeZone })
+
         const printMode = getPrintMode(req.body, v1);
 
         const body = {
@@ -106,7 +108,8 @@ const boot = async (app) => {
           recordId,
           token,
           domain,
-          timeZone
+          timeZone,
+          apiCss: printerApiStyle
         });
 
         const {
@@ -131,6 +134,7 @@ const boot = async (app) => {
 
     await app.listen({ port: PORT, host: '0.0.0.0' });
     console.log('Puppeteer Report ready with Fastify on port ', PORT);
+
   } catch (e) {
     app.log.error(e);
     logger.error(e);
