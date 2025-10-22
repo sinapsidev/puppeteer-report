@@ -1,4 +1,7 @@
 # Change Log
+1.30.0 - 22/10/2025
+- Feat: possibilità di inserire stile css proveniente da client (Rif.Int. 2025/ 4116)
+
 1.29.0 - 26/06/2025
 - aggiorna Jenkinsfile per ECR
 
