@@ -214,7 +214,8 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       const newStyleTag = document.createElement("style");
 
       newStyleTag.innerHTML = CUSTOM_CSS;
-      document.head.appendChild(newStyleTag)
+      const currentStyle = document.head.style;
+      currentStyle.textContent = CUSTOM_CSS;
 
       const getHTMLReportFromContent = function (bodyHTML, headerHTML) {
         
@@ -294,7 +295,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
 
     const IS_LANDSCAPE = WIDTH > HEIGHT;
 
-    const PAGE_CSS = `@page { size: ${WIDTH} ${HEIGHT} ${(IS_LANDSCAPE ? 'landscape' : '')}; } ${apiCss}`;
+    const PAGE_CSS = `@page { size: ${WIDTH} ${HEIGHT} ${(IS_LANDSCAPE ? 'landscape' : '')}; }`;
 
     await page.addStyleTag(
       { content: PAGE_CSS }
