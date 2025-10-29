@@ -1,4 +1,7 @@
 # Change Log
+1.31.0 - 28/10/2025
+- fix(#4330): sistema  stili in pagine report
+
 1.30.0 - 22/10/2025
 - Feat: possibilità di inserire stile css proveniente da client (Rif.Int. 2025/ 4116)
 
