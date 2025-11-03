@@ -1,4 +1,7 @@
 # Change Log
+1.32.0 - 28/10/2025
+- fix: reports: ripristino ripetizione header e contenuto in interruzione pagine (Rif. Int. 2025/ 4393)
+
 1.31.0 - 28/10/2025
 - fix(#4330): sistema  stili in pagine report
 

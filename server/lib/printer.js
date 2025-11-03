@@ -208,18 +208,13 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
           `;
         return CUSTOM_CSS;
       };
-
+            
       const CUSTOM_CSS = getCustomCSS(HEADER_H, addedStyle);
-
-      const newStyleTag = document.createElement("style");
-
-      newStyleTag.innerHTML = CUSTOM_CSS;
-      const currentStyle = document.head.style;
-      currentStyle.textContent = CUSTOM_CSS;
 
       const getHTMLReportFromContent = function (bodyHTML, headerHTML) {
         
         return `
+        <style>${CUSTOM_CSS}</style>
             <div id="header" class="page-header">
               <div class="standard-padding">${headerHTML}</div>
             </div>
