@@ -58,8 +58,10 @@
 
     <!-- App JS -->
     <script src="./app.js"></script>
+</head>
 
-    <style>
+<body ng-controller="myController">
+     <style>
         .report-wrapper {
             position: absolute;
             top: 0;
@@ -88,9 +90,7 @@
             white-space: pre-line;
         }
     </style>
-</head>
-
-<body ng-controller="myController">
+    
     <div ng-show="!loading && !error">
         <div class="report-wrapper"></div>
     </div>

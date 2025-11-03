@@ -138,7 +138,7 @@
           if (error && error.message) {
             return error.message;
           }
-          return 'Errore sconosciuto';
+          return `Errore sconosciuto: ${error.textContent}`;
         };
 
         const printError = e => {
@@ -275,9 +275,21 @@
             });
 
             reportService.getApiTemplateCss(parseInt(searchParams.get('idTemplate'), 10)).then((res) => {
-              const styleTag = document.createElement("style");
-              styleTag.textContent = `${res}`;
-              document.head.appendChild(styleTag)
+              const withPrintInstructions = res.length > 0 ? `@media print {
+             ${res} 
+            }` : '';
+              
+              const styleTags = document.querySelectorAll("style");
+              const styleTag = styleTags[styleTags.length - 1];
+
+              if (!styleTag) {
+                const newStyleTag = document.createElement('style');
+                newStyleTag.textContent = res;
+                document.head.appendChild(newStyleTag)
+              } else {
+                styleTag.textContent = `${styleTag.textContent}\n${res}\n${withPrintInstructions}`;
+              }
+
             })
 
             return campiEditabiliReport.applyValues(valoriCampiEditabili).then(() => {
