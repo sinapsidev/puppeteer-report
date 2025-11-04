@@ -138,7 +138,7 @@
           if (error && error.message) {
             return error.message;
           }
-          return `Errore sconosciuto: ${error.textContent}`;
+          return `Errore sconosciuto: ${error.jsonValue()}`;
         };
 
         const printError = e => {
