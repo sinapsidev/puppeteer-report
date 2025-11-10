@@ -170,6 +170,18 @@
           return asNumsArray;
         }
 
+        const validateIdRecordParam = (idRecord) => {
+              if (!idRecord) {
+                throw new Error('idRecord mancante', idRecord);
+              };
+
+              if(Array.isArray(idRecord)) {
+                return `=%25IN=${idRecord.toString()}`;
+              }
+
+              return `=%25=${idRecord}`;
+            }
+
         try {
           const url = new URL(window.location.href);
           const searchParams = url.searchParams;
@@ -203,8 +215,13 @@
             Object.assign($scope, {
               infoBase
             });
-            $scope.infoBase.idRecord = idRecord;
 
+            Object.assign($scope.infoBase, Array.isArray(idRecord) ? {
+              idRecords: idRecord,
+            } : {
+              idRecord
+            });
+            
             idScheda = reportHelpers.getIdScheda(template);
             idViste = reportHelpers.getIdViste(template);
 
@@ -221,18 +238,6 @@
               })
             } else if (idScheda && !Array.isArray(idRecord)) {
               promises.push(xdbApiService.getValoriCampiScheda(idScheda, idRecord));
-            }
- 
-            const validateIdRecordParam = (idRecord) => {
-              if (!idRecord) {
-                throw new Error('idRecord mancante', idRecord);
-              };
-
-              if(Array.isArray(idRecord)) {
-                return `=%25IN=${idRecord.toString()}`;
-              }
-
-              return `=%25=${idRecord}`;
             }
 
             idViste.forEach(function (idVista) {
@@ -308,7 +313,7 @@
               const filtroPerCampo = primaFoto.dataset.filtro;
 
               // genere la query per andare a recuperare i dati per una persona specifica
-              const q = filtroPerCampo ? (filtroPerCampo + '=%25=' + idRecord) : null;
+              const q = filtroPerCampo ? `${filtroPerCampo}${validateIdRecordParam(idRecord)}` : null;
               xdbApiService.getVistaRows(idVista, 1, 0, null, q).then((res) => {
                 const records = res.data.records ?? [];
                 const image = records.filter(file => filesPerCampo.isImage(file.nome));
