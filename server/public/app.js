@@ -199,10 +199,22 @@
               promises.push(xdbApiService.getValoriCampiScheda(idScheda, idRecord));
             }
 
+            const validateIdRecordParam = (idRecord) => {
+              if (!idRecord) {
+                throw new Error('idRecord mancante');
+              };
+
+              if(idRecord.includes('%25')) {
+                return `=${idRecord}`;
+              }
+
+              return `=%25=${idRecord}`;
+            }
+
             idViste.forEach(function (idVista) {
               const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === idVista; }) || {};
               const foreignKeyVista = vistaCorrelata.campoVistaPerFiltro;
-              const q = foreignKeyVista ? (foreignKeyVista + '=%25=' + idRecord) : null;
+              const q = foreignKeyVista ? `${foreignKeyVista}${validateIdRecordParam(idRecord)}` : null;
               const limit = q ? -1 : 1000;
               promises.push(xdbApiService.getVistaRows(idVista, limit, 0, null, q));
             });
@@ -278,7 +290,7 @@
               const withPrintInstructions = res.length > 0 ? `@media print {
              ${res} 
             }` : '';
-              
+
               const styleTags = document.querySelectorAll("style");
               const styleTag = styleTags[styleTags.length - 1];
 
