@@ -150,12 +150,31 @@
           $scope.error = message;
         };
 
+        const getValidIdRecord = (searchParams) => {
+          if (!searchParams) throw new Error("SearchParams assenti");
+
+          const idRecordParam = searchParams.get('idRecord');
+
+          if (!idRecordParam) throw new Error("Parametro idRecord assente");
+          
+          const hasQueryParamsValues = [...idRecordParam.matchAll(/(%25|IN|=|%3D|,)/g)]
+
+          if(!hasQueryParamsValues?.length) {
+            return parseInt(idRecordParam, 10);
+          }
+
+          const withoutInclusion = idRecordParam.split(/(%25|IN|=|%3D|,|%)/).filter((subStr) => typeof subStr === 'string' && !subStr.match(/(%25|IN|=|%3D|,|%)/));
+          const asStringsArray = withoutInclusion.filter(str => typeof str === 'string' && str.match(/[0-9]/));
+          const asNumsArray = asStringsArray.map(str => parseInt(str, 10));
+
+          return asNumsArray;
+        }
+
         try {
           const url = new URL(window.location.href);
-          // console.log('url,', url.toString())
           const searchParams = url.searchParams;
           const idTemplate = parseInt(searchParams.get('idTemplate'), 10);
-          const idRecord = searchParams.get('idRecord');
+          const idRecord = (() => getValidIdRecord(searchParams))();
           const tenantId = parseInt(searchParams.get('tenantId'), 10);
 
           currentUser.changeTenant(tenantId);
@@ -196,28 +215,30 @@
             infoScheda = res;
 
             const promises = [];
-            if (idScheda) {
+            if (idScheda && Array.isArray(idRecord)) {
+              idRecord.forEach((idR) => {
+                promises.push(xdbApiService.getValoriCampiScheda(idScheda, idR));
+              })
+            } else if (idScheda && !Array.isArray(idRecord)) {
               promises.push(xdbApiService.getValoriCampiScheda(idScheda, idRecord));
             }
-
+ 
             const validateIdRecordParam = (idRecord) => {
               if (!idRecord) {
                 throw new Error('idRecord mancante', idRecord);
               };
 
-              if(!idRecord.includes('%25')) {
-                return `=${idRecord}`;
+              if(Array.isArray(idRecord)) {
+                return `=%25IN=${idRecord.toString()}`;
               }
 
               return `=%25=${idRecord}`;
             }
 
             idViste.forEach(function (idVista) {
-              // console.log('idVista', idVista)
               const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === idVista; }) || {};
               const foreignKeyVista = vistaCorrelata.campoVistaPerFiltro;
               const q = foreignKeyVista ? `${foreignKeyVista}${validateIdRecordParam(idRecord)}` : null;
-              // console.log('idViste.forEach q', q)
               const limit = q ? -1 : 1000;
               promises.push(xdbApiService.getVistaRows(idVista, limit, 0, null, q));
             });
