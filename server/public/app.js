@@ -152,9 +152,10 @@
 
         try {
           const url = new URL(window.location.href);
+          // console.log('url,', url.toString())
           const searchParams = url.searchParams;
           const idTemplate = parseInt(searchParams.get('idTemplate'), 10);
-          const idRecord = parseInt(searchParams.get('idRecord'), 10);
+          const idRecord = searchParams.get('idRecord');
           const tenantId = parseInt(searchParams.get('tenantId'), 10);
 
           currentUser.changeTenant(tenantId);
@@ -201,10 +202,10 @@
 
             const validateIdRecordParam = (idRecord) => {
               if (!idRecord) {
-                throw new Error('idRecord mancante');
+                throw new Error('idRecord mancante', idRecord);
               };
 
-              if(idRecord.includes('%25')) {
+              if(!idRecord.includes('%25')) {
                 return `=${idRecord}`;
               }
 
@@ -212,9 +213,11 @@
             }
 
             idViste.forEach(function (idVista) {
+              // console.log('idVista', idVista)
               const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === idVista; }) || {};
               const foreignKeyVista = vistaCorrelata.campoVistaPerFiltro;
               const q = foreignKeyVista ? `${foreignKeyVista}${validateIdRecordParam(idRecord)}` : null;
+              // console.log('idViste.forEach q', q)
               const limit = q ? -1 : 1000;
               promises.push(xdbApiService.getVistaRows(idVista, limit, 0, null, q));
             });
