@@ -248,8 +248,21 @@
             }
           }).then(function (res) {
             if (res && idScheda) {
-              const resScheda = res.splice(0, 1);
-              Object.assign($scope, reportHelpers.mapSchedaToReportData(infoScheda, resScheda[0].data));
+              const assignResultsToScope = (res) => {
+                if (!Array.isArray(idRecord)) {
+                  const resScheda = res.splice(0, 1);
+
+                  return Object.assign($scope, reportHelpers.mapSchedaToReportData(infoScheda, resScheda[0].data));
+                }
+
+                const resScheda = res.splice(0, idRecord.length);
+
+                return resScheda.forEach((record) => {
+                  Object.assign($scope, reportHelpers.mapSchedaToReportData(infoScheda, record.data));
+                })
+              };
+              
+              assignResultsToScope(res);
             }
 
             if (res && res.length) {
