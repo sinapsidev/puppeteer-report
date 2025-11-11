@@ -105,7 +105,7 @@
     'reportApp.common',
     'reportApp.files',
     'reportApp.report',
-    'reportApp.xdb'
+    'reportApp.xdb',
   ]);
 
   window.angular.module('reportApp')
@@ -120,6 +120,7 @@
       'storageService',
       'domUtilsService',
       'filesPerCampo',
+      'manageSchedeIdRecords',
       function (
         $scope,
         avatars,
@@ -130,7 +131,8 @@
         campiEditabiliReport,
         storageService,
         domUtilsService,
-        filesPerCampo
+        filesPerCampo,
+        manageSchedeIdRecords
       ) {
         const ID_SCHEDA_CONFIGURAZIONE = 90;
 
@@ -150,245 +152,213 @@
           $scope.error = message;
         };
 
-        const getValidIdRecord = (searchParams) => {
-          if (!searchParams) throw new Error("SearchParams assenti");
+        try {
+            const url = new URL(window.location.href);
+            const searchParams = url.searchParams;
+            const idTemplate = parseInt(searchParams.get('idTemplate'), 10);
+            const idRecord = manageSchedeIdRecords.getValidIdRecord(searchParams);
+            const tenantId = parseInt(searchParams.get('tenantId'), 10);
 
-          const idRecordParam = searchParams.get('idRecord');
+            currentUser.changeTenant(tenantId);
 
-          if (!idRecordParam) throw new Error("Parametro idRecord assente");
-          
-          const hasQueryParamsValues = [...idRecordParam.matchAll(/(%25|IN|=|%3D|,)/g)]
+            $scope.stampaDataOra = () => window.moment().toDate();
 
-          if(!hasQueryParamsValues?.length) {
-            return parseInt(idRecordParam, 10);
-          }
+            let idScheda;
+            let infoScheda;
+            let idViste;
+            let template;
+            let visteCorrelate;
+            let infoBase;
 
-          const withoutInclusion = idRecordParam.split(/(%25|IN|=|%3D|,|%)/).filter((subStr) => typeof subStr === 'string' && !subStr.match(/(%25|IN|=|%3D|,|%)/));
-          const asStringsArray = withoutInclusion.filter(str => typeof str === 'string' && str.match(/[0-9]/));
-          const asNumsArray = asStringsArray.map(str => parseInt(str, 10));
+            $scope.loading = true;
+            $scope.error = false;
 
-          return asNumsArray;
-        }
+            Promise.all([
+              reportService.getTemplate(idTemplate),
+              reportService.getVisteTemplate(idTemplate),
+              reportService.getInfoBase()
+            ]).then(function (res) {
+              template = res[0];
 
-        const validateIdRecordParam = (idRecord) => {
-              if (!idRecord) {
-                throw new Error('idRecord mancante', idRecord);
-              };
+              visteCorrelate = res[1].viste || [];
+              infoBase = res[2];
+              Object.assign($scope, {
+                infoBase
+              });
 
-              if(Array.isArray(idRecord)) {
-                return `=%25IN=${idRecord.toString()}`;
+              Object.assign($scope.infoBase, Array.isArray(idRecord) ? {
+                idRecords: idRecord,
+              } : {
+                idRecord
+              });
+
+              idScheda = reportHelpers.getIdScheda(template);
+              idViste = reportHelpers.getIdViste(template);
+
+              idViste = [...new Set(idViste)];
+
+              return reportService.getDatiSchedaDiRiferimento(idScheda);
+            }).then(function (res) {
+              infoScheda = res;
+
+              const promises = [];
+              if (idScheda && Array.isArray(idRecord)) {
+                idRecord.forEach((idR) => {
+                  promises.push(xdbApiService.getValoriCampiScheda(idScheda, idR));
+                })
+              } else if (idScheda && !Array.isArray(idRecord)) {
+                promises.push(xdbApiService.getValoriCampiScheda(idScheda, idRecord));
               }
 
-              return `=%25=${idRecord}`;
-            }
+              idViste.forEach(function (idVista) {
+                const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === idVista; }) || {};
+                const foreignKeyVista = vistaCorrelata.campoVistaPerFiltro;
+                const q = foreignKeyVista ? `${foreignKeyVista}${manageSchedeIdRecords.validateIdRecordParam(idRecord)}` : null;
+                const limit = q ? -1 : 1000;
+                promises.push(xdbApiService.getVistaRows(idVista, limit, 0, null, q));
+              });
 
-        try {
-          const url = new URL(window.location.href);
-          const searchParams = url.searchParams;
-          const idTemplate = parseInt(searchParams.get('idTemplate'), 10);
-          const idRecord = (() => getValidIdRecord(searchParams))();
-          const tenantId = parseInt(searchParams.get('tenantId'), 10);
+              if (promises.length) {
+                return Promise.all(promises);
+              }
+            }).then(function (res) {
+              if (res && idScheda) {
+                const assignResultsToScope = (res) => {
+                  if (!Array.isArray(idRecord)) {
+                    const resScheda = res.splice(0, 1);
 
-          currentUser.changeTenant(tenantId);
+                    return Object.assign($scope, reportHelpers.mapSchedaToReportData(infoScheda, resScheda[0].data));
+                  }
 
-          $scope.stampaDataOra = () => window.moment().toDate();
+                  const resScheda = res.splice(0, idRecord.length);
 
-          let idScheda;
-          let infoScheda;
-          let idViste;
-          let template;
-          let visteCorrelate;
-          let infoBase;
-
-          $scope.loading = true;
-          $scope.error = false;
-
-          Promise.all([
-            reportService.getTemplate(idTemplate),
-            reportService.getVisteTemplate(idTemplate),
-            reportService.getInfoBase()
-          ]).then(function (res) {
-            template = res[0];
-
-            visteCorrelate = res[1].viste || [];
-            infoBase = res[2];
-            Object.assign($scope, {
-              infoBase
-            });
-
-            Object.assign($scope.infoBase, Array.isArray(idRecord) ? {
-              idRecords: idRecord,
-            } : {
-              idRecord
-            });
-            
-            idScheda = reportHelpers.getIdScheda(template);
-            idViste = reportHelpers.getIdViste(template);
-
-            idViste = [...new Set(idViste)];
-
-            return reportService.getDatiSchedaDiRiferimento(idScheda);
-          }).then(function (res) {
-            infoScheda = res;
-
-            const promises = [];
-            if (idScheda && Array.isArray(idRecord)) {
-              idRecord.forEach((idR) => {
-                promises.push(xdbApiService.getValoriCampiScheda(idScheda, idR));
-              })
-            } else if (idScheda && !Array.isArray(idRecord)) {
-              promises.push(xdbApiService.getValoriCampiScheda(idScheda, idRecord));
-            }
-
-            idViste.forEach(function (idVista) {
-              const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === idVista; }) || {};
-              const foreignKeyVista = vistaCorrelata.campoVistaPerFiltro;
-              const q = foreignKeyVista ? `${foreignKeyVista}${validateIdRecordParam(idRecord)}` : null;
-              const limit = q ? -1 : 1000;
-              promises.push(xdbApiService.getVistaRows(idVista, limit, 0, null, q));
-            });
-
-            if (promises.length) {
-              return Promise.all(promises);
-            }
-          }).then(function (res) {
-            if (res && idScheda) {
-              const assignResultsToScope = (res) => {
-                if (!Array.isArray(idRecord)) {
-                  const resScheda = res.splice(0, 1);
-
-                  return Object.assign($scope, reportHelpers.mapSchedaToReportData(infoScheda, resScheda[0].data));
-                }
-
-                const resScheda = res.splice(0, idRecord.length);
-
-                return resScheda.forEach((record) => {
-                  Object.assign($scope, reportHelpers.mapSchedaToReportData(infoScheda, record.data));
-                })
-              };
-              
-              assignResultsToScope(res);
-            }
-
-            if (res && res.length) {
-              res.forEach(function (vista, index) {
-                const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === idViste[index]; }) || {};
-
-                const infoVista = {
-                  idVista: idViste[index],
-                  etichettaVista: vistaCorrelata.etichettaVista
+                  return resScheda.forEach((record) => {
+                    Object.assign($scope, reportHelpers.mapSchedaToReportData(infoScheda, record.data));
+                  })
                 };
 
-                Object.assign($scope, reportHelpers.mapVistaToReportData(infoVista, vista.data));
-              });
-            }
+                assignResultsToScope(res);
+              }
 
-            const body = document.querySelector('.report-wrapper');
-            const elements = $compile(template)($scope);
+              if (res && res.length) {
+                res.forEach(function (vista, index) {
+                  const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === idViste[index]; }) || {};
 
-            body.innerHTML = '';
+                  const infoVista = {
+                    idVista: idViste[index],
+                    etichettaVista: vistaCorrelata.etichettaVista
+                  };
 
-            Array.from(elements).forEach(element => {
-              body.appendChild(element);
-            });
-
-            const valoriCampiEditabili = storageService.loadLocalStorage('__valoriCampiEditabili') || {};
-
-            const div = document.createElement('div');
-            div.innerHTML = JSON.stringify(valoriCampiEditabili);
-            body.appendChild(div);
-
-            domUtilsService.waitForSelector('[data-attach-logo-aziendale]').then((reportCompanyLogo) => {
-              const ID_RECORD = 1;
-              avatars.get(ID_SCHEDA_CONFIGURAZIONE, ID_RECORD)
-                .then((url) => {
-                  reportCompanyLogo.src = `${url}`;
+                  Object.assign($scope, reportHelpers.mapVistaToReportData(infoVista, vista.data));
                 });
-            });
+              }
 
-            domUtilsService.waitForSelector('[data-prima-foto-report]').then((primaFoto) => {
-              const idVista = primaFoto.dataset.primaFotoReport;
-              const nomeRisorsa = primaFoto.dataset.risorsa;
-              const idCampo = primaFoto.dataset.campo;
-              const filtroPerCampo = primaFoto.dataset.filtro;
+              const body = document.querySelector('.report-wrapper');
+              const elements = $compile(template)($scope);
 
-              // genere la query per andare a recuperare i dati per una persona specifica
-              const q = filtroPerCampo ? `${filtroPerCampo}${validateIdRecordParam(idRecord)}` : null;
-              xdbApiService.getVistaRows(idVista, 1, 0, null, q).then((res) => {
-                const records = res.data.records ?? [];
-                const image = records.filter(file => filesPerCampo.isImage(file.nome));
-                filesPerCampo
-                  .download(
-                    nomeRisorsa,
-                    image[0].ID,
-                    idCampo
-                  ).then((url) => {
-                    primaFoto.src = `${url}`;
+              body.innerHTML = '';
+
+              Array.from(elements).forEach(element => {
+                body.appendChild(element);
+              });
+
+              const valoriCampiEditabili = storageService.loadLocalStorage('__valoriCampiEditabili') || {};
+
+              const div = document.createElement('div');
+              div.innerHTML = JSON.stringify(valoriCampiEditabili);
+              body.appendChild(div);
+
+              domUtilsService.waitForSelector('[data-attach-logo-aziendale]').then((reportCompanyLogo) => {
+                const ID_RECORD = 1;
+                avatars.get(ID_SCHEDA_CONFIGURAZIONE, ID_RECORD)
+                  .then((url) => {
+                    reportCompanyLogo.src = `${url}`;
                   });
               });
-            });
 
-            reportService.getApiTemplateCss(parseInt(searchParams.get('idTemplate'), 10)).then((res) => {
-              const withPrintInstructions = res.length > 0 ? `@media print {
+              domUtilsService.waitForSelector('[data-prima-foto-report]').then((primaFoto) => {
+                const idVista = primaFoto.dataset.primaFotoReport;
+                const nomeRisorsa = primaFoto.dataset.risorsa;
+                const idCampo = primaFoto.dataset.campo;
+                const filtroPerCampo = primaFoto.dataset.filtro;
+
+                // genere la query per andare a recuperare i dati per una persona specifica
+                const q = filtroPerCampo ? `${filtroPerCampo}${manageSchedeIdRecords.validateIdRecordParam(idRecord)}` : null;
+                xdbApiService.getVistaRows(idVista, 1, 0, null, q).then((res) => {
+                  const records = res.data.records ?? [];
+                  const image = records.filter(file => filesPerCampo.isImage(file.nome));
+                  filesPerCampo
+                    .download(
+                      nomeRisorsa,
+                      image[0].ID,
+                      idCampo
+                    ).then((url) => {
+                      primaFoto.src = `${url}`;
+                    });
+                });
+              });
+
+              reportService.getApiTemplateCss(parseInt(searchParams.get('idTemplate'), 10)).then((res) => {
+                const withPrintInstructions = res.length > 0 ? `@media print {
              ${res} 
             }` : '';
 
-              const styleTags = document.querySelectorAll("style");
-              const styleTag = styleTags[styleTags.length - 1];
+                const styleTags = document.querySelectorAll("style");
+                const styleTag = styleTags[styleTags.length - 1];
 
-              if (!styleTag) {
-                const newStyleTag = document.createElement('style');
-                newStyleTag.textContent = res;
-                document.head.appendChild(newStyleTag)
-              } else {
-                styleTag.textContent = `${styleTag.textContent}\n${res}\n${withPrintInstructions}`;
-              }
+                if (!styleTag) {
+                  const newStyleTag = document.createElement('style');
+                  newStyleTag.textContent = res;
+                  document.head.appendChild(newStyleTag)
+                } else {
+                  styleTag.textContent = `${styleTag.textContent}\n${res}\n${withPrintInstructions}`;
+                }
 
-            })
+              })       
 
-            return campiEditabiliReport.applyValues(valoriCampiEditabili).then(() => {
-              const images = body.querySelectorAll('[data-avatar-record]');
+              return campiEditabiliReport.applyValues(valoriCampiEditabili).then(() => {
+                const images = body.querySelectorAll('[data-avatar-record]');
 
-              images.forEach(image => {
-                const idSschedaPerAvatar = image.dataset.avatarRecord || idScheda;
-                avatars
-                  .get(idSschedaPerAvatar, idRecord)
-                  .then(url => {
-                    const div = document.createElement('div');
-                    div.style.width = `${image.width}px`;
-                    div.style.height = `${image.height}px`;
-                    div.style.backgroundImage = `url('${url}')`;
-                    div.style.backgroundPosition = 'center';
-                    div.style.backgroundSize = 'cover';
+                images.forEach(image => {
+                  const idSschedaPerAvatar = image.dataset.avatarRecord || idScheda;
+                  avatars
+                    .get(idSschedaPerAvatar, idRecord)
+                    .then(url => {
+                      const div = document.createElement('div');
+                      div.style.width = `${image.width}px`;
+                      div.style.height = `${image.height}px`;
+                      div.style.backgroundImage = `url('${url}')`;
+                      div.style.backgroundPosition = 'center';
+                      div.style.backgroundSize = 'cover';
 
-                    image.replaceWith(div);
-                  });
+                      image.replaceWith(div);
+                    });
+                });
+              });
+
+            }).catch(function (e) {
+              printError(e);
+            }).finally(function () {
+              $scope.$applyAsync(function () {
+                $scope.loading = false;
+                const reportHeader = document.getElementById('header');
+                if (reportHeader) {
+                  setTimeout(function () {
+                    const headerHeight = reportHeader.offsetHeight;
+                    const reportHeight = document.documentElement.clientHeight;
+                    if (headerHeight / reportHeight > 0.15) {
+                      window.top.postMessage('showReportHeaderWarning', '*');
+                    } else {
+                      window.top.postMessage('hideReportHeaderWarning', '*');
+                    }
+                  }, 0);
+                }
               });
             });
 
-          }).catch(function (e) {
-            printError(e);
-          }).finally(function () {
-            $scope.$applyAsync(function () {
-              $scope.loading = false;
-              const reportHeader = document.getElementById('header');
-              if (reportHeader) {
-                setTimeout(function () {
-                  const headerHeight = reportHeader.offsetHeight;
-                  const reportHeight = document.documentElement.clientHeight;
-                  if (headerHeight / reportHeight > 0.15) {
-                    window.top.postMessage('showReportHeaderWarning', '*');
-                  } else {
-                    window.top.postMessage('hideReportHeaderWarning', '*');
-                  }
-                }, 0);
-              }
-            });
-          });
-
-        } catch (error) {
-          printError(error);
+          } catch (error) {
+            printError(error);
+          }
         }
-      }
     ]);
 })();
