@@ -228,14 +228,55 @@
                 promises.push(xdbApiService.getValoriCampiScheda(idScheda, idRecord));
               }
 
-              idViste.forEach(function (idVista) {
+              const vistaRowsParamsList = idViste.map(function (idVista) {
                 const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === idVista; }) || {};
                 const foreignKeyVista = vistaCorrelata.campoVistaPerFiltro;
                 const q = foreignKeyVista ? `${foreignKeyVista}${manageSchedeIdRecords.validateIdRecordParam(idRecord)}` : null;
-                const limit = q ? -1 : 1000;
-                promises.push(xdbApiService.getVistaRows(idVista, limit, 0, null, q));
+                const limit = foreignKeyVista ? -1 : 1000;
+                
+                return {
+                  idVista,
+                  limit,
+                  foreignKeyVista,
+                  offset: 0,
+                  sort: null,
+                }
               });
 
+              const vistaRowsPromisesList = vistaRowsParamsList.reduce((promisesArray, vistaRowsParams) => {
+                const resultArr = [...promisesArray];
+                const foreignKeyVista = vistaRowsParams?.foreignKeyVista;
+
+                if (Array.isArray(idRecord)) {
+                  const multipleIdsQuery = manageSchedeIdRecords.makeVistaRowsQueryParams(foreignKeyVista, idRecord);
+                  
+                  multipleIdsQuery.forEach((idQ) => {
+                    resultArr.push(xdbApiService.getVistaRows(
+                      vistaRowsParams.idVista,
+                      vistaRowsParams.limit,
+                      vistaRowsParams.offset,
+                      vistaRowsParams.sort,
+                      idQ
+                    ));
+                  });
+
+                  return resultArr;
+                }
+
+                const singleIdQuery = manageSchedeIdRecords.makeVistaRowsQueryParams(foreignKeyVista, idRecord);
+                resultArr.push(xdbApiService.getVistaRows(
+                  vistaRowsParams.idVista,
+                  vistaRowsParams.limit,
+                  vistaRowsParams.offset,
+                  vistaRowsParams.sort,
+                  singleIdQuery
+                ));
+
+                return resultArr;
+
+              }, []) ?? [];
+              
+              promises.push(...vistaRowsPromisesList);
             if (promises.length) {
               return Promise.all(promises);
             }
