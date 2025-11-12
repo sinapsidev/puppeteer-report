@@ -140,7 +140,7 @@
           if (error && error.message) {
             return error.message;
           }
-          return `Errore sconosciuto: ${error.jsonValue()}`;
+          return `Errore sconosciuto: ${typeof error} ${error}`;
         };
 
         const printError = e => {
@@ -312,13 +312,16 @@
                   if (!tableContainersList?.length) throw new Error('Lista di contenitori delle tabelle per idRecords vuota');
                   
                   tableContainersList.forEach((divContainer, index) => {
-                    const spanToSubstitute = body.querySelector(`[data-idrecords-table-space]="${$scope.infoBase.idRecords[index]}"`);
+                    const spanToSubstitute = body.querySelector(`[data-idrecords-table-space="${$scope.infoBase.idRecords[index]}"]`);
 
                     if (!spanToSubstitute) throw new Error('Elemento da sostituire non trovato');
 
-                  const table = manageSchedeIdRecords.buildTableFromSchedaObj($scope.infoBase.idRecords[index], idTemplate);
+                    manageSchedeIdRecords.buildTableFromSchedaObj($scope.infoBase.idRecords[index], parseInt(searchParams.get('idTemplate'), 10)).then((res) => res).then((resHtml) => {
 
-                    divContainer.replaceChild(table, spanToSubstitute);
+                      return spanToSubstitute.replaceWith(resHtml);
+
+                    }).catch(error => new Error("Non ci sono elementi html validi per creare una tabella \n", error.message));
+
                   })                 
 
               }).catch((error) => {
@@ -328,9 +331,9 @@
             } else if (!$scope.infoBase?.idRecords?.length && $scope.infoBase?.idRecord) {
 
                 (async () => await domUtilsService.waitForSelector('[data-infobase-idrecord]').then((tableContainer) => {
-                  const divContainer = body.querySelectorAll('[data-infobase-idrecord]="$scope.infoBase.idRecord"'); 
+                  const divContainer = body.querySelectorAll(`[data-infobase-idrecord="${$scope.infoBase.idRecord}"]`); 
 
-                  const spanToSubstitute = body.querySelector(`[data-idrecord-table-space]="${$scope.infoBase.idRecord}"`);
+                  const spanToSubstitute = body.querySelector(`[data-idrecord-table-space="${$scope.infoBase.idRecord}"]`);
 
                   if (!spanToSubstitute) throw new Error('Elemento da sostituire non trovato');
                   
@@ -342,7 +345,7 @@
                 
               }
 
-              reportService.getApiTemplateCss(idTemplate).then((res) => {
+              reportService.getApiTemplateCss(parseInt(searchParams.get('idTemplate'), 10)).then((res) => {
                 const withPrintInstructions = res.length > 0 ? `@media print {
              ${res} 
             }` : '';

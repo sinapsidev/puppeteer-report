@@ -34,28 +34,28 @@
 
     const getCampiSchedaValues = async (idRecord, templateId) => {
       try {
-        const printModeInstructions = await reportService.getPrintModeInstructions(templateId)?.idScheda;
+        const printModeInstructions = await reportService.getPrintModeInstructions(templateId);
         const templateIdScheda = await printModeInstructions?.idScheda;
-        console.log('---templateIdScheda OK---', typeof templateIdScheda, templateIdScheda);
 
         if (!templateIdScheda) throw new Error('Id scheda da idRecord non presente. Tipo templateIdScheda: ', typeof templateIdScheda);
 
         const valoriCampiScheda = await xdbApiService.getValoriCampiScheda(templateIdScheda, idRecord);
-        console.log('---valoriCampiScheda OK---', typeof valoriCampiScheda);
 
         if (!valoriCampiScheda) throw new Error('Valori per campi scheda non presenti. Tipo valoriCampiScheda: ', typeof valoriCampiScheda);
 
-        return valoriCampiScheda;
+        return valoriCampiScheda?.data;
       } catch (error) {
         console.error('Errore nell\'ottenere campi scheda.\n', error.message)
         return null;
       }
     };
 
-    this.buildTableFromSchedaObj = (idRecord, templateId) => {
+    this.buildTableFromSchedaObj = async (idRecord, templateId) => {
       try {
         // GET CAMPI SCHEDA VALUES
-        const campiSchedaValues = (async () => await getCampiSchedaValues(idRecord, templateId))();
+        const campiSchedaValues = await getCampiSchedaValues(idRecord, templateId);
+
+        if (!campiSchedaValues) throw new Error('campiSchedaValues non esistenti. Tipo campiSchedaValues: ', typeof campiSchedaValues);
 
         // STRUCTURAL DOM ELEMENTS
         const table = window.document.createElement('table');
@@ -72,6 +72,7 @@
         })
         table.insertAdjacentElement('afterbegin', colGroup);
         const tbody = window.document.createElement('tbody');
+        table.insertAdjacentElement('beforeend', tbody);
 
         // DOM ELEMENTS BASED ON DATA
         const cellStyle = {
