@@ -152,6 +152,24 @@
           $scope.error = message;
         };
 
+        const getCampiSchedaObject = (res, idRecord) => {
+          if (!Array.isArray(idRecord)) {
+            const resScheda = res.splice(0, 1);
+
+            return Object.assign($scope, reportHelpers.mapSchedaToReportData(infoScheda, resScheda[0].data));
+          }
+
+          const resScheda = res.splice(0, idRecord.length);
+
+          const objToAssign = {};
+
+          resScheda.forEach((record) => {
+            Object.assign(objToAssign, reportHelpers.mapSchedaToReportData(infoScheda, record.data));
+          })
+
+          return objToAssign;
+        };
+
         try {
             const url = new URL(window.location.href);
             const searchParams = url.searchParams;
@@ -218,27 +236,15 @@
                 promises.push(xdbApiService.getVistaRows(idVista, limit, 0, null, q));
               });
 
-              if (promises.length) {
-                return Promise.all(promises);
-              }
-            }).then(function (res) {
-              if (res && idScheda) {
-                const assignResultsToScope = (res) => {
-                  if (!Array.isArray(idRecord)) {
-                    const resScheda = res.splice(0, 1);
+            if (promises.length) {
+              return Promise.all(promises);
+            }
+          }).then(function (res) {
+            if (res && idScheda) {
+              const objToAssign = getCampiSchedaObject(res, idRecord);
 
-                    return Object.assign($scope, reportHelpers.mapSchedaToReportData(infoScheda, resScheda[0].data));
-                  }
-
-                  const resScheda = res.splice(0, idRecord.length);
-
-                  return resScheda.forEach((record) => {
-                    Object.assign($scope, reportHelpers.mapSchedaToReportData(infoScheda, record.data));
-                  })
-                };
-
-                assignResultsToScope(res);
-              }
+              Object.assign($scope, objToAssign);
+            }
 
               if (res && res.length) {
                 res.forEach(function (vista, index) {
@@ -310,14 +316,18 @@
 
                     if (!spanToSubstitute) throw new Error('Elemento da sostituire non trovato');
 
-                    const table = manageSchedeIdRecords.getTableFromSchedaObj($scope, $scope.infoBase.idRecords[index]);
+                  const schedaObj = getCampiSchedaObject(res, idRecord);
+
+                  const table = manageSchedeIdRecords.buildTableFromSchedaObj(schedaObj);
 
                     divContainer.replaceChild(table, spanToSubstitute);
                   })                 
 
-                }).catch((_error) => { }))()
-                
-              } else if (!$scope.infoBase?.idRecords?.length && $scope.infoBase?.idRecord) {
+              }).catch((error) => {
+                console.error(error?.message ?? error?.jsonValue());
+              }))()
+
+            } else if (!$scope.infoBase?.idRecords?.length && $scope.infoBase?.idRecord) {
 
                 (async () => await domUtilsService.waitForSelector('[data-infobase-idrecord]').then((tableContainer) => {
                   const divContainer = body.querySelectorAll('[data-infobase-idrecord]="$scope.infoBase.idRecord"'); 

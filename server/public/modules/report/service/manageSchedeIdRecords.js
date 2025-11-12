@@ -32,7 +32,7 @@
             return `=%25=${idRecord}`;
         };
 
-        const buildTableFromSchedaObj = (schedaObj) => {
+        this.buildTableFromSchedaObj = (schedaObj) => {
           // STRUCTURAL DOM ELEMENTS
           const table = document.createElement('table');
           table.setAttribute('border', '1');
@@ -77,18 +77,6 @@
           })
           return table;
         }; 
-
-        this.getTableFromSchedaObj = (scope, idRecord) => {
-            const schedaKey = Object.keys(scope).find((key) => key.startsWith('scheda_') && key.includes(`_${idRecord}`));
-            
-            if (!schedaKey) throw new Error(`Proprietà dello $scope per idRecord ${scope.infoBase.idRecord} non trovata`);
-                  
-            const schedaObj = JSON.stringify(scope[schedaKey]);
-
-            const table = buildTableFromSchedaObj(schedaObj);
-
-            return table;
-        }
     };
 
     window.angular
