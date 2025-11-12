@@ -344,7 +344,7 @@
                 
               }
 
-              reportService.getApiTemplateCss(parseInt(searchParams.get('idTemplate'), 10)).then((res) => {
+              reportService.getApiTemplateCss(idTemplate).then((res) => {
                 const withPrintInstructions = res.length > 0 ? `@media print {
              ${res} 
             }` : '';
