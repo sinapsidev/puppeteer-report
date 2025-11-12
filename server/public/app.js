@@ -316,9 +316,7 @@
 
                     if (!spanToSubstitute) throw new Error('Elemento da sostituire non trovato');
 
-                  const schedaObj = getCampiSchedaObject(res, idRecord);
-
-                  const table = manageSchedeIdRecords.buildTableFromSchedaObj(schedaObj);
+                  const table = manageSchedeIdRecords.buildTableFromSchedaObj($scope.infoBase.idRecords[index], idTemplate);
 
                     divContainer.replaceChild(table, spanToSubstitute);
                   })                 
