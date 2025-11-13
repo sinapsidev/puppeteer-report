@@ -152,7 +152,7 @@
           $scope.error = message;
         };
 
-        const getCampiSchedaObject = (res, idRecord) => {
+        const getCampiSchedaObject = (res, idRecord, infoScheda) => {
           if (!Array.isArray(idRecord)) {
             const resScheda = res.splice(0, 1);
 
@@ -163,7 +163,10 @@
 
           const objToAssign = {};
 
-          resScheda.forEach((record) => {
+          resScheda.forEach((record, index) => {
+            // TO-DO: MODIFICARE QUESTA RIGA PER LAVORARE SULLA CREAZIONE DI REPORT CONTENENTI DATI DI VISTE MULTIPLE
+            if (index > 0) return;
+
             Object.assign(objToAssign, reportHelpers.mapSchedaToReportData(infoScheda, record.data));
           })
 
@@ -219,29 +222,31 @@
             }).then(function (res) {
               infoScheda = res;
 
-              const promises = [];
-              if (idScheda && Array.isArray(idRecord)) {
-                idRecord.forEach((idR) => {
-                  promises.push(xdbApiService.getValoriCampiScheda(idScheda, idR));
-                })
-              } else if (idScheda && !Array.isArray(idRecord)) {
-                promises.push(xdbApiService.getValoriCampiScheda(idScheda, idRecord));
-              }
+            const promises = [];
+            if (idScheda && Array.isArray(idRecord)) {
+              idRecord.forEach((idR, index) => {
+                // TO-DO: MODIFICARE QUESTA RIGA PER LAVORARE SULLA CREAZIONE DI REPORT CONTENENTI DATI DI VISTE MULTIPLE
+                if (index > 0) return;
 
-              const vistaRowsParamsList = idViste.map(function (idVista) {
-                const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === idVista; }) || {};
-                const foreignKeyVista = vistaCorrelata.campoVistaPerFiltro;
-                const q = foreignKeyVista ? `${foreignKeyVista}${manageSchedeIdRecords.validateIdRecordParam(idRecord)}` : null;
-                const limit = foreignKeyVista ? -1 : 1000;
-                
-                return {
-                  idVista,
-                  limit,
-                  foreignKeyVista,
-                  offset: 0,
-                  sort: null,
-                }
-              });
+                promises.push(xdbApiService.getValoriCampiScheda(idScheda, idR));
+              })
+            } else if (idScheda && !Array.isArray(idRecord)) {
+              promises.push(xdbApiService.getValoriCampiScheda(idScheda, idRecord));
+            }
+
+            const vistaRowsParamsList = idViste.map(function (idVista) {
+              const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === idVista; }) || {};
+              const foreignKeyVista = vistaCorrelata.campoVistaPerFiltro;
+              const limit = foreignKeyVista ? -1 : 1000;
+
+              return {
+                idVista,
+                limit,
+                foreignKeyVista,
+                offset: 0,
+                sort: null,
+              }
+            });
 
               const vistaRowsPromisesList = vistaRowsParamsList.reduce((promisesArray, vistaRowsParams) => {
                 const resultArr = [...promisesArray];
@@ -282,19 +287,19 @@
             }
           }).then(function (res) {
             if (res && idScheda) {
-              const objToAssign = getCampiSchedaObject(res, idRecord);
+              const objToAssign = getCampiSchedaObject(res, idRecord, infoScheda);
 
               Object.assign($scope, objToAssign);
             }
 
-              if (res && res.length) {
-                res.forEach(function (vista, index) {
-                  const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === idViste[index]; }) || {};
+            if (res && res.length) {
+              res.forEach(function (vista) {
+                const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === vista?.data?.id; }) || {};
 
-                  const infoVista = {
-                    idVista: idViste[index],
-                    etichettaVista: vistaCorrelata.etichettaVista
-                  };
+                const infoVista = {
+                  idVista: vista?.data?.id,
+                  etichettaVista: vistaCorrelata.etichettaVista
+                };
 
                   Object.assign($scope, reportHelpers.mapVistaToReportData(infoVista, vista.data));
                 });
