@@ -31,16 +31,22 @@
           });
       };
 
-      const getApiTemplateCss = async function (templateId) {
+      const getPrintModeInstructions = async function (templateId) {
         const url = `${apiURLs.getBasePath()}/${TEMPLATE_BASE_URL}/${templateId}`;
 
-        const response = await xdbHttpService
+        return xdbHttpService
           .fetch({
             method: 'GET',
             url: url
-          })
+          }).then(function (res) {
+            return res.data;
+          });
+      }
+
+      const getApiTemplateCss = async function (templateId) {
+        const queryResponse = await getPrintModeInstructions(templateId);
         
-        const customStyle = await response?.data?.customStyle || ""; 
+        const customStyle = await queryResponse?.customStyle || ""; 
         
         return customStyle;
       }
@@ -76,7 +82,8 @@
         getTemplate,
         getVisteTemplate,
         getDatiSchedaDiRiferimento,
-        getApiTemplateCss
+        getApiTemplateCss,
+        getPrintModeInstructions
       };
     }
   ]);
