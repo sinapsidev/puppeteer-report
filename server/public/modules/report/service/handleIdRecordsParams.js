@@ -1,7 +1,7 @@
 (function () {
   const service = function () {
 
-    const canParamBecomeArray = (param) => [...param.matchAll(/^(?=.*%)(?=.*\bIN\b)(?=.*=)(?=.*,).*$/g)]?.length > 0;
+    const canParamBecomeArray = (param) => [...param.matchAll(/((?=.*[0-9])(?=.*,).*$)/g)]?.length > 0;
 
     this.getArrayIdRecords = (searchParams) => {
       if (!searchParams) throw new Error("SearchParams assenti");
