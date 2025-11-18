@@ -84,9 +84,18 @@
 
         this.mapVistaToReportData = function (infoVista, valori) {
             const toReturn = {};
+
+            // costruisce il nome della chiave corrispondente alla vista
+            // richiamata
             const stringIdVista = infoVista.idVista + '';
             const idVistaSanitized = stringIdVista.replace(/-/g, 'pers');
-            toReturn['vista_' + sanitizeSlug(infoVista.etichettaVista) + '_' + idVistaSanitized] = valori.records;
+
+            // assegna i valori di modo che non possano essere sovrascritti
+            // se venisse generata una chiave identica, per la stessa vista
+            const newIdKey = infoVista.idRecord;
+            const newVistaKey = `vista_${sanitizeSlug(infoVista.etichettaVista)}_${idVistaSanitized}`;
+
+            toReturn[newVistaKey][newIdKey] = valori.records;
 
             return toReturn;
         };

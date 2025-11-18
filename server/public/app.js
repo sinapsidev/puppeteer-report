@@ -161,10 +161,7 @@
               if (arrayIdRecords.length > 0) {
                 const multipleIdsQuery = handleIdRecordsParams.makeVistaRowsQueryParams(foreignKeyVista, arrayIdRecords);
 
-                multipleIdsQuery.forEach((idQ, index) => {
-                  // TO-DO: MODIFICARE QUESTA RIGA PER LAVORARE SULLA CREAZIONE DI REPORT CONTENENTI DATI DI VISTE MULTIPLE
-                  if (index > 0) return;
-
+                multipleIdsQuery.forEach((idQ) => {
                   resultArr.push(xdbApiService.getVistaRows(
                     vistaRowsParams.idVista,
                     vistaRowsParams.limit,
@@ -207,10 +204,11 @@
 
                 const infoVista = {
                   idVista: vista?.data?.id,
+                  idRecord: vista?.data?.records?.[0]?.["ID"],
                   etichettaVista: vistaCorrelata.etichettaVista
                 };
 
-                Object.assign($scope, reportHelpers.mapVistaToReportData(infoVista, vista.data));
+                Object.assign($scope, reportHelpers.mapVistaToReportData(infoVista, vista?.data));
               });
             }
 
