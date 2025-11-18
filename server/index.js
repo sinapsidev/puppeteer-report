@@ -158,10 +158,6 @@ const boot = async (app) => {
       await doPrintRequest(req, res, false);
     });
 
-    app.post('/print/v2/:tenantId/:templateId/%IN=:recordId', async (req, res) => {
-      await doPrintRequest(req, res, false);
-    });
-
     await app.listen({ port: PORT, host: '0.0.0.0' });
     console.log('Puppeteer Report ready with Fastify on port ', PORT);
 
