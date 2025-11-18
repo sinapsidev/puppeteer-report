@@ -67,7 +67,7 @@ const boot = async (app) => {
         const {
           tenantId,
           templateId,
-          recordId
+          recordId: paramRecordId
         } = req.params;
 
         const profile = await auth.getProfile({
@@ -100,12 +100,18 @@ const boot = async (app) => {
           printMode
         };
 
+        const recordId = paramRecordId || req.query.idRecord;
+
+        if (!recordId) throw new Error('recordId non è presente né nel path né come parametro di ricerca.');
+
+        const reqPath = { tenantId, templateId, recordId: paramRecordId };
+        const queryParams = { ...req.query };
+
         const result = await printer.print({
           port: PORT,
           body,
-          tenantId,
-          templateId,
-          recordId,
+          path: reqPath,
+          queryParams,
           token,
           domain,
           timeZone,
@@ -128,7 +134,27 @@ const boot = async (app) => {
       await doPrintRequest(req, res, true);
     });
 
-    app.post('/print/v2/:tenantId/:templateId/:recordId', async (req, res) => {
+    app.post('/print/v2/:tenantId/:templateId/:recordId?',
+      {
+        schema: {
+          params: {
+            type: 'object',
+            properties: {
+              tenantId: { type: 'string' },
+              templateId: { type: 'string' },
+              recordId: {type: 'string'}
+            },
+            required: ['tenantId', 'templateId']
+          },
+           querystring: {
+        type: 'object',
+        properties: {
+          idRecord: { type: 'string' }
+        }
+      }
+        }
+      },
+      async (req, res) => {
       await doPrintRequest(req, res, false);
     });
 
