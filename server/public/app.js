@@ -145,19 +145,13 @@
             const vistaRowsPromisesList = idViste.map(function (idVista) {
               const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === idVista; }) || {};
               
-              const vistaParamsObj = visteDataService.getVistaRowsParams({
+              const query = visteDataService.callVistaRowByIdRecord({
                 idVista,
                 idRecord: intIdRecord,
                 vistaCorrelata
-              });
+              }); 
 
-              return xdbApiService.getVistaRows(
-                vistaParamsObj.idVista,
-                vistaParamsObj.limit,
-                vistaParamsObj.offset,
-                vistaParamsObj.sort,
-                vistaParamsObj.q,
-              )
+              return query;
             });
 
             promises.push(...vistaRowsPromisesList);
