@@ -46,25 +46,6 @@
 
       return `=%25=${idRecord}`;
     };
-
-    this.makeVistaRowsQueryParams = (queryKey, idRecord) => {
-      if (!idRecord) {
-        throw new Error('idRecord mancante', typeof idRecord);
-      };
-
-      if (!queryKey) {
-        throw new Error('queryKey mancante', typeof queryKey);
-      };
-
-      if (!queryKey) return null;
-
-      if (!Array.isArray(idRecord)) {
-        return `${queryKey}${this.validateIdRecordParam(idRecord)}`;
-      }
-
-      return idRecord.map((idR) => `${queryKey}${this.validateIdRecordParam(idR)}`)
-     };
-
   };
 
   window.angular
