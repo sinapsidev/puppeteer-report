@@ -4,7 +4,7 @@
 
 'use strict';
 (function () {
-    window.angular.module('reportApp.report').service('vistaDataStore', function () {
+    window.angular.module('reportApp.report').service('vistaDataStore', [function () {
         this.data = {
             idRecord: -1,
             idRecords: [],
@@ -31,5 +31,5 @@
 
             this.data = dataUpdated;
          };
-    });
+    }]);
 })();
