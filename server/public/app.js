@@ -25,6 +25,7 @@
       'handleIdRecordsParams',
       'reportHelpers',
       'visteDataService',
+      'vistaDataStore',
       function (
         $scope,
         avatars,
@@ -38,7 +39,8 @@
         filesPerCampo,
         handleIdRecordsParams,
         reportHelpers,
-        visteDataService
+        visteDataService,
+        vistaDataStore
       ) {
         const ID_SCHEDA_CONFIGURAZIONE = 90;
 
@@ -124,6 +126,8 @@
             idViste = reportHelpers.getIdViste(template);
 
             idViste = [...new Set(idViste)];
+
+            vistaDataStore.setData({idRecord: intIdRecord, idRecords: arrayIdRecords, visteCorrelate, idViste});
 
             return reportService.getDatiSchedaDiRiferimento(idScheda);
           }).then(function (res) {
