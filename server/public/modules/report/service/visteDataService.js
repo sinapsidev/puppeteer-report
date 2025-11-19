@@ -2,6 +2,21 @@
 (function () {
 
     function service(reportHelpers, xdbApiService, handleIdRecordsParams) {
+        this.mapVistaToReportData = (infoVista, valori) => {
+            const toReturn = {};
+
+            // costruisce il nome della chiave corrispondente alla vista
+            // richiamata
+            const stringIdVista = infoVista.idVista + '';
+            const idVistaSanitized = stringIdVista.replace(/-/g, 'pers');
+
+            const newVistaKey = `vista_${reportHelpers.sanitizeSlug(infoVista.etichettaVista)}_${idVistaSanitized}`;
+
+            toReturn[newVistaKey] = valori.records;
+
+            return toReturn;
+        };
+
         this.makeVistaRowsParams = (queryKey, idRecord) => {
             if (!idRecord) {
                 throw new Error('idRecord mancante', typeof idRecord);
@@ -60,7 +75,7 @@
                   etichettaVista: vistaCorrelata.etichettaVista
             };
             
-            const vistaToReportData = reportHelpers.mapVistaToReportData(infoVista, vistaResult);
+            const vistaToReportData = this.mapVistaToReportData(infoVista, vistaResult);
 
             return vistaToReportData;
         }
