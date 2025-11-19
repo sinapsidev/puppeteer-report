@@ -24,6 +24,7 @@
       'filesPerCampo',
       'handleIdRecordsParams',
       'reportHelpers',
+      'visteDataService',
       function (
         $scope,
         avatars,
@@ -36,7 +37,8 @@
         domUtilsService,
         filesPerCampo,
         handleIdRecordsParams,
-        reportHelpers
+        reportHelpers,
+        visteDataService
       ) {
         const ID_SCHEDA_CONFIGURAZIONE = 90;
 
@@ -140,52 +142,71 @@
               promises.push(xdbApiService.getValoriCampiScheda(idScheda, intIdRecord));
             }
 
-            const vistaRowsParamsList = idViste.map(function (idVista) {
+            // const vistaRowsParamsList = idViste.map(function (idVista) {
+            //   const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === idVista; }) || {};
+            //   const foreignKeyVista = vistaCorrelata.campoVistaPerFiltro;
+            //   const limit = foreignKeyVista ? -1 : 1000;
+
+            //   return {
+            //     idVista,
+            //     limit,
+            //     foreignKeyVista,
+            //     offset: 0,
+            //     sort: null,
+            //   }
+            // });
+            
+
+            // const vistaRowsPromisesList = vistaRowsParamsList.reduce((promisesArray, vistaRowsParams) => {
+            //   const resultArr = [...promisesArray];
+            //   const foreignKeyVista = vistaRowsParams?.foreignKeyVista;
+
+            //   if (arrayIdRecords.length > 0) {
+            //     const multipleIdsQuery = handleIdRecordsParams.makeVistaRowsQueryParams(foreignKeyVista, arrayIdRecords);
+
+            //     multipleIdsQuery.forEach((idQ) => {
+            //       resultArr.push(xdbApiService.getVistaRows(
+            //         vistaRowsParams.idVista,
+            //         vistaRowsParams.limit,
+            //         vistaRowsParams.offset,
+            //         vistaRowsParams.sort,
+            //         idQ
+            //       ));
+            //     });
+
+            //     return resultArr;
+            //   }
+
+            //   const singleIdQuery = handleIdRecordsParams.makeVistaRowsQueryParams(foreignKeyVista, intIdRecord);
+            //   resultArr.push(xdbApiService.getVistaRows(
+            //     vistaRowsParams.idVista,
+            //     vistaRowsParams.limit,
+            //     vistaRowsParams.offset,
+            //     vistaRowsParams.sort,
+            //     singleIdQuery
+            //   ));
+
+            //   return resultArr;
+
+            // }, []) ?? [];
+
+            const vistaRowsPromisesList = idViste.map(function (idVista) {
               const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === idVista; }) || {};
-              const foreignKeyVista = vistaCorrelata.campoVistaPerFiltro;
-              const limit = foreignKeyVista ? -1 : 1000;
-
-              return {
+              
+              const vistaParamsObj = visteDataService.getVistaRowsParams({
                 idVista,
-                limit,
-                foreignKeyVista,
-                offset: 0,
-                sort: null,
-              }
+                idRecord: intIdRecord,
+                vistaCorrelata
+              });
+
+              return xdbApiService.getVistaRows(
+                vistaParamsObj.idVista,
+                vistaParamsObj.limit,
+                vistaParamsObj.offset,
+                vistaParamsObj.sort,
+                vistaParamsObj.q,
+              )
             });
-
-            const vistaRowsPromisesList = vistaRowsParamsList.reduce((promisesArray, vistaRowsParams) => {
-              const resultArr = [...promisesArray];
-              const foreignKeyVista = vistaRowsParams?.foreignKeyVista;
-
-              if (arrayIdRecords.length > 0) {
-                const multipleIdsQuery = handleIdRecordsParams.makeVistaRowsQueryParams(foreignKeyVista, arrayIdRecords);
-
-                multipleIdsQuery.forEach((idQ) => {
-                  resultArr.push(xdbApiService.getVistaRows(
-                    vistaRowsParams.idVista,
-                    vistaRowsParams.limit,
-                    vistaRowsParams.offset,
-                    vistaRowsParams.sort,
-                    idQ
-                  ));
-                });
-
-                return resultArr;
-              }
-
-              const singleIdQuery = handleIdRecordsParams.makeVistaRowsQueryParams(foreignKeyVista, intIdRecord);
-              resultArr.push(xdbApiService.getVistaRows(
-                vistaRowsParams.idVista,
-                vistaRowsParams.limit,
-                vistaRowsParams.offset,
-                vistaRowsParams.sort,
-                singleIdQuery
-              ));
-
-              return resultArr;
-
-            }, []) ?? [];
 
             promises.push(...vistaRowsPromisesList);
             if (promises.length) {
