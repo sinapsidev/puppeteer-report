@@ -90,12 +90,9 @@
             const stringIdVista = infoVista.idVista + '';
             const idVistaSanitized = stringIdVista.replace(/-/g, 'pers');
 
-            // assegna i valori di modo che non possano essere sovrascritti
-            // se venisse generata una chiave identica, per la stessa vista
-            const newIdKey = infoVista.idRecord;
             const newVistaKey = `vista_${sanitizeSlug(infoVista.etichettaVista)}_${idVistaSanitized}`;
 
-            toReturn[newVistaKey][newIdKey] = valori.records;
+            toReturn[newVistaKey] = valori.records;
 
             return toReturn;
         };
