@@ -1,7 +1,7 @@
 'use strict';
 (function () {
 
-    function service(xdbApiService, handleIdRecordsParams) {
+    function service(reportHelpers, xdbApiService, handleIdRecordsParams) {
         this.makeVistaRowsParams = (queryKey, idRecord) => {
             if (!idRecord) {
                 throw new Error('idRecord mancante', typeof idRecord);
@@ -50,7 +50,21 @@
                 vistaParamsObj.q,
             )
         };
+
+        this.createReportVistaObject = ({ vistaCorrelata, vistaResult }) => {
+            if (!Object.entries(vistaResult).length) return {};
+
+            const infoVista = {
+                  idVista: vistaResult.id,
+                  idRecord: vistaResult.records?.[0]?.["ID"],
+                  etichettaVista: vistaCorrelata.etichettaVista
+            };
+            
+            const vistaToReportData = reportHelpers.mapVistaToReportData(infoVista, vistaResult);
+
+            return vistaToReportData;
+        }
     };
 
-    window.angular.module('reportApp.report').service('visteDataService', ['xdbApiService', 'handleIdRecordsParams', service]);
+    window.angular.module('reportApp.report').service('visteDataService', ['reportHelpers', 'xdbApiService', 'handleIdRecordsParams', service]);
 })();

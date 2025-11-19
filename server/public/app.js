@@ -173,13 +173,9 @@
               res.forEach(function (vista) {
                 const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === vista?.data?.id; }) || {};
 
-                const infoVista = {
-                  idVista: vista?.data?.id,
-                  idRecord: vista?.data?.records?.[0]?.["ID"],
-                  etichettaVista: vistaCorrelata.etichettaVista
-                };
+                const vistaToReportData = visteDataService.createReportVistaObject({vistaCorrelata, vistaResult: vista?.data});
 
-                Object.assign($scope, reportHelpers.mapVistaToReportData(infoVista, vista?.data));
+                Object.assign($scope, vistaToReportData);
               });
             }
 
