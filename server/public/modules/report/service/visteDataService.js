@@ -2,7 +2,7 @@
 (function () {
 
     function service(handleIdRecordsParams) {
-        this.makeVistaRowsQueryParams = (queryKey, idRecord) => {
+        this.makeVistaRowsParams = (queryKey, idRecord) => {
             if (!idRecord) {
                 throw new Error('idRecord mancante', typeof idRecord);
             };
@@ -23,7 +23,7 @@
         this.getVistaRowsParams = ({ idVista, idRecord, vistaCorrelata }) => {
             const foreignKeyVista = vistaCorrelata.campoVistaPerFiltro;
             const limit = foreignKeyVista ? -1 : 1000;
-            const q = this.makeVistaRowsQueryParams(foreignKeyVista, idRecord);
+            const q = this.makeVistaRowsParams(foreignKeyVista, idRecord);
 
             return {
                 idVista,
