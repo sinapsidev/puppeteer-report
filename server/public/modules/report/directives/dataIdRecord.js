@@ -1,12 +1,11 @@
 'use strict';
 (function () {
-    window.angular.module('reportApp.report').directive('dataIdRecord', ['visteDataService', 'vistaDataStore', function (visteDataService, vistaDataStore) {
+    window.angular.module('reportApp.report').directive('dataIdRecord', ['$compile', 'visteDataService', 'vistaDataStore', function ($compile, visteDataService, vistaDataStore) {
         return {
             restrict: 'A',
-            scope: {
-                idRecord: '=dataIdRecord',
-            },
-            link(scope) {
+            scope: {},
+            link(scope, element) {
+                console.log('---DIRECTIVE OK--- IDVISTE---', idViste, visteCorrelate);
                 const { idViste, visteCorrelate } = vistaDataStore.getData();
 
                 console.log('---DIRECTIVE OK--- IDVISTE---', idViste, visteCorrelate);
