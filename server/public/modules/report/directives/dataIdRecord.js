@@ -1,56 +1,68 @@
 'use strict';
 (function () {
-    window.angular.module('reportApp.report').directive('dataIdRecord', ['$compile', 'visteDataService', 'vistaDataStore', function ($compile, visteDataService, vistaDataStore) {
+    window.angular.module('reportApp.report').directive('dataIdRecord', function ($compile, visteDataService, vistaDataStore) {
         return {
             restrict: 'A',
-            scope: {},
-            link(scope, element) {
-                console.log('---DIRECTIVE OK--- IDVISTE---', idViste, visteCorrelate);
-                const { idViste, visteCorrelate } = vistaDataStore.getData();
+            scope: true,
+            transclude: true,
+            link: {
+                post(scope, element, attrs, _controller, transclude) {
 
-                const appendResultsToTree = (promisesList) => {
-                    return Promise.all(promisesList)
-                        .then((res) => {
-                            if (!res?.length) return;
+                    let transcludeFnScope;
+                    let elementClone;
 
-                            return res.map(function (vista) {
-                                const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === vista?.data?.id; }) || {};
-
-                                const vistaToReportData = visteDataService.createReportVistaObject({ vistaCorrelata, vistaResult: vista?.data });
-
-                                return vistaToReportData;
-                            }) ?? [];
-                        })
-                        .then((reportData) => {
-                            return reportData.forEach(function (vistaScopeObj) {
-                                Object.assign(scope, vistaScopeObj);
-                            })
-                        })
-                        .finally(() => {
-                            $compile(element.html())(scope);
-                            scope.$digest();
-                        });
-                }
-                
-                attrs.$observe("data-id-record", function (value) {
-                    scope.idRecord = value;
-                     // console.log('---DIRECTIVE OK--- IDVISTE---', idViste, visteCorrelate);
-                    const vistaRowsPromisesList = idViste.map(function (idVista) {
-                        const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === idVista; }) || {};
-
-                        const query = visteDataService.callVistaRowByIdRecord({
-                            idVista,
-                            idRecord,
-                            vistaCorrelata
-                        });
-
-                        return query;
+                    transclude(function (clone, transcludeScope) {
+                        elementClone = clone;
+                        transcludeFnScope = transcludeScope;
                     });
-                    
-                    appendResultsToTree(vistaRowsPromisesList);
-                })
+
+                    scope.$watch(() => vistaDataStore.getData(), function (newValue, oldValue) {
+
+                        const vistaRowsPromisesList = newValue?.idViste.map(function (idVista) {
+                            const vistaCorrelata = newValue?.visteCorrelate.find(function (v) { return v.idVista === idVista; }) || {};
+
+                            const query = visteDataService.callVistaRowByIdRecord({
+                                idVista,
+                                idRecord: attrs.dataIdRecord,
+                                vistaCorrelata,
+                            });
+
+                            return query;
+                        });
+
+                        const compileNewScopeContent = (promisesList) => {
+                            return Promise.all(promisesList)
+                                .then((res) => {
+                                    if (!res?.length) return;
+
+                                    return res
+                                        .filter((vista) => vista?.data)
+                                        .map(function (vista) {
+                                            const vistaCorrelata = newValue?.visteCorrelate.find(function (v) { return v.idVista === vista?.data?.id; }) || {};
+
+                                            return visteDataService.createReportVistaObject({ vistaCorrelata, vistaResult: vista.data });
+                                        }) ?? [];
+                                })
+                                .then((reportData) => {
+                                    reportData.forEach(function (vistaScopeObj) {
+                                        Object.assign(transcludeFnScope, vistaScopeObj);
+                                    })
+
+                                    element.replaceWith(elementClone);
+                                    $compile(element)(transcludeFnScope);
+                                })
+                                .finally(() => {
+                                    if (!scope.$$phase) {
+                                        scope.$parent.$digest();
+                                    }
+                                });
+                        };
+
+                        compileNewScopeContent(vistaRowsPromisesList);
+                    }, true)
+                }
             },
         }
     },
-    ]);
+    );
 })();
