@@ -66,6 +66,27 @@
             )
         };
 
+        this.getVistaRowsPromisesList = (idViste, idRecord, visteCorrelate) => {
+            const shouldNotContinue = [
+                !idViste,
+                !Array.isArray(idViste),
+                !idRecord,
+                !visteCorrelate,
+                !Array.isArray(visteCorrelate)].some((c) => c)
+            
+            if (shouldNotContinue) return [];
+
+            return idViste.map((idVista) => {
+                const vistaCorrelata = (Array.isArray(visteCorrelate) ? visteCorrelate.find(function (v) { return v.idVista === idVista; }) : {}) || {};
+
+                return this.callVistaRowByIdRecord({
+                    idVista,
+                    idRecord,
+                    vistaCorrelata
+                });
+            });
+        };
+
         this.createReportVistaObject = ({ vistaCorrelata, vistaResult }) => {
             if (!Object.entries(vistaResult).length) return {};
 

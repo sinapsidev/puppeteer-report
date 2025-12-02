@@ -19,17 +19,7 @@
                     $timeout(function () {
                           const { visteCorrelate, idViste } = vistaDataStore.getData();
 
-                        const vistaRowsPromisesList = idViste.map(function (idVista) {
-                            const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === idVista; }) || {};
-
-                            const query = visteDataService.callVistaRowByIdRecord({
-                                idVista,
-                                idRecord: attrs.idRecord,
-                                vistaCorrelata,
-                            });
-
-                            return query;
-                        });
+                        const vistaRowsPromisesList = visteDataService.getVistaRowsPromisesList(idViste, attrs.idRecord, visteCorrelate);
 
                         const compileNewScopeContent = (promisesList) => {
                             return Promise.all(promisesList)
@@ -59,7 +49,7 @@
                                 });
                         };
 
-                        compileNewScopeContent(vistaRowsPromisesList);
+                        vistaRowsPromisesList?.length > 0 && compileNewScopeContent(vistaRowsPromisesList);
 
                     }, 100)
                 }

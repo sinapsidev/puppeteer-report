@@ -146,17 +146,7 @@
               promises.push(xdbApiService.getValoriCampiScheda(idScheda, intIdRecord));
             }
 
-            const vistaRowsPromisesList = idViste.map(function (idVista) {
-              const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === idVista; }) || {};
-              
-              const query = visteDataService.callVistaRowByIdRecord({
-                idVista,
-                idRecord: intIdRecord,
-                vistaCorrelata
-              }); 
-
-              return query;
-            });
+            const vistaRowsPromisesList = visteDataService.getVistaRowsPromisesList(idViste, intIdRecord, visteCorrelate);
 
             promises.push(...vistaRowsPromisesList);
             if (promises.length) {
