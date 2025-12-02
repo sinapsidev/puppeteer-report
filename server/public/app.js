@@ -72,7 +72,7 @@
           const objToAssign = {};
 
           resScheda.forEach((record, index) => {
-            // TO-DO: MODIFICARE QUESTA RIGA PER LAVORARE SULLA CREAZIONE DI REPORT CONTENENTI DATI DI UNA STESSA SCHEDA 
+            // PROSSIMI STEP: MODIFICARE QUESTA RIGA PER LAVORARE SULLA CREAZIONE DI REPORT CONTENENTI DATI DI UNA STESSA SCHEDA 
             // MA MULTIPLI ID RECORDS
             if (index > 0) return;
 
@@ -134,15 +134,7 @@
             infoScheda = res;
 
             const promises = [];
-            if (idScheda && arrayIdRecords.length > 0) {
-              arrayIdRecords.forEach((idR, index) => {
-                // TO-DO: MODIFICARE QUESTA RIGA PER LAVORARE SULLA CREAZIONE DI REPORT CONTENENTI DATI DI UNA STESSA SCHEDA 
-                // MA MULTIPLI ID RECORDS
-                if (index > 0) return;
-
-                promises.push(xdbApiService.getValoriCampiScheda(idScheda, idR));
-              })
-            } else if (idScheda && !arrayIdRecords.length) {
+            if (idScheda) {
               promises.push(xdbApiService.getValoriCampiScheda(idScheda, intIdRecord));
             }
 
@@ -154,7 +146,7 @@
             }
           }).then(function (res) {
             if (res && idScheda) {
-              const objToAssign = getCampiSchedaObject(res, arrayIdRecords.length > 0 ? arrayIdRecords : intIdRecord, infoScheda);
+              const objToAssign = getCampiSchedaObject(res, intIdRecord, infoScheda);
 
               Object.assign($scope, objToAssign);
             }
