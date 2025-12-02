@@ -14,12 +14,13 @@
                         elementClone = angular.element(clone);
                         transcludeFnScope = transcludeScope;
                     });
-                    
+
+                    const idRecord = parseInt(attrs.idRecord, 10);                    
 
                     $timeout(function () {
                           const { visteCorrelate, idViste } = vistaDataStore.getData();
 
-                        const vistaRowsPromisesList = visteDataService.getVistaRowsPromisesList(idViste, attrs.idRecord, visteCorrelate);
+                        const vistaRowsPromisesList = visteDataService.getVistaRowsPromisesList(idViste, idRecord, visteCorrelate);
 
                         const compileNewScopeContent = (promisesList) => {
                             return Promise.all(promisesList)
