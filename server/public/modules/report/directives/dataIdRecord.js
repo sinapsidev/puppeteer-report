@@ -1,13 +1,12 @@
 'use strict';
 (function () {
-    window.angular.module('reportApp.report').directive('dataIdRecord', function ($compile, visteDataService, vistaDataStore) {
+    window.angular.module('reportApp.report').directive('idRecord', function ($compile, visteDataService, vistaDataStore) {
         return {
             restrict: 'A',
             scope: true,
             transclude: true,
             link: {
                 post(scope, element, attrs, _controller, transclude) {
-
                     let transcludeFnScope;
                     let elementClone;
 
@@ -17,13 +16,14 @@
                     });
 
                     scope.$watch(() => vistaDataStore.getData(), function (newValue, oldValue) {
+                        const { visteCorrelate, idViste } = newValue;
 
-                        const vistaRowsPromisesList = newValue?.idViste.map(function (idVista) {
-                            const vistaCorrelata = newValue?.visteCorrelate.find(function (v) { return v.idVista === idVista; }) || {};
+                        const vistaRowsPromisesList = idViste.map(function (idVista) {
+                            const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === idVista; }) || {};
 
                             const query = visteDataService.callVistaRowByIdRecord({
                                 idVista,
-                                idRecord: attrs.dataIdRecord,
+                                idRecord: attrs.idRecord,
                                 vistaCorrelata,
                             });
 
@@ -38,7 +38,7 @@
                                     return res
                                         .filter((vista) => vista?.data)
                                         .map(function (vista) {
-                                            const vistaCorrelata = newValue?.visteCorrelate.find(function (v) { return v.idVista === vista?.data?.id; }) || {};
+                                            const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === vista?.data?.id; }) || {};
 
                                             return visteDataService.createReportVistaObject({ vistaCorrelata, vistaResult: vista.data });
                                         }) ?? [];
@@ -49,7 +49,8 @@
                                     })
 
                                     element.replaceWith(elementClone);
-                                    $compile(element)(transcludeFnScope);
+
+                                    return $compile(elementClone)(transcludeFnScope);
                                 })
                                 .finally(() => {
                                     if (!scope.$$phase) {
