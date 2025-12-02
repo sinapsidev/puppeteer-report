@@ -26,8 +26,6 @@
                 throw new Error('queryKey mancante', typeof queryKey);
             };
 
-            if (!queryKey) return null;
-
             if (!Array.isArray(idRecord)) {
                 return `${queryKey}${handleIdRecordsParams.validateIdRecordParam(idRecord)}`;
             }
