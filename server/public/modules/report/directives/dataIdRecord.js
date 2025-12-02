@@ -1,6 +1,6 @@
 'use strict';
 (function () {
-    window.angular.module('reportApp.report').directive('idRecord', function ($compile, visteDataService, vistaDataStore) {
+    window.angular.module('reportApp.report').directive('idRecord', function ($timeout, $compile, visteDataService, vistaDataStore) {
         return {
             restrict: 'A',
             scope: true,
@@ -11,12 +11,13 @@
                     let elementClone;
 
                     transclude(function (clone, transcludeScope) {
-                        elementClone = clone;
+                        elementClone = angular.element(clone);
                         transcludeFnScope = transcludeScope;
                     });
+                    
 
-                    scope.$watch(() => vistaDataStore.getData(), function (newValue, oldValue) {
-                        const { visteCorrelate, idViste } = newValue;
+                    $timeout(function () {
+                          const { visteCorrelate, idViste } = vistaDataStore.getData();
 
                         const vistaRowsPromisesList = idViste.map(function (idVista) {
                             const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === idVista; }) || {};
@@ -48,9 +49,8 @@
                                         Object.assign(transcludeFnScope, vistaScopeObj);
                                     })
 
-                                    element.replaceWith(elementClone);
-
-                                    return $compile(elementClone)(transcludeFnScope);
+                                    element.srcHTML = elementClone.srcHTML;
+                                    element.append($compile(elementClone)(transcludeFnScope));
                                 })
                                 .finally(() => {
                                     if (!scope.$$phase) {
@@ -60,7 +60,8 @@
                         };
 
                         compileNewScopeContent(vistaRowsPromisesList);
-                    }, true)
+
+                    }, 100)
                 }
             },
         }
