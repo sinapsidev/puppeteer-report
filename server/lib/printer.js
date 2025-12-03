@@ -151,7 +151,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             height: ${FOOTER_H ? FOOTER_H + SBECCO : '0'}px;
           }
   
-          .page-footer {
+          div.page-footer {
             position: fixed;
             bottom: 0;
             left: 0;
@@ -291,7 +291,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
                   </tfoot>
                   </table>
 
-                  <div class="page-footer page-footer-space standard-padding">
+                  <div class="page-footer standard-padding">
                     ${addFooter()}
                   </div>
           `;
