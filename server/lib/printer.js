@@ -147,7 +147,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             height: ${headerHeight ? headerHeight + SBECCO : '0'}px;
           }
 
-          .document-table-footer, .page-footer {
+          .page-footer, .page-footer-space {
             height: ${FOOTER_H ? FOOTER_H + SBECCO : '0'}px;
           }
   
@@ -157,9 +157,6 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             left: 0;
             right: 0;
             background-color: #fff;
-          }
-
-          div.page-footer-space {
             padding-bottom: 0px;
             width: 100%; 
             font-size: 9px; 
@@ -286,7 +283,10 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
                 </tr>
               </tbody>
               <tfoot>
-                <tr class="document-table-footer">
+                <tr>
+                <td>
+                <div class="page-footer-space"></div>
+                </td>
                   </tr>
                   </tfoot>
                   </table>
