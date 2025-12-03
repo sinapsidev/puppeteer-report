@@ -223,7 +223,9 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       const addFooter = () => {
         if (!HAS_FOOTER) return "";
 
-        return FOOTER_TEMPLATE;
+        return `<div class="page-footer standard-padding">
+        ${FOOTER_TEMPLATE}
+        </div>`;
       }
 
       const getHTMLReportFromContent = function (bodyHTML, headerHTML) {
@@ -291,9 +293,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
                   </tfoot>
                   </table>
 
-                  <div class="page-footer standard-padding">
                     ${addFooter()}
-                  </div>
           `;
       };
 
