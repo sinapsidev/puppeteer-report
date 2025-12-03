@@ -117,7 +117,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       }));
     });
 
-    const { FOOTER_TEMPLATE, HAS_FOOTER, FOOTER_H } = await page.evaluate((addedStyle) => {
+    const { FOOTER_H } = await page.evaluate((addedStyle) => {
 
       const SBECCO = 20;
 
@@ -204,12 +204,28 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             widows: 4;
           }
 
+          div.page-footer-space {
+            width: 100%; 
+            background-color: #fff; 
+            font-size: 9px; 
+            text-align: center; 
+            padding: 5px 0 0 0; 
+            font-family: Arial; 
+            color: #444;
+          }
+
           ${addedStyle ?? ""}
           `;
         return CUSTOM_CSS;
       };
             
       const CUSTOM_CSS = getCustomCSS(HEADER_H, addedStyle);
+
+      const addFooter = () => {
+        if (!HAS_FOOTER) return "";
+
+        return FOOTER_TEMPLATE;
+      }
 
       const getHTMLReportFromContent = function (bodyHTML, headerHTML) {
         
@@ -270,7 +286,9 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
               <tfoot>
                 <tr>
                   <td>
-                    <div class="page-footer-space"></div>
+                    <div class="page-footer-space">
+                      ${addFooter()}
+                    </div>
                   </td>
                 </tr>
               </tfoot>
@@ -282,8 +300,6 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       document.querySelector('body').innerHTML = `${TEMPLATE}`;
 
       return {
-        FOOTER_TEMPLATE,
-        HAS_FOOTER,
         FOOTER_H
       };
     }, apiCss);
@@ -309,17 +325,6 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
 
     if (IS_LANDSCAPE) {
       config.landscape = true;
-    }
-
-    if (HAS_FOOTER) {
-      config.displayHeaderFooter = true;
-      config.margin = {
-        top: 0,
-        right: 0,
-        left: 0,
-        bottom: FOOTER_H || 40
-      };
-      config.footerTemplate = `<div style="width: 100%; background-color: #fff; font-size: 9px; text-align: center; padding: 5px 0 0 0; font-family: Arial; color: #444;">${FOOTER_TEMPLATE}</div>`;
     }
 
     if (IS_PAGE_NUMBER_VISIBLE) {
