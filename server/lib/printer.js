@@ -147,7 +147,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             height: ${headerHeight ? headerHeight + SBECCO : '0'}px;
           }
 
-          .document-table-footer {
+          .document-table-footer, .page-footer {
             height: ${FOOTER_H ? FOOTER_H + SBECCO : '0'}px;
           }
   
@@ -157,6 +157,15 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             left: 0;
             right: 0;
             background-color: #fff;
+          }
+
+          div.page-footer-space {
+            padding-bottom: 0px;
+            width: 100%; 
+            font-size: 9px; 
+            text-align: center; 
+            font-family: Arial; 
+            color: #444;
           }
   
           .page-header {
@@ -205,20 +214,6 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             break-inside: avoid;
             orphans: 0;
             widows: 4;
-          }
-
-          div.page-footer-space {
-            position: fixed;
-            left: 0;
-            bottom: 0;
-            padding-bottom: 0px;
-            width: 100%; 
-            background-color: #fff; 
-            font-size: 9px; 
-            text-align: center; 
-            padding: 5px 0 0 0; 
-            font-family: Arial; 
-            color: #444;
           }
 
           ${addedStyle ?? ""}
@@ -296,7 +291,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
                   </tfoot>
                   </table>
 
-                  <div class="page-footer-space standard-padding">
+                  <div class="page-footer page-footer-space standard-padding">
                     ${addFooter()}
                   </div>
           `;
