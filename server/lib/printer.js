@@ -208,6 +208,10 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
           }
 
           div.page-footer-space {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            padding-bottom: 0px;
             width: 100%; 
             background-color: #fff; 
             font-size: 9px; 
