@@ -146,7 +146,10 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
           .page-header, .page-header-space {
             height: ${headerHeight ? headerHeight + SBECCO : '0'}px;
           }
-  
+
+          .document-table-footer {
+            height: ${FOOTER_H ? FOOTER_H + SBECCO : '0'}px;
+          }
   
           .page-footer {
             position: fixed;
