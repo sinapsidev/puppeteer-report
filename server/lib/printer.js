@@ -284,15 +284,14 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
                 </tr>
               </tbody>
               <tfoot>
-                <tr>
-                  <td>
-                    <div class="page-footer-space">
-                      ${addFooter()}
-                    </div>
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
+                <tr class="document-table-footer">
+                  </tr>
+                  </tfoot>
+                  </table>
+
+                  <div class="page-footer-space standard-padding">
+                    ${addFooter()}
+                  </div>
           `;
       };
 
