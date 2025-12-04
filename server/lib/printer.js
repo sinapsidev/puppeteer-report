@@ -224,6 +224,8 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             
       const CUSTOM_CSS = getCustomCSS(HEADER_H, addedStyle);
 
+      console.log('CUSTOM_CSS', CUSTOM_CSS);
+
       const getHTMLReportFromContent = function (bodyHTML, headerHTML) {
         
         return `
@@ -348,7 +350,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       </style>
       <div class="page-footer page-footer--with-numbers">
         ${config.footerTemplate}
-        <div class="page-footer">
+        <div id="page-numbers-container" class="page-footer">
           Pagina <span class="pageNumber"></span> di <span class="totalPages"></span>
         </div>
       </div>`;
