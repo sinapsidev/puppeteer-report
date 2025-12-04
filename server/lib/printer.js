@@ -224,8 +224,6 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             
       const CUSTOM_CSS = getCustomCSS(HEADER_H, addedStyle);
 
-      console.log('CUSTOM_CSS', CUSTOM_CSS);
-
       const getHTMLReportFromContent = function (bodyHTML, headerHTML) {
         
         return `
