@@ -101,7 +101,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
 
     const WIDTH = body.width + 'mm';
     const HEIGHT = body.height + 'mm';
-    const IS_PAGE_NUMBER_VISIBLE = body.insertPageNumber;
+    const IS_PAGE_NUMBER_VISIBLE = body.pageNumber;
 
     await page.waitForSelector('#header', { timeout: 0, visible: true });
     await page.waitForSelector('#footer', { timeout: 0, visible: true });
