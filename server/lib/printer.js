@@ -221,11 +221,11 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
           `;
         return CUSTOM_CSS;
       };
-            
+
       const CUSTOM_CSS = getCustomCSS(HEADER_H, addedStyle);
 
       const getHTMLReportFromContent = function (bodyHTML, headerHTML) {
-        
+
         return `
         <style>${CUSTOM_CSS}</style>
             <div id="header" class="page-header">
