@@ -153,9 +153,23 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             bottom: 0;
             left: 0;
             right: 0;
-            background-color: #fff;
+            width: 100%; 
+            background-color: #fff; 
+            font-size: 9px; 
+            text-align: 
+            center; 
+            padding: 5px 0 0 0; 
+            font-family: Arial; 
+            color: #444;
           }
   
+          .page-footer--with-numbers {
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+          }
+
           .page-header {
             position: fixed;
             top: 0mm;
