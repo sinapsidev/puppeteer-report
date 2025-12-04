@@ -117,7 +117,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       }));
     });
 
-    const { FOOTER_TEMPLATE, HAS_FOOTER, FOOTER_H } = await page.evaluate((addedStyle) => {
+    const { FOOTER_TEMPLATE, HAS_FOOTER, FOOTER_H, CUSTOM_CSS } = await page.evaluate((addedStyle) => {
 
       const SBECCO = 20;
 
@@ -146,7 +146,6 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
           .page-header, .page-header-space {
             height: ${headerHeight ? headerHeight + SBECCO : '0'}px;
           }
-  
   
           .page-footer {
             position: fixed;
@@ -298,7 +297,8 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       return {
         FOOTER_TEMPLATE,
         HAS_FOOTER,
-        FOOTER_H
+        FOOTER_H,
+        CUSTOM_CSS
       };
     }, apiCss);
 
