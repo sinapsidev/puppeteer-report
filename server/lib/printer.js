@@ -343,9 +343,12 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
         left: 0,
         bottom: FOOTER_H ? FOOTER_H + 40 : 40
       };
-      config.footerTemplate = `<div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      config.footerTemplate = `<style>
+        ${CUSTOM_CSS}
+      </style>
+      <div class="page-footer page-footer--with-numbers">
         ${config.footerTemplate}
-        <div style="width: 100%; margin-top: 10px; font-size: 9px; text-align: center; padding: 5px 0 0 0; font-family: Arial; color: #444;">
+        <div class="page-footer">
           Pagina <span class="pageNumber"></span> di <span class="totalPages"></span>
         </div>
       </div>`;
