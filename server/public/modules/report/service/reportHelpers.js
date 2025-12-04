@@ -38,7 +38,7 @@
             return string.replace(/\([^()]*\)/g, '').replace(/\s+$/, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w\s]/gi, '').toLowerCase().split(' ').join('_');
         };
 
-        this.getIdScheda = function (template) {
+        const getIdScheda = function (template) {
             const placeholdersScheda = getPlaceholdersScheda(template);
             const idsPlaceholders = placeholdersScheda.map(function (placeholder) {
                 const schedaInfo = placeholder.split('.')[0];
@@ -50,7 +50,7 @@
             return idsPlaceholders[0];
         };
 
-        this.getIdViste = function (template) {
+        const getIdViste = function (template) {
             let placeholdersViste = getPlaceholdersViste(template);
             const placeholdersVisteSingole = getPlaceholdersVisteSingole(template);
             placeholdersViste = placeholdersViste.concat(placeholdersVisteSingole);
@@ -64,7 +64,7 @@
             return idsPlaceholders;
         };
 
-        this.mapSchedaToReportData = function (infoScheda, valori) {
+        const mapSchedaToReportData = (infoScheda, valori) => {
             const toReturn = {};
             valori.forEach(function (valore) {
                 const content = valore.dettagli ? valore.dettagli : valore.valore;
@@ -82,13 +82,11 @@
             return toReturn;
         };
 
-        this.mapVistaToReportData = function (infoVista, valori) {
-            const toReturn = {};
-            const stringIdVista = infoVista.idVista + '';
-            const idVistaSanitized = stringIdVista.replace(/-/g, 'pers');
-            toReturn['vista_' + sanitizeSlug(infoVista.etichettaVista) + '_' + idVistaSanitized] = valori.records;
-
-            return toReturn;
+        return {
+            sanitizeSlug,
+            getIdScheda,
+            getIdViste,
+            mapSchedaToReportData
         };
     };
 
