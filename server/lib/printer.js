@@ -163,6 +163,10 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
           }
   
           .page-footer--with-numbers {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: ${SBECCO}px;
             display: flex; 
             flex-direction: column; 
             align-items: center; 
