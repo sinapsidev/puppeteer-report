@@ -332,7 +332,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       <style>
       ${CUSTOM_CSS}
       </style>
-      <div style="width: 100%; background-color: #fff; font-size: 9px; text-align: center; padding: 5px 0 0 0; font-family: Arial; color: #444;">
+      <div class="page-footer">
       ${FOOTER_TEMPLATE}
       </div>`;
     }
