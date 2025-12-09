@@ -117,7 +117,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       }));
     });
 
-    const { FOOTER_TEMPLATE, HAS_FOOTER, FOOTER_H } = await page.evaluate((addedStyle) => {
+    const { FOOTER_TEMPLATE, HAS_FOOTER, FOOTER_H, CUSTOM_CSS } = await page.evaluate((addedStyle) => {
 
       const SBECCO = 20;
 
@@ -154,6 +154,14 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             left: 0;
             right: 0;
             background-color: #fff;
+            width: 100%; 
+            background-color: #fff; 
+            font-size: 9px; 
+            text-align: 
+            center; 
+            padding: 5px 0 0 0; 
+            font-family: Arial; 
+            color: #444;
           }
   
           .page-header {
@@ -284,7 +292,8 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       return {
         FOOTER_TEMPLATE,
         HAS_FOOTER,
-        FOOTER_H
+        FOOTER_H,
+        CUSTOM_CSS
       };
     }, apiCss);
 
@@ -319,7 +328,13 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
         left: 0,
         bottom: FOOTER_H || 40
       };
-      config.footerTemplate = `<div style="width: 100%; background-color: #fff; font-size: 9px; text-align: center; padding: 5px 0 0 0; font-family: Arial; color: #444;">${FOOTER_TEMPLATE}</div>`;
+      config.footerTemplate = `
+      <style>
+      ${CUSTOM_CSS}
+      </style>
+      <div class="page-footer">
+      ${FOOTER_TEMPLATE}
+      </div>`;
     }
 
     if (IS_PAGE_NUMBER_VISIBLE) {
