@@ -346,7 +346,13 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
         bottom: FOOTER_H || 40
       };
       config.printBackground = true;
-      config.footerTemplate = `<div style="width: 100%; background-color: #fff; font-size: 9px; text-align: center; padding: 5px 0 0 0; font-family: Arial; color: #444;">${FOOTER_TEMPLATE}</div>`;
+      config.footerTemplate = `
+      <style>
+      ${CUSTOM_CSS}
+      </style>
+      <div class="page-footer">
+      ${FOOTER_TEMPLATE}
+      </div>`;
     }
 
     if (IS_PAGE_NUMBER_VISIBLE) {
