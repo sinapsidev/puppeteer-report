@@ -133,6 +133,10 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
 
       const getCustomCSS = function (headerHeight, addedStyle) {
         const CUSTOM_CSS = `
+          html {
+              -webkit-print-color-adjust: exact;
+            }
+
           .document-preview__frame__page-break-after {
             width: 100%;
             border: none;
@@ -197,6 +201,10 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
           }
   
           @media print {
+            html {
+              -webkit-print-color-adjust: exact;
+            }
+
             thead {display: table-header-group;} 
             tfoot {display: table-footer-group;}
             button {display: none;}
@@ -348,6 +356,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
         left: 0,
         bottom: FOOTER_H ? FOOTER_H + 40 : 40
       };
+      config.printBackground = true;
       config.footerTemplate = `<style>
         ${CUSTOM_CSS}
       </style>
