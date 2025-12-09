@@ -345,6 +345,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
         left: 0,
         bottom: FOOTER_H || 40
       };
+      config.printBackground = true;
       config.footerTemplate = `<div style="width: 100%; background-color: #fff; font-size: 9px; text-align: center; padding: 5px 0 0 0; font-family: Arial; color: #444;">${FOOTER_TEMPLATE}</div>`;
     }
 
