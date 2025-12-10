@@ -164,7 +164,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
 
           .page-footer--fixed {
             position: fixed;
-            bottom: 0;
+            bottom: ${SBECCO}px;
             left: 0;
             right: 0;
           }
@@ -366,7 +366,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       config.footerTemplate = `<style>
         ${CUSTOM_CSS}
       </style>
-      <div class="page-footer page-footer--with-numbers">
+      <div class="page-footer page-footer--with-numbers page-footer--fixed">
         ${!HAS_FOOTER ? "" : FOOTER_TEMPLATE}
         <div id="page-numbers-container" class="page-footer">
           Pagina <span class="pageNumber"></span> di <span class="totalPages"></span>
