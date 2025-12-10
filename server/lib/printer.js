@@ -164,7 +164,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
 
           .page-footer--fixed {
             position: fixed;
-            bottom: ${SBECCO}px;
+            bottom: 0px;
             left: 0;
             right: 0;
           }
@@ -360,7 +360,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
         top: 0,
         right: 0,
         left: 0,
-        bottom: FOOTER_H ? FOOTER_H + 40 : 40
+        bottom: HAS_FOOTER ? FOOTER_H + 40 : 40
       };
       config.printBackground = true;
       config.footerTemplate = `<style>
