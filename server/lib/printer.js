@@ -342,7 +342,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
         top: 0,
         right: 0,
         left: 0,
-        bottom: FOOTER_H || 40
+        bottom: FOOTER_H + 40 || 40
       };
       config.printBackground = true;
       config.footerTemplate = `
