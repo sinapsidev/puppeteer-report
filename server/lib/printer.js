@@ -368,7 +368,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
         ${CUSTOM_CSS}
       </style>
       <div class="page-footer page-footer--with-numbers">
-        ${!config?.footerTemplate ? "" : config?.footerTemplate }
+        ${!HAS_FOOTER ? "" : FOOTER_TEMPLATE}
         <div id="page-numbers-container" class="page-footer">
           Pagina <span class="pageNumber"></span> di <span class="totalPages"></span>
         </div>
