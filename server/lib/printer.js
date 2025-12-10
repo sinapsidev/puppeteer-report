@@ -152,10 +152,6 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
           }
   
           .page-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
             width: 100%; 
             background-color: #fff; 
             font-size: 9px; 
@@ -165,12 +161,15 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             font-family: Arial; 
             color: #444;
           }
-  
-          .page-footer--with-numbers {
+
+          .page-footer--fixed {
             position: fixed;
+            bottom: 0;
             left: 0;
             right: 0;
-            bottom: ${SBECCO}px;
+          }
+  
+          .page-footer--with-numbers {
             display: flex; 
             flex-direction: column; 
             align-items: center; 
@@ -350,7 +349,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       <style>
       ${CUSTOM_CSS}
       </style>
-      <div class="page-footer">
+      <div class="page-footer page-footer--fixed">
       ${FOOTER_TEMPLATE}
       </div>`;
     }
