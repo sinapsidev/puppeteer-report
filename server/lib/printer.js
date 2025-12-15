@@ -133,6 +133,10 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
 
       const getCustomCSS = function (headerHeight, addedStyle) {
         const CUSTOM_CSS = `
+          html {
+              -webkit-print-color-adjust: exact;
+            }
+
           .document-preview__frame__page-break-after {
             width: 100%;
             border: none;
@@ -147,13 +151,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             height: ${headerHeight ? headerHeight + SBECCO : '0'}px;
           }
   
-  
           .page-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: #fff;
             width: 100%; 
             background-color: #fff; 
             font-size: 9px; 
@@ -163,7 +161,21 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             font-family: Arial; 
             color: #444;
           }
+
+          .page-footer--fixed {
+            position: fixed;
+            bottom: 0px;
+            left: 0;
+            right: 0;
+          }
   
+          .page-footer--with-numbers {
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+          }
+
           .page-header {
             position: fixed;
             top: 0mm;
@@ -188,6 +200,10 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
           }
   
           @media print {
+            html {
+              -webkit-print-color-adjust: exact;
+            }
+
             thead {display: table-header-group;} 
             tfoot {display: table-footer-group;}
             button {display: none;}
@@ -216,11 +232,11 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
           `;
         return CUSTOM_CSS;
       };
-            
+
       const CUSTOM_CSS = getCustomCSS(HEADER_H, addedStyle);
 
       const getHTMLReportFromContent = function (bodyHTML, headerHTML) {
-        
+
         return `
         <style>${CUSTOM_CSS}</style>
             <div id="header" class="page-header">
@@ -326,27 +342,33 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
         top: 0,
         right: 0,
         left: 0,
-        bottom: FOOTER_H || 40
+        bottom: FOOTER_H + 40 || 40
       };
+      config.printBackground = true;
       config.footerTemplate = `
       <style>
       ${CUSTOM_CSS}
       </style>
-      <div class="page-footer">
+      <div class="page-footer page-footer--fixed">
       ${FOOTER_TEMPLATE}
       </div>`;
     }
 
     if (IS_PAGE_NUMBER_VISIBLE) {
+      config.displayHeaderFooter = true;
       config.margin = {
         top: 0,
         right: 0,
         left: 0,
-        bottom: FOOTER_H ? FOOTER_H + 40 : 40
+        bottom: HAS_FOOTER ? FOOTER_H + 40 : 40
       };
-      config.footerTemplate = `<div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-        ${config.footerTemplate}
-        <div style="width: 100%; margin-top: 10px; font-size: 9px; text-align: center; padding: 5px 0 0 0; font-family: Arial; color: #444;">
+      config.printBackground = true;
+      config.footerTemplate = `<style>
+        ${CUSTOM_CSS}
+      </style>
+      <div class="page-footer page-footer--with-numbers page-footer--fixed">
+        ${!HAS_FOOTER ? "" : FOOTER_TEMPLATE}
+        <div id="page-numbers-container" class="page-footer">
           Pagina <span class="pageNumber"></span> di <span class="totalPages"></span>
         </div>
       </div>`;
