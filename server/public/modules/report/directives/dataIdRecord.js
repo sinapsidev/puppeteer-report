@@ -8,12 +8,6 @@
             link: {
                 post(scope, element, attrs, _controller, transclude) {
                     let transcludeFnScope;
-                    let elementClone;
-
-                    transclude(function (clone, transcludeScope) {
-                        elementClone = angular.element(clone);
-                        transcludeFnScope = transcludeScope;
-                    });
 
                     const idRecord = parseInt(attrs.idRecord, 10);                    
 
@@ -21,6 +15,8 @@
                           const { visteCorrelate, idViste } = vistaDataStore.getData();
 
                         const vistaRowsPromisesList = visteDataService.getVistaRowsPromisesList(idViste, idRecord, visteCorrelate);
+
+                        transcludeFnScope = scope.$parent.$new();
 
                         const compileNewScopeContent = (promisesList) => {
                             return Promise.all(promisesList)
@@ -40,8 +36,13 @@
                                         Object.assign(transcludeFnScope, vistaScopeObj);
                                     })
 
-                                    element.srcHTML = elementClone.srcHTML;
-                                    element.append($compile(elementClone)(transcludeFnScope));
+                                    const parentElement = element.parent();
+                                    
+                                    transclude(transcludeFnScope, function (clone) {
+                                        const  elementClone = angular.element(clone);
+                                        element.append($compile(elementClone)(transcludeFnScope));
+                                    }, parentElement);
+
                                 })
                                 .finally(() => {
                                     if (!scope.$$phase) {
