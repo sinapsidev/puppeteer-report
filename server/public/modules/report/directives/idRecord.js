@@ -9,10 +9,10 @@
                 post(scope, element, attrs, _controller, transclude) {
                     let transcludeFnScope;
 
-                    const idRecord = parseInt(attrs.idRecord, 10);                    
+                    const idRecord = parseInt(attrs.idRecord, 10);
 
                     $timeout(function () {
-                          const { visteCorrelate, idViste } = vistaDataStore.getData();
+                        const { visteCorrelate, idViste } = vistaDataStore.getData();
 
                         const vistaRowsPromisesList = visteDataService.getVistaRowsPromisesList(idViste, idRecord, visteCorrelate);
 
@@ -37,9 +37,9 @@
                                     })
 
                                     const parentElement = element.parent();
-                                    
+
                                     transclude(transcludeFnScope, function (clone) {
-                                        const  elementClone = angular.element(clone);
+                                        const elementClone = angular.element(clone);
                                         element.append($compile(elementClone)(transcludeFnScope));
                                     }, parentElement);
 
