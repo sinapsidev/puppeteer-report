@@ -252,7 +252,6 @@
             printError(e);
           }).finally(function () {
             $scope.$applyAsync(function () {
-              $scope.loading = false;
               const reportHeader = document.getElementById('header');
               if (reportHeader) {
                 setTimeout(function () {
@@ -263,6 +262,7 @@
                   } else {
                     window.top.postMessage('hideReportHeaderWarning', '*');
                   }
+                  $scope.loading = false;
                 }, 0);
               }
             });
