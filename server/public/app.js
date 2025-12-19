@@ -187,27 +187,27 @@
                 });
             });
 
-            domUtilsService.waitForSelector('[data-avatar-record]').then((reportCompanyLogo) => {
-              if (!reportCompanyLogo) return;
+            // domUtilsService.waitForSelector('[data-avatar-record]').then((reportCompanyLogo) => {
+            //   if (!reportCompanyLogo) return;
                 
-               const images = body.querySelectorAll('[data-avatar-record]');
+            //    const images = body.querySelectorAll('[data-avatar-record]');
 
-              images.forEach(image => {
-                const idSschedaPerAvatar = image.dataset.avatarRecord || idScheda;
-                avatars
-                  .get(idSschedaPerAvatar, intIdRecord)
-                  .then(url => {
-                    const div = document.createElement('div');
-                    div.style.width = `${image.width}px`;
-                    div.style.height = `${image.height}px`;
-                    div.style.backgroundImage = `url('${url}')`;
-                    div.style.backgroundPosition = 'center';
-                    div.style.backgroundSize = 'cover';
+            //   images.forEach(image => {
+            //     const idSschedaPerAvatar = image.dataset.avatarRecord || idScheda;
+            //     avatars
+            //       .get(idSschedaPerAvatar, intIdRecord)
+            //       .then(url => {
+            //         const div = document.createElement('div');
+            //         div.style.width = `${image.width}px`;
+            //         div.style.height = `${image.height}px`;
+            //         div.style.backgroundImage = `url('${url}')`;
+            //         div.style.backgroundPosition = 'center';
+            //         div.style.backgroundSize = 'cover';
 
-                    image.replaceWith(div);
-                  });
-              });
-            });
+            //         image.replaceWith(div);
+            //       });
+            //   });
+            // });
 
             domUtilsService.waitForSelector('[data-prima-foto-report]').then((primaFoto) => {
               const idVista = primaFoto.dataset.primaFotoReport;
