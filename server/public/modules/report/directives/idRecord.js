@@ -3,6 +3,7 @@
     window.angular.module('reportApp.report').directive('idRecord', function ($compile, visteDataService, vistaDataStore) {
         return {
             restrict: 'A',
+            priority: 0,
             scope: true,
             transclude: true,
             link: {
