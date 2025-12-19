@@ -14,14 +14,12 @@
                     const isValidValue = (value) => value !== undefined && value !== null;
 
                     scope.$watch(() => [idRecord, idSchedaPerAvatar, loading], function (newValue, oldValue) {
-                        console.log('newvalue', newValue);
                         if (newValue.every((val) => isValidValue(val))) {
                             const compileImg = function () {
                                 return avatars
                                     .get(idSchedaPerAvatar, idRecord)
                                     .catch(() => { })
                                     .then(url => {
-                                        console.log('url', url);
                                         if (!url) return;
 
                                         const div = document.createElement('div');
@@ -34,13 +32,10 @@
                                         return div;
                                     })
                                     .then((div) => {
-                                        console.log('div', div);
                                         if (!div) return;
 
                                         transclude(function (_clone, _transcludedScope) {
                                             const angularDiv = angular.element(div);
-
-                                            console.log('angularDiv', angularDiv);
 
                                             element?.replaceWith($compile(angularDiv)(scope));
                                         });
