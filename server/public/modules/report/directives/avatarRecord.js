@@ -1,6 +1,6 @@
 'use strict';
 (function () {
-    window.angular.module('reportApp.report').directive('avatarRecord', function ($compile, avatars, schedeDataStore) {
+    window.angular.module('reportApp.report').directive('avatarRecord', function ($compile, avatars, schedeDataStore, $document) {
         return {
             restrict: 'A',
             scope: false,
@@ -22,7 +22,7 @@
                                     .then(url => {
                                         if (!url) return;
 
-                                        const div = document.createElement('div');
+                                        const div = $document[0].createElement('div');
                                         div.style.width = `${element[0].offsetWidth}px`;
                                         div.style.height = `${element[0].offsetHeight}px`;
                                         div.style.backgroundImage = `url('${url}')`;
@@ -46,10 +46,10 @@
                                         if (!scope.$$phase) {
                                             scope.$parent.$digest();
                                         }
-                                    });;
+                                    });
                             };
 
-                            element && compileImg();
+                            angular.isElement(element) && compileImg();
                         }
                     }, true)
                 }
