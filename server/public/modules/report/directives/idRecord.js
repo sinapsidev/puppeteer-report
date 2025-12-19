@@ -12,13 +12,17 @@
                     const idRecord = parseInt(attrs.idRecord, 10);
 
                     scope.$watch(() => scope.$parent.loading, function (newValue, oldValue) {
-                        if (!newValue && oldValue) {
+                        transcludeFnScope = scope.$parent.$new();
+                        Object.assign(transcludeFnScope, {
+                            loading: newValue,
+                            idRecord,
+                        })
 
+                        if (!newValue && oldValue) {
                             const { visteCorrelate, idViste } = vistaDataStore.getData();
     
                             const vistaRowsPromisesList = visteDataService.getVistaRowsPromisesList(idViste, idRecord, visteCorrelate);
     
-                            transcludeFnScope = scope.$parent.$new();
     
                             const compileNewScopeContent = (promisesList) => {
                                 return Promise.all(promisesList)
