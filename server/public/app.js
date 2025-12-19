@@ -26,6 +26,7 @@
       'reportHelpers',
       'visteDataService',
       'vistaDataStore',
+      'schedeDataStore',
       function (
         $scope,
         avatars,
@@ -40,7 +41,8 @@
         handleIdRecordsParams,
         reportHelpers,
         visteDataService,
-        vistaDataStore
+        vistaDataStore,
+        schedeDataStore
       ) {
         const ID_SCHEDA_CONFIGURAZIONE = 90;
 
@@ -128,6 +130,7 @@
             idViste = [...new Set(idViste)];
 
             vistaDataStore.setData({idRecord: intIdRecord, idRecords: arrayIdRecords, visteCorrelate, idViste});
+            schedeDataStore.setData({idScheda});
 
             return reportService.getDatiSchedaDiRiferimento(idScheda);
           }).then(function (res) {
@@ -184,28 +187,6 @@
                 });
             });
 
-            domUtilsService.waitForSelector('[data-prima-foto-report]').then((primaFoto) => {
-              const idVista = primaFoto.dataset.primaFotoReport;
-              const nomeRisorsa = primaFoto.dataset.risorsa;
-              const idCampo = primaFoto.dataset.campo;
-              const filtroPerCampo = primaFoto.dataset.filtro;
-
-              // genere la query per andare a recuperare i dati per una persona specifica
-              const q = filtroPerCampo ? `${filtroPerCampo}${handleIdRecordsParams.validateIdRecordParam(intIdRecord)}` : null;
-              xdbApiService.getVistaRows(idVista, 1, 0, null, q).then((res) => {
-                const records = res.data.records ?? [];
-                const image = records.filter(file => filesPerCampo.isImage(file.nome));
-                filesPerCampo
-                  .download(
-                    nomeRisorsa,
-                    image[0].ID,
-                    idCampo
-                  ).then((url) => {
-                    primaFoto.src = `${url}`;
-                  });
-              });
-            });
-
             reportService.getApiTemplateCss(parseInt(searchParams.get('idTemplate'), 10)).then((res) => {
               const withPrintInstructions = res.length > 0 ? `@media print {
              ${res} 
@@ -224,31 +205,12 @@
 
             })
 
-            return campiEditabiliReport.applyValues(valoriCampiEditabili).then(() => {
-              const images = body.querySelectorAll('[data-avatar-record]');
-
-              images.forEach(image => {
-                const idSschedaPerAvatar = image.dataset.avatarRecord || idScheda;
-                avatars
-                  .get(idSschedaPerAvatar, intIdRecord)
-                  .then(url => {
-                    const div = document.createElement('div');
-                    div.style.width = `${image.width}px`;
-                    div.style.height = `${image.height}px`;
-                    div.style.backgroundImage = `url('${url}')`;
-                    div.style.backgroundPosition = 'center';
-                    div.style.backgroundSize = 'cover';
-
-                    image.replaceWith(div);
-                  });
-              });
-            });
-
+            return campiEditabiliReport.applyValues(valoriCampiEditabili)
+            
           }).catch(function (e) {
             printError(e);
           }).finally(function () {
             $scope.$applyAsync(function () {
-              $scope.loading = false;
               const reportHeader = document.getElementById('header');
               if (reportHeader) {
                 setTimeout(function () {
@@ -259,6 +221,7 @@
                   } else {
                     window.top.postMessage('hideReportHeaderWarning', '*');
                   }
+                  $scope.loading = false;
                 }, 0);
               }
             });
