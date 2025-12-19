@@ -26,6 +26,7 @@
       'reportHelpers',
       'visteDataService',
       'vistaDataStore',
+      'schedeDataStore',
       function (
         $scope,
         avatars,
@@ -40,7 +41,8 @@
         handleIdRecordsParams,
         reportHelpers,
         visteDataService,
-        vistaDataStore
+        vistaDataStore,
+        schedeDataStore
       ) {
         const ID_SCHEDA_CONFIGURAZIONE = 90;
 
@@ -128,6 +130,7 @@
             idViste = [...new Set(idViste)];
 
             vistaDataStore.setData({idRecord: intIdRecord, idRecords: arrayIdRecords, visteCorrelate, idViste});
+            schedeDataStore.setData({idScheda});
 
             return reportService.getDatiSchedaDiRiferimento(idScheda);
           }).then(function (res) {
