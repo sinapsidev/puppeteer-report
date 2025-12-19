@@ -1,6 +1,6 @@
 'use strict';
 (function () {
-    window.angular.module('reportApp.report').directive('primaFotoReport', function ($compile, handleIdRecordsParams, xdbApiService, vistaDataStore, filesPerCampo) {
+    window.angular.module('reportApp.report').directive('primaFotoReport', function ($timeout, handleIdRecordsParams, xdbApiService, filesPerCampo) {
         return {
             restrict: 'A',
             scope: false,
@@ -8,16 +8,15 @@
             link: {
                 post(scope, element, attrs, _controller) {
                     const idFoto = parseInt(attrs.primaFotoReport, 10);
-                    const { idRecord } = vistaDataStore.getData();
+                    const idRecord = scope.idRecord ?? scope.infoBase.idRecord;
                     const nomeRisorsa = attrs.risorsa;
                     const idCampo = attrs.campo;
                     const filtroCampo = attrs.filtro;
-                    const loading = scope.$parent.loading;
 
                     const isValidValue = (value) => value !== undefined && value !== null;
 
-                    scope.$watch(() => [idFoto, loading, nomeRisorsa, idCampo, idRecord], function (newVal, _oldVal) {
-                        const compileImage = function () {
+                    $timeout(function () {
+                            const compileImage = function () {
 
                             const q = filtroCampo ? `${filtroCampo}${handleIdRecordsParams.validateIdRecordParam(idRecord)}` : null;
 
@@ -53,10 +52,8 @@
                                 });
                         };
 
-                        if (newVal.every((val) => isValidValue(val))) {
-                            angular.isElement(element) && compileImage();
-                        }
-                    }, true)
+                        angular.isElement(element) && compileImage();
+                    }, 1000)
                 }
             }
         };
