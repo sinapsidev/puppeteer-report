@@ -8,9 +8,9 @@
             link: {
                 post(scope, element, attrs, _controller, transclude) {
                     const { idScheda } = schedeDataStore.getData();
-                    const idRecord = scope.$parent.value;
+                    const idRecord = scope.idRecord ?? scope.infoBase.idRecord;
                     const idSchedaPerAvatar = parseInt(attrs.avatarRecord, 10) ?? idScheda;
-                    const loading = scope.$parent.loading;
+                    const loading = scope.loading;
                     const isValidValue = (value) => value !== undefined && value !== null;
 
                     scope.$watch(() => [idRecord, idSchedaPerAvatar, loading], function (newValue, oldValue) {
