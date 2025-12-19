@@ -187,28 +187,6 @@
                 });
             });
 
-            domUtilsService.waitForSelector('[data-prima-foto-report]').then((primaFoto) => {
-              const idVista = primaFoto.dataset.primaFotoReport;
-              const nomeRisorsa = primaFoto.dataset.risorsa;
-              const idCampo = primaFoto.dataset.campo;
-              const filtroPerCampo = primaFoto.dataset.filtro;
-
-              // genere la query per andare a recuperare i dati per una persona specifica
-              const q = filtroPerCampo ? `${filtroPerCampo}${handleIdRecordsParams.validateIdRecordParam(intIdRecord)}` : null;
-              xdbApiService.getVistaRows(idVista, 1, 0, null, q).then((res) => {
-                const records = res.data.records ?? [];
-                const image = records.filter(file => filesPerCampo.isImage(file.nome));
-                filesPerCampo
-                  .download(
-                    nomeRisorsa,
-                    image[0].ID,
-                    idCampo
-                  ).then((url) => {
-                    primaFoto.src = `${url}`;
-                  });
-              });
-            });
-
             reportService.getApiTemplateCss(parseInt(searchParams.get('idTemplate'), 10)).then((res) => {
               const withPrintInstructions = res.length > 0 ? `@media print {
              ${res} 
