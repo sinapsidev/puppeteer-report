@@ -60,28 +60,6 @@
           $scope.error = message;
         };
 
-        const getCampiSchedaObject = (res, idRecord, infoScheda) => {
-          if (!Array.isArray(idRecord)) {
-            const resScheda = res.splice(0, 1);
-
-            return Object.assign($scope, reportHelpers.mapSchedaToReportData(infoScheda, resScheda[0].data));
-          }
-
-          const resScheda = res.splice(0, idRecord.length);
-
-          const objToAssign = {};
-
-          resScheda.forEach((record, index) => {
-            // PROSSIMI STEP: MODIFICARE QUESTA RIGA PER LAVORARE SULLA CREAZIONE DI REPORT CONTENENTI DATI DI UNA STESSA SCHEDA 
-            // MA MULTIPLI ID RECORDS
-            if (index > 0) return;
-
-            Object.assign(objToAssign, reportHelpers.mapSchedaToReportData(infoScheda, record.data));
-          })
-
-          return objToAssign;
-        };
-
         try {
           const url = new URL(window.location.href);
           const searchParams = url.searchParams;
