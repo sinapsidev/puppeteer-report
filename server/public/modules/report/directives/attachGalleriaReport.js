@@ -29,8 +29,10 @@
 
   window.angular.module('reportApp.report')
     .directive('attachGalleriaReport', [
+      'handleIdRecordsParams',
       'xdbApiService',
       'filesPerCampo', function (
+        handleIdRecordsParams,
         xdbApiService,
         filesPerCampo
       ) {
@@ -43,7 +45,9 @@
           link: function ($scope, $element) {
             const url = new URL(window.location.href);
             const searchParams = url.searchParams;
-            const _idRecord = parseInt(searchParams.get('idRecord'), 10);
+            const idRecordParam = searchParams.get('idRecord');
+            const idRecordVistaInt = handleIdRecordsParams.getIntIdRecord(idRecordParam);
+            const idRecordVistaList = handleIdRecordsParams.getArrayIdRecords(idRecordParam);
 
             const idVista = $scope.attachGalleriaReport;
             const {
@@ -52,7 +56,7 @@
               risorsa
             } = $element[0].dataset;
 
-            const idRecord = $scope.record || _idRecord;
+            // const idRecord = $scope.record || idRecordVistaInt;
 
             loadImages({
               idVista,
