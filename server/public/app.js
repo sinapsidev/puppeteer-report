@@ -15,7 +15,6 @@
       '$scope',
       'avatars',
       'reportService',
-      'xdbApiService',
       '$compile',
       'currentUser',
       'campiEditabiliReport',
@@ -26,11 +25,11 @@
       'visteDataService',
       'vistaDataStore',
       'schedeDataStore',
+      'campiSchedaService',
       function (
         $scope,
         avatars,
         reportService,
-        xdbApiService,
         $compile,
         currentUser,
         campiEditabiliReport,
@@ -40,7 +39,8 @@
         reportHelpers,
         visteDataService,
         vistaDataStore,
-        schedeDataStore
+        schedeDataStore,
+        campiSchedaService
       ) {
         const ID_SCHEDA_CONFIGURAZIONE = 90;
 
@@ -135,9 +135,6 @@
             infoScheda = res;
 
             const promises = [];
-            if (idScheda) {
-              promises.push(xdbApiService.getValoriCampiScheda(idScheda, intIdRecord));
-            }
 
             const vistaRowsPromisesList = visteDataService.getVistaRowsPromisesList(idViste, intIdRecord, visteCorrelate);
 
@@ -146,10 +143,10 @@
               return Promise.all(promises);
             }
           }).then(function (res) {
-            if (res && idScheda) {
-              const objToAssign = getCampiSchedaObject(res, intIdRecord, infoScheda);
-
-              Object.assign($scope, objToAssign);
+            if (idScheda) {
+              campiSchedaService.getCampiSchedaObject({ infoScheda, idRecord: intIdRecord, idScheda }).then((objToAssign) => {
+                Object.assign($scope, objToAssign);
+              });
             }
 
             if (res && res.length) {
