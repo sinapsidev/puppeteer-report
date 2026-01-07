@@ -128,7 +128,7 @@
             idViste = [...new Set(idViste)];
 
             vistaDataStore.setData({idRecord: intIdRecord, idRecords: arrayIdRecords, visteCorrelate, idViste});
-            schedeDataStore.setData({idScheda});
+            idScheda && schedeDataStore.setData({idScheda});
 
             return reportService.getDatiSchedaDiRiferimento(idScheda);
           }).then(function (res) {
