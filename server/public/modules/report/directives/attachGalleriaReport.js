@@ -29,9 +29,11 @@
 
   window.angular.module('reportApp.report')
     .directive('attachGalleriaReport', [
+      '$compile',
       'handleIdRecordsParams',
       'xdbApiService',
       'filesPerCampo', function (
+        $compile,
         handleIdRecordsParams,
         xdbApiService,
         filesPerCampo
@@ -58,31 +60,83 @@
 
             // const idRecord = $scope.record || idRecordVistaInt;
 
-            loadImages({
-              idVista,
-              idRecord,
-              nomeRisorsa: risorsa,
-              foreignKeyVista: filtro,
-              xdbApiService,
-              filesPerCampo,
-              idCampo: campo
-            }).then(images => {
-              const div = document.createElement('div');
-              div.className = 'report-gallery';
-              for (let index = 0; index < images.length; index++) {
-                const container = document.createElement('div');
-                container.className = 'report-gallery__image-container';
-                const element = images[index];
-                const caption = document.createElement('p');
-                caption.className = 'report-gallery__caption';
-                caption.innerText = `Immagine ${index + 1}`;
-                container.appendChild(element);
-                container.appendChild(caption);
-                div.appendChild(container);
-              }
+            const digest = () => { 
+              if (scope.$$phase) return;
+                
+              $scope.$parent.$digest();
+            };
 
-              $element[0].replaceWith(div);
-            });
+            const updateImgElement = ({ idRecordVista }) => {
+              return loadImages({
+                idVista,
+                idRecord: idRecordVista,
+                nomeRisorsa: risorsa,
+                foreignKeyVista: filtro,
+                xdbApiService,
+                filesPerCampo,
+                idCampo: campo
+              })
+                .then(images => {
+                const div = document.createElement('div');
+                div.className = 'report-gallery';
+                for (let index = 0; index < images.length; index++) {
+                  const container = document.createElement('div');
+                  container.className = 'report-gallery__image-container';
+                  const element = images[index];
+                  const caption = document.createElement('p');
+                  caption.className = 'report-gallery__caption';
+                  caption.innerText = `Immagine ${index + 1}`;
+                  container.appendChild(element);
+                  container.appendChild(caption);
+                  div.appendChild(container);
+                }
+
+                  return angular.element(div);
+                })
+            };
+
+            if (!Number.isInteger($scope?.record) && idRecordVistaList?.length > 0) {
+              return idRecordVistaList.forEach((idR, index) => { 
+                if (index > 0) { 
+                  return updateImgElement({ idRecordVista: idR })
+                    .then((newEl) => {
+                      const parent = angular.element($element.parent());
+                      const clone = angular.element($element.clone(true));
+
+                      clone.appendTo(parent);
+                      clone.replaceWith($compile(newEl)($scope));
+                  })
+                  .finally(() => {
+                    digest();
+                  });
+                }
+                
+                return updateImgElement({ idRecordVista: idR })
+                  .then((newEl) => {
+                    $element.append($compile(newEl)($scope));
+                  })
+                  .finally(() => {
+                    digest();
+                  });
+              });
+            }
+
+            if (!Number.isInteger($scope?.record) && !idRecordVistaList?.length) {
+              return updateImgElement({ idRecordVista: idRecordVistaInt })
+                .then((newEl) => {
+                  $element.append($compile(newEl)($scope));
+                })
+                .finally(() => {  
+                 digest();
+                });
+            }
+
+            updateImgElement({ idRecordVista: $scope.record }).then((newEl) => {
+                  $element.append($compile(newEl)($scope));
+                })
+                .finally(() => {  
+                 digest();
+                });
           }
         };
       }]);
