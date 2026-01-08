@@ -1,6 +1,6 @@
 'use strict';
 (function () {
-    window.angular.module('reportApp.report').directive('idRecord', function (schedeDataStore, $compile, visteDataService, vistaDataStore) {
+    window.angular.module('reportApp.report').directive('idRecord', function (campiSchedaService, schedeDataStore, $compile, visteDataService, vistaDataStore) {
         return {
             restrict: 'A',
             priority: 1,
@@ -41,15 +41,19 @@
                                 return Promise.all(promisesList)
                                     .then((res) => {
                                         const vistaScopeObjects = processVistaPromises(res);
+                                        const campiSchedaObject = campiSchedaService.getCampiSchedaObject({idRecord, idScheda, infoScheda});
 
                                         return {
-                                            vistaScopeObjects
+                                            vistaScopeObjects,
+                                            campiSchedaObject
                                         }
                                     })
                                     .then((reportData) => {
                                         reportData.vistaScopeObjects.forEach(function (vistaScopeObj) {
                                             Object.assign(transcludeFnScope, vistaScopeObj);
-                                        })
+                                        });
+
+                                        Object.assign(transcludeFnScope, reportData.campiSchedaObject);
 
                                         const parentElement = element.parent();
 
