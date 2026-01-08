@@ -1,6 +1,6 @@
 'use strict';
 (function () {
-    window.angular.module('reportApp.report').directive('idRecord', function ($compile, visteDataService, vistaDataStore) {
+    window.angular.module('reportApp.report').directive('idRecord', function (schedeDataStore, $compile, visteDataService, vistaDataStore) {
         return {
             restrict: 'A',
             priority: 1,
@@ -21,6 +21,7 @@
 
                         if (!newValue && oldValue) {
                             const { visteCorrelate, idViste } = vistaDataStore.getData();
+                            const { idScheda, infoScheda } = schedeDataStore.getData();
 
                             const vistaRowsPromisesList = visteDataService.getVistaRowsPromisesList(idViste, idRecord, visteCorrelate);
 
