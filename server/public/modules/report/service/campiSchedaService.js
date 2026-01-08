@@ -3,6 +3,14 @@
 
     function service(xdbApiService, reportHelpers) {
         const getCampiSchedaObject = async ({ idRecord, idScheda, infoScheda }) => { 
+            const shouldNotContinue = [
+                !Number.isInteger(idRecord),
+                !Number.isInteger(idScheda),
+                !infoScheda
+            ].some((c) => c);
+            
+            if (shouldNotContinue) return {};
+
             const valoriCampiScheda = await xdbApiService.getValoriCampiScheda(idScheda, idRecord);
 
             if (!valoriCampiScheda?.data) return {};
