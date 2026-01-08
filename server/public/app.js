@@ -106,12 +106,13 @@
             idViste = [...new Set(idViste)];
 
             vistaDataStore.setData({idRecord: intIdRecord, idRecords: arrayIdRecords, visteCorrelate, idViste});
-            (idScheda && infoScheda) && schedeDataStore.setData({idScheda, infoScheda});
-
+            
             return reportService.getDatiSchedaDiRiferimento(idScheda);
           }).then(function (res) {
             infoScheda = res;
-
+            
+            schedeDataStore.setData({ idScheda, infoScheda });
+            
             const promises = [];
 
             const vistaRowsPromisesList = visteDataService.getVistaRowsPromisesList(idViste, intIdRecord, visteCorrelate);
