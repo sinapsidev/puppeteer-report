@@ -25,22 +25,29 @@
 
                             const vistaRowsPromisesList = visteDataService.getVistaRowsPromisesList(idViste, idRecord, visteCorrelate);
 
+                            const processVistaPromises = (responses) => { 
+                                if (!responses?.length) return [];
 
-                            const compileNewScopeContent = (promisesList) => {
-                                return Promise.all(promisesList)
-                                    .then((res) => {
-                                        if (!res?.length) return;
+                                const visteWithData = responses.filter((vista) => vista?.data);
 
-                                        return res
-                                            .filter((vista) => vista?.data)
-                                            .map(function (vista) {
+                                return visteWithData.map(function (vista) {
                                                 const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === vista?.data?.id; }) || {};
 
                                                 return visteDataService.createReportVistaObject({ vistaCorrelata, vistaResult: vista.data });
                                             }) ?? [];
+                            }; 
+
+                            const compileNewScopeContent = (promisesList) => {
+                                return Promise.all(promisesList)
+                                    .then((res) => {
+                                        const vistaScopeObjects = processVistaPromises(res);
+
+                                        return {
+                                            vistaScopeObjects
+                                        }
                                     })
                                     .then((reportData) => {
-                                        reportData.forEach(function (vistaScopeObj) {
+                                        reportData.vistaScopeObjects.forEach(function (vistaScopeObj) {
                                             Object.assign(transcludeFnScope, vistaScopeObj);
                                         })
 

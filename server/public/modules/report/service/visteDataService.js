@@ -89,15 +89,15 @@
             if (!Object.entries(vistaResult).length) return {};
 
             const infoVista = {
-                  idVista: vistaResult.id,
-                  idRecord: vistaResult.records?.[0]?.["ID"],
-                  etichettaVista: vistaCorrelata.etichettaVista
+                idVista: vistaResult.id,
+                idRecord: vistaResult.records?.[0]?.["ID"],
+                etichettaVista: vistaCorrelata.etichettaVista
             };
             
             const vistaToReportData = this.mapVistaToReportData(infoVista, vistaResult);
 
             return vistaToReportData;
-        }
+        };
     };
 
     window.angular.module('reportApp.report').service('visteDataService', ['reportHelpers', 'xdbApiService', 'handleIdRecordsParams', service]);
