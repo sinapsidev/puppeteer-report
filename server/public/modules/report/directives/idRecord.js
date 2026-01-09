@@ -12,6 +12,76 @@
 
                     const idRecord = parseInt(attrs.idRecord, 10);
 
+                    const processVistaPromises = ({ scopeCopy, visteCorrelate, idViste }) => {
+                        const vistaRowsPromisesList = visteDataService.getVistaRowsPromisesList(idViste, idRecord, visteCorrelate);
+
+                        if (!vistaRowsPromisesList?.length) return;
+
+                        return Promise.all(vistaRowsPromisesList)
+                            .catch(() => { })
+                            .then(function (responses) {
+                                if (!responses?.length) return [];
+
+                                const visteWithData = responses.filter((vista) => vista?.data);
+
+                                return visteWithData.map(function (vista) {
+                                    const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === vista?.data?.id; }) || {};
+
+                                    return visteDataService.createReportVistaObject({ vistaCorrelata, vistaResult: vista.data });
+                                }) ?? [];
+                            })
+                            .then(function (vistaScopeObjects) {
+                                return vistaScopeObjects.forEach(function (vistaScopeObj) {
+                                    Object.assign(scopeCopy, vistaScopeObj);
+                                });
+                            });
+                    };
+
+                    const processSchedaPromise = ({ infoScheda, idScheda, scopeCopy }) => {
+                        return Promise.resolve(campiSchedaService.getCampiSchedaObject({ idRecord, idScheda, infoScheda }))
+                            .then(function (schedaObj) {
+                                if (!Object.entries(schedaObj)?.length) return;
+
+                                Object.assign(scopeCopy, schedaObj);
+
+                                return;
+                            })
+                            .catch((error) => {
+                                return console.error(error?.message);
+                            });
+                    };
+
+                    const compileNewScopeContent = ({ promisesList, scopeCopy }) => {
+                        if (!scopeCopy || !promisesList?.length) return;
+
+                        return Promise.allSettled(promisesList)
+                            .then((fulfilledSummary) => {
+
+                                if (fulfilledSummary.every((summary) => summary.status === "rejected")) {
+                                    const rejectedPromises = fulfilledSummary.map((summary) => summary?.reason)?.filter((reason) => Boolean(reason));
+
+                                    return rejectedPromises.forEach((reason) => { 
+                                        throw new Error(`Errore nella directive idRecord. \n ${reason}`)
+                                    });
+                                };
+                            
+                                const parentElement = element.parent();
+
+                                return transclude(scopeCopy, function (clone) {
+                                    const elementClone = angular.element(clone);
+                                    element.append($compile(elementClone)(scopeCopy));
+                                }, parentElement);
+                            })
+                            .catch((error) => {
+                                console.error(error.message);
+                            })
+                            .finally(() => {
+                                        if (!scope.$$phase) {
+                                            scope.$parent.$digest();
+                                        }
+                                    });
+                    };
+
                     scope.$watch(() => scope.$parent.loading, function (newValue, oldValue) {
                         transcludeFnScope = scope.$parent.$new();
                         Object.assign(transcludeFnScope, {
@@ -23,54 +93,20 @@
                             const { visteCorrelate, idViste } = vistaDataStore.getData();
                             const { idScheda, infoScheda } = schedeDataStore.getData();
 
-                            const vistaRowsPromisesList = visteDataService.getVistaRowsPromisesList(idViste, idRecord, visteCorrelate);
+                            const promisesList = [
+                                processVistaPromises({
+                                    idViste,
+                                    scopeCopy: transcludeFnScope,
+                                    visteCorrelate
+                                }),
+                                processSchedaPromise({
+                                    idScheda,
+                                    infoScheda,
+                                    scopeCopy: transcludeFnScope,
+                                })
+                            ];
 
-                            const processVistaPromises = (responses) => { 
-                                if (!responses?.length) return [];
-
-                                const visteWithData = responses.filter((vista) => vista?.data);
-
-                                return visteWithData.map(function (vista) {
-                                                const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === vista?.data?.id; }) || {};
-
-                                                return visteDataService.createReportVistaObject({ vistaCorrelata, vistaResult: vista.data });
-                                            }) ?? [];
-                            }; 
-
-                            const compileNewScopeContent = (promisesList) => {
-                                return Promise.all(promisesList)
-                                    .then((res) => {
-                                        const vistaScopeObjects = processVistaPromises(res);
-                                        const campiSchedaObject = campiSchedaService.getCampiSchedaObject({idRecord, idScheda, infoScheda});
-
-                                        return {
-                                            vistaScopeObjects,
-                                            campiSchedaObject
-                                        }
-                                    })
-                                    .then((reportData) => {
-                                        reportData.vistaScopeObjects.forEach(function (vistaScopeObj) {
-                                            Object.assign(transcludeFnScope, vistaScopeObj);
-                                        });
-
-                                        Object.assign(transcludeFnScope, reportData.campiSchedaObject);
-
-                                        const parentElement = element.parent();
-
-                                        transclude(transcludeFnScope, function (clone) {
-                                            const elementClone = angular.element(clone);
-                                            element.append($compile(elementClone)(transcludeFnScope));
-                                        }, parentElement);
-
-                                    })
-                                    .finally(() => {
-                                        if (!scope.$$phase) {
-                                            scope.$parent.$digest();
-                                        }
-                                    });
-                            };
-
-                            vistaRowsPromisesList?.length > 0 && compileNewScopeContent(vistaRowsPromisesList);
+                            compileNewScopeContent({ promisesList, scopeCopy: transcludeFnScope });
                         }
 
                         if (newValue && transcludeFnScope) {
