@@ -3,21 +3,30 @@
 
     function service(xdbApiService, reportHelpers) {
         const getCampiSchedaObject = async ({ idRecord, idScheda, infoScheda }) => { 
-            const shouldNotContinue = [
-                !Number.isInteger(idRecord),
-                !Number.isInteger(idScheda),
-                !infoScheda
-            ].some((c) => c);
-            
-            if (shouldNotContinue) return {};
+            try { 
+                const shouldNotContinue = [
+                    !Number.isInteger(idRecord),
+                    !Number.isInteger(idScheda),
+                    !infoScheda
+                ].some((c) => c);
 
-            const valoriCampiScheda = await xdbApiService.getValoriCampiScheda(idScheda, idRecord);
+                if (shouldNotContinue) throw new Error("Controllare che i tipi dei parametri inseriti in getCampiSchedaObject siano corretti. Tipi corretti: \n {\n idRecord: number\n idScheda: number \n infoScheda: { \n idScheda: number \n nomeScheda: string \n } \n}");
 
-            if (!valoriCampiScheda?.data) return {};
+                const valoriCampiScheda = await xdbApiService.getValoriCampiScheda(idScheda, idRecord);
 
-            const dataToScopeObj = reportHelpers.mapSchedaToReportData(infoScheda, valoriCampiScheda?.data);
+                if (valoriCampiScheda.status < 200 && valoriCampiScheda.status >= 300) {
+                    console.log('data', Object.entries(valoriCampiScheda).toString());
+                    throw new Error(`Non ci sono valori validi nella scheda con id ${idScheda} per record con id ${idRecord}`)
+                };
 
-            return dataToScopeObj;
+                const dataToScopeObj = reportHelpers.mapSchedaToReportData(infoScheda, valoriCampiScheda?.data);
+
+                return dataToScopeObj;
+
+            } catch (error) {
+                console.error(error.message);
+                return {};
+            }
         };
 
         return {
