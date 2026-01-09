@@ -16,7 +16,10 @@
                         transcludeFnScope = scope.$parent.$new();
                         Object.assign(transcludeFnScope, {
                             loading: newValue,
-                            idRecord,
+                            infoBase: {
+                                ...scope.$parent?.infoBase,
+                                idRecord,
+                            },
                         });
 
                         if (!newValue && oldValue) {
