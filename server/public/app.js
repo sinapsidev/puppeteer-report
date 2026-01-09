@@ -116,20 +116,25 @@
             const promises = [];
 
             const vistaRowsPromisesList = visteDataService.getVistaRowsPromisesList(idViste, intIdRecord, visteCorrelate);
+            const schedaRowsPromise = campiSchedaService.getCampiSchedaObject({ infoScheda, idRecord: intIdRecord, idScheda });
 
             promises.push(...vistaRowsPromisesList);
+            promises.push(schedaRowsPromise);
             if (promises.length) {
               return Promise.all(promises);
             }
           }).then(function (res) {
-            if (idScheda) {
-              campiSchedaService.getCampiSchedaObject({ infoScheda, idRecord: intIdRecord, idScheda }).then((objToAssign) => {
-                Object.assign($scope, objToAssign);
-              });
-            }
 
+            if (idScheda && infoScheda) {
+              const schedaObj = res[res.length - 1];
+              
+              Object.assign($scope, schedaObj);
+            }
+            
             if (res && res.length) {
-              res.forEach(function (vista) {
+              const promisesResults = (idScheda && infoScheda) ? res.splice(0, res.length - 1) : res;
+              
+              promisesResults.forEach(function (vista) {
                 const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === vista?.data?.id; }) || {};
 
                 const vistaToReportData = visteDataService.createReportVistaObject({vistaCorrelata, vistaResult: vista?.data});
