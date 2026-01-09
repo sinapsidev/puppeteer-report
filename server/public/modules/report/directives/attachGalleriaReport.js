@@ -29,10 +29,12 @@
 
   window.angular.module('reportApp.report')
     .directive('attachGalleriaReport', [
+      '$location',
       '$compile',
       'handleIdRecordsParams',
       'xdbApiService',
       'filesPerCampo', function (
+        $location,
         $compile,
         handleIdRecordsParams,
         xdbApiService,
@@ -44,55 +46,57 @@
             attachGalleriaReport: '=',
             record: '='
           },
-          link: function ($scope, $element) {
-            const url = new URL(window.location.href);
-            const searchParams = url.searchParams;
-            const idRecordParam = searchParams.get('idRecord');
+          link: function ($scope, $element, attributes) {
+
+            const searchParams = $location.search();
+            const idRecordParam = searchParams?.idRecord;
             const idRecordVistaInt = handleIdRecordsParams.getIntIdRecord(idRecordParam);
             const idRecordVistaList = handleIdRecordsParams.getArrayIdRecords(idRecordParam);
 
-            const idVista = $scope.attachGalleriaReport;
-            const {
-              filtro,
-              campo,
-              risorsa
-            } = $element[0].dataset;
+            const digest = () => {
+              if (!!scope.$$phase) return;
 
-            // const idRecord = $scope.record || idRecordVistaInt;
-
-            const digest = () => { 
-              if (scope.$$phase) return;
-                
               $scope.$parent.$digest();
             };
 
             const updateImgElement = ({ idRecordVista }) => {
-              return loadImages({
-                idVista,
-                idRecord: idRecordVista,
-                nomeRisorsa: risorsa,
-                foreignKeyVista: filtro,
-                xdbApiService,
-                filesPerCampo,
-                idCampo: campo
-              })
-                .then(images => {
-                const div = document.createElement('div');
-                div.className = 'report-gallery';
-                for (let index = 0; index < images.length; index++) {
-                  const container = document.createElement('div');
-                  container.className = 'report-gallery__image-container';
-                  const element = images[index];
-                  const caption = document.createElement('p');
-                  caption.className = 'report-gallery__caption';
-                  caption.innerText = `Immagine ${index + 1}`;
-                  container.appendChild(element);
-                  container.appendChild(caption);
-                  div.appendChild(container);
-                }
+              try {
 
-                  return angular.element(div);
+                if ([attributes?.attachGalleriaReport,
+                attributes?.risorsa,
+                attributes?.campo].some((data) => !data)) throw new Error(`Parametri mancanti: \n {\n attachGalleriaReport: ${attributes?.attachGalleriaReport},\n risorsa: ${attributes?.risorsa}, \n filtro: ${attributes?.filtro}, \n campo: ${attributes?.campo} \n}`);
+
+                return loadImages({
+                  idVista: attributes?.attachGalleriaReport,
+                  idRecord: idRecordVista,
+                  nomeRisorsa: attributes?.risorsa,
+                  foreignKeyVista: attributes?.filtro,
+                  xdbApiService,
+                  filesPerCampo,
+                  idCampo: attributes?.campo
                 })
+                  .then(images => {
+                    const div = document.createElement('div');
+                    div.className = 'report-gallery';
+
+                    for (let index = 0; index < images.length; index++) {
+                      const container = document.createElement('div');
+                      container.className = 'report-gallery__image-container';
+                      const element = images[index];
+                      const caption = document.createElement('p');
+                      caption.className = 'report-gallery__caption';
+                      caption.innerText = `Immagine ${index + 1}`;
+                      container.appendChild(element);
+                      container.appendChild(caption);
+                      div.appendChild(container);
+                    }
+
+                    return angular.element(div);
+                  })
+              } catch (error) {
+                console.error(error?.message);
+                return;
+              }
             };
 
             if (!Number.isInteger($scope?.record) && idRecordVistaList?.length > 0) {
