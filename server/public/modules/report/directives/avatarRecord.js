@@ -8,7 +8,7 @@
             link: {
                 post(scope, element, attrs, _controller, transclude) {
                     const { idScheda } = schedeDataStore.getData();
-                    const idRecord = scope.idRecord ?? scope.infoBase.idRecord;
+                    const idRecord = scope.infoBase.idRecord;
                     const idSchedaPerAvatar = parseInt(attrs.avatarRecord, 10) ?? idScheda;
                     const loading = scope.loading;
                     const isValidValue = (value) => value !== undefined && value !== null;
