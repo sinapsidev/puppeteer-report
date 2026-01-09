@@ -15,7 +15,9 @@
 
             if (!valoriCampiScheda?.data) return {};
 
-            return Object.assign({}, reportHelpers.mapSchedaToReportData(infoScheda, valoriCampiScheda?.data));
+            const dataToScopeObj = reportHelpers.mapSchedaToReportData(infoScheda, valoriCampiScheda?.data);
+
+            return dataToScopeObj;
         };
 
         return {
