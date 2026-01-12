@@ -42,6 +42,7 @@
       ) {
         return {
           restrict: 'A',
+          transclude: true,
           scope: {
             attachGalleriaReport: '=',
             record: '='
@@ -59,7 +60,7 @@
               $scope.$parent.$digest();
             };
 
-            const updateImgElement = ({ idRecordVista }) => {
+            const createNewElement = ({ idRecordVista }) => {
               try {
 
                 if ([attributes?.attachGalleriaReport,
@@ -99,48 +100,58 @@
               }
             };
 
-            if (!Number.isInteger($scope?.record) && idRecordVistaList?.length > 0) {
-              return idRecordVistaList.forEach((idR, index) => { 
-                if (index > 0) { 
-                  return updateImgElement({ idRecordVista: idR })
-                    .then((newEl) => {
-                      const parent = angular.element($element.parent());
-                      const clone = angular.element($element.clone(true));
+            // wrappare tutto in scope.$watch? y/n
 
-                      clone.appendTo(parent);
-                      clone.replaceWith($compile(newEl)($scope));
-                  })
-                  .finally(() => {
-                    digest();
-                  });
-                }
-                
-                return updateImgElement({ idRecordVista: idR })
-                  .then((newEl) => {
-                    $element.append($compile(newEl)($scope));
-                  })
-                  .finally(() => {
-                    digest();
-                  });
-              });
-            }
+            // non c'è bisogno di fare questa catena di ifs 
+            // Meglio fare 3 callbacks separate e poi un'unica fn con switch, od object + if
 
-            if (!Number.isInteger($scope?.record) && !idRecordVistaList?.length) {
-              return updateImgElement({ idRecordVista: idRecordVistaInt })
+            const compileFromAttrsValue = () => {
+              return createNewElement({ idRecordVista: record })
                 .then((newEl) => {
                   $element.append($compile(newEl)($scope));
                 })
-                .finally(() => {  
-                 digest();
-                });
-            }
+                .finally(() => {
+                  digest();
+                })
+            };
 
-            updateImgElement({ idRecordVista: $scope.record }).then((newEl) => {
+            const compileFromParamList = async () => {
+              try {
+
+              if (!idRecordVistaList?.length) throw new Error("Non è associato più di un id record al search param idRecord");
+
+              const parentEl = $element.parent();
+              const firstIdRecord = idRecordVistaList[0];
+              const followingIds = idRecordVistaList.splice(1, idRecordVistaList.length); 
+
+                  const firstImage = await createNewElement({ idRecordVista: firstIdRecord });
+                  const followingImages = followingIds.map(async (idRecord) => {
+                    return await createNewElement({idRecordVista: idRecord})
+                  });
+
+                  $element.replaceWith($compile(firstImage)($scope)); 
+                  followingImages.forEach(async (element) => {
+                    parentEl.append($compile(element)($scope));
+                  })
+                } catch (error) {
+                  console.error(error?.message);
+
+                  return;
+                } finally {
+                  digest();
+                }
+              };
+
+            const compileFromParamValue = () => {
+              return createNewElement({ idRecordVista: idRecordVistaInt })
+                .then((newEl) => {
                   $element.append($compile(newEl)($scope));
                 })
-                .finally(() => {  
-                 digest();
+                .finally(() => {
+                  digest();
                 });
+            };
+            
           }
         };
       }]);
