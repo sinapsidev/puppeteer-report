@@ -105,14 +105,14 @@
 
             idViste = [...new Set(idViste)];
 
-            vistaDataStore.setData({idRecord: intIdRecord, idRecords: arrayIdRecords, visteCorrelate, idViste});
-            
+            vistaDataStore.setData({ idRecord: intIdRecord, idRecords: arrayIdRecords, visteCorrelate, idViste });
+
             return reportService.getDatiSchedaDiRiferimento(idScheda);
           }).then(function (res) {
             infoScheda = res;
-            
+
             schedeDataStore.setData({ idScheda, infoScheda });
-            
+
             const promises = [];
 
             const vistaRowsPromisesList = visteDataService.getVistaRowsPromisesList(idViste, intIdRecord, visteCorrelate);
@@ -127,17 +127,17 @@
 
             if (idScheda && infoScheda) {
               const schedaObj = res[res.length - 1];
-              
+
               Object.assign($scope, schedaObj);
             }
-            
+
             if (res && res.length) {
               const promisesResults = (idScheda && infoScheda) ? res.splice(0, res.length - 1) : res;
-              
+
               promisesResults.forEach(function (vista) {
                 const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === vista?.data?.id; }) || {};
 
-                const vistaToReportData = visteDataService.createReportVistaObject({vistaCorrelata, vistaResult: vista?.data});
+                const vistaToReportData = visteDataService.createReportVistaObject({ vistaCorrelata, vistaResult: vista?.data });
 
                 Object.assign($scope, vistaToReportData);
               });
@@ -185,7 +185,7 @@
             })
 
             return campiEditabiliReport.applyValues(valoriCampiEditabili)
-            
+
           }).catch(function (e) {
             printError(e);
           }).finally(function () {

@@ -60,11 +60,11 @@
                                 if (fulfilledSummary.every((summary) => summary.status === "rejected")) {
                                     const rejectedPromises = fulfilledSummary.map((summary) => summary?.reason)?.filter((reason) => Boolean(reason));
 
-                                    return rejectedPromises.forEach((reason) => { 
+                                    return rejectedPromises.forEach((reason) => {
                                         throw new Error(`Errore nella directive idRecord. \n ${reason}`)
                                     });
                                 };
-                            
+
                                 const parentElement = element.parent();
 
                                 return transclude(scopeCopy, function (clone) {
@@ -76,10 +76,10 @@
                                 console.error(error.message);
                             })
                             .finally(() => {
-                                        if (!scope.$$phase) {
-                                            scope.$parent.$digest();
-                                        }
-                                    });
+                                if (!scope.$$phase) {
+                                    scope.$parent.$digest();
+                                }
+                            });
                     };
 
                     scope.$watch(() => scope.$parent.loading, function (newValue, oldValue) {

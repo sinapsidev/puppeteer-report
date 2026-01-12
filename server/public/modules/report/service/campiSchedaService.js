@@ -2,8 +2,8 @@
 (function () {
 
     function service(xdbApiService, reportHelpers) {
-        const getCampiSchedaObject = async ({ idRecord, idScheda, infoScheda }) => { 
-            try { 
+        const getCampiSchedaObject = async ({ idRecord, idScheda, infoScheda }) => {
+            try {
                 const shouldNotContinue = [
                     !Number.isInteger(idRecord),
                     !Number.isInteger(idScheda),
@@ -15,7 +15,6 @@
                 const valoriCampiScheda = await xdbApiService.getValoriCampiScheda(idScheda, idRecord);
 
                 if (valoriCampiScheda.status < 200 && valoriCampiScheda.status >= 300) {
-                    console.log('data', Object.entries(valoriCampiScheda).toString());
                     throw new Error(`Non ci sono valori validi nella scheda con id ${idScheda} per record con id ${idRecord}`)
                 };
 
