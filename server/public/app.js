@@ -15,34 +15,32 @@
       '$scope',
       'avatars',
       'reportService',
-      'xdbApiService',
       '$compile',
       'currentUser',
       'campiEditabiliReport',
       'storageService',
       'domUtilsService',
-      'filesPerCampo',
       'handleIdRecordsParams',
       'reportHelpers',
       'visteDataService',
       'vistaDataStore',
       'schedeDataStore',
+      'campiSchedaService',
       function (
         $scope,
         avatars,
         reportService,
-        xdbApiService,
         $compile,
         currentUser,
         campiEditabiliReport,
         storageService,
         domUtilsService,
-        filesPerCampo,
         handleIdRecordsParams,
         reportHelpers,
         visteDataService,
         vistaDataStore,
-        schedeDataStore
+        schedeDataStore,
+        campiSchedaService
       ) {
         const ID_SCHEDA_CONFIGURAZIONE = 90;
 
@@ -60,28 +58,6 @@
           div.id = 'report-error';
           document.body.appendChild(div);
           $scope.error = message;
-        };
-
-        const getCampiSchedaObject = (res, idRecord, infoScheda) => {
-          if (!Array.isArray(idRecord)) {
-            const resScheda = res.splice(0, 1);
-
-            return Object.assign($scope, reportHelpers.mapSchedaToReportData(infoScheda, resScheda[0].data));
-          }
-
-          const resScheda = res.splice(0, idRecord.length);
-
-          const objToAssign = {};
-
-          resScheda.forEach((record, index) => {
-            // PROSSIMI STEP: MODIFICARE QUESTA RIGA PER LAVORARE SULLA CREAZIONE DI REPORT CONTENENTI DATI DI UNA STESSA SCHEDA 
-            // MA MULTIPLI ID RECORDS
-            if (index > 0) return;
-
-            Object.assign(objToAssign, reportHelpers.mapSchedaToReportData(infoScheda, record.data));
-          })
-
-          return objToAssign;
         };
 
         try {
@@ -129,36 +105,39 @@
 
             idViste = [...new Set(idViste)];
 
-            vistaDataStore.setData({idRecord: intIdRecord, idRecords: arrayIdRecords, visteCorrelate, idViste});
-            schedeDataStore.setData({idScheda});
+            vistaDataStore.setData({ idRecord: intIdRecord, idRecords: arrayIdRecords, visteCorrelate, idViste });
 
             return reportService.getDatiSchedaDiRiferimento(idScheda);
           }).then(function (res) {
             infoScheda = res;
 
+            schedeDataStore.setData({ idScheda, infoScheda });
+
             const promises = [];
-            if (idScheda) {
-              promises.push(xdbApiService.getValoriCampiScheda(idScheda, intIdRecord));
-            }
 
             const vistaRowsPromisesList = visteDataService.getVistaRowsPromisesList(idViste, intIdRecord, visteCorrelate);
+            const schedaRowsPromise = campiSchedaService.getCampiSchedaObject({ infoScheda, idRecord: intIdRecord, idScheda });
 
             promises.push(...vistaRowsPromisesList);
+            promises.push(schedaRowsPromise);
             if (promises.length) {
               return Promise.all(promises);
             }
           }).then(function (res) {
-            if (res && idScheda) {
-              const objToAssign = getCampiSchedaObject(res, intIdRecord, infoScheda);
 
-              Object.assign($scope, objToAssign);
+            if (idScheda && infoScheda) {
+              const schedaObj = res[res.length - 1];
+
+              Object.assign($scope, schedaObj);
             }
 
             if (res && res.length) {
-              res.forEach(function (vista) {
+              const promisesResults = (idScheda && infoScheda) ? res.splice(0, res.length - 1) : res;
+
+              promisesResults.forEach(function (vista) {
                 const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === vista?.data?.id; }) || {};
 
-                const vistaToReportData = visteDataService.createReportVistaObject({vistaCorrelata, vistaResult: vista?.data});
+                const vistaToReportData = visteDataService.createReportVistaObject({ vistaCorrelata, vistaResult: vista?.data });
 
                 Object.assign($scope, vistaToReportData);
               });
@@ -206,7 +185,7 @@
             })
 
             return campiEditabiliReport.applyValues(valoriCampiEditabili)
-            
+
           }).catch(function (e) {
             printError(e);
           }).finally(function () {
