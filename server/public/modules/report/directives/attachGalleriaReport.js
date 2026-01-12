@@ -42,7 +42,6 @@
       ) {
         return {
           restrict: 'A',
-          transclude: true,
           scope: {
             attachGalleriaReport: '=',
             record: '='
@@ -55,9 +54,9 @@
             const idRecordVistaList = handleIdRecordsParams.getArrayIdRecords(idRecordParam);
 
             const digest = () => {
-              if (!!scope.$$phase) return;
-
-              $scope.$parent.$digest();
+              if (!scope.$$phase) {
+                scope.$parent.$digest();
+              }
             };
 
             const createNewElement = ({ idRecordVista }) => {
@@ -96,14 +95,11 @@
                   })
               } catch (error) {
                 console.error(error?.message);
-                return;
+                return  $element.clone();
               }
             };
 
             // wrappare tutto in scope.$watch? y/n
-
-            // non c'è bisogno di fare questa catena di ifs 
-            // Meglio fare 3 callbacks separate e poi un'unica fn con switch, od object + if
 
             const compileFromAttrsValue = () => {
               return createNewElement({ idRecordVista: record })
@@ -151,7 +147,19 @@
                   digest();
                 });
             };
-            
+
+            const shouldUseAttrValue = Number.isInteger(attributes?.record);
+            const shouldUseSingleParamVal = !shouldUseAttrValue && !infoBase?.idRecords?.length;
+            const shouldUseParamValues = !shouldUseAttrValue && infoBase?.idRecords?.length > 0;
+              
+              switch (true) {
+                case shouldUseParamValues:
+                  return compileFromParamList();
+                case shouldUseSingleParamVal:
+                  return compileFromParamValue();
+                default:
+                  return compileFromAttrsValue();
+              }
           }
         };
       }]);
