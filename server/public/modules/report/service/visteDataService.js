@@ -66,16 +66,15 @@
 
         this.getVistaRowsPromisesList = (idViste, idRecord, visteCorrelate) => {
             const shouldNotContinue = [
-                !idViste,
+                (!Array.isArray(idViste) && !idViste.some((entry) => Number.isInteger(entry))),
                 !Array.isArray(idViste),
-                !idRecord,
-                !visteCorrelate,
+                !Number.isInteger(idRecord),
                 !Array.isArray(visteCorrelate)].some((c) => c)
             
             if (shouldNotContinue) return [];
 
             return idViste.map((idVista) => {
-                const vistaCorrelata = (Array.isArray(visteCorrelate) ? visteCorrelate.find(function (v) { return v.idVista === idVista; }) : {}) || {};
+                const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === idVista; }) || {};
 
                 return this.callVistaRowByIdRecord({
                     idVista,
@@ -89,15 +88,15 @@
             if (!Object.entries(vistaResult).length) return {};
 
             const infoVista = {
-                  idVista: vistaResult.id,
-                  idRecord: vistaResult.records?.[0]?.["ID"],
-                  etichettaVista: vistaCorrelata.etichettaVista
+                idVista: vistaResult.id,
+                idRecord: vistaResult.records?.[0]?.["ID"],
+                etichettaVista: vistaCorrelata.etichettaVista
             };
             
             const vistaToReportData = this.mapVistaToReportData(infoVista, vistaResult);
 
             return vistaToReportData;
-        }
+        };
     };
 
     window.angular.module('reportApp.report').service('visteDataService', ['reportHelpers', 'xdbApiService', 'handleIdRecordsParams', service]);

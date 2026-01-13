@@ -7,6 +7,7 @@
     const service = function () {
         this.data = {
             idScheda: -1,
+            infoScheda: null
         };
 
         this.getData = () => ({ ...this.data });
