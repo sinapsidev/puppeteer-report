@@ -29,137 +29,116 @@
 
   window.angular.module('reportApp.report')
     .directive('attachGalleriaReport', [
-      '$location',
       '$compile',
-      'handleIdRecordsParams',
       'xdbApiService',
       'filesPerCampo', function (
-        $location,
         $compile,
-        handleIdRecordsParams,
         xdbApiService,
         filesPerCampo
       ) {
         return {
           restrict: 'A',
+          transclude: true,
           scope: {
             attachGalleriaReport: '=',
             record: '='
           },
-          link: function ($scope, $element, attributes) {
+          link: function ($scope, $element) {
+            const infoBase = $scope.$parent.infoBase;
+            const shouldHandleManyIds = !$scope.record && infoBase?.idRecords?.length > 0;
 
-            const searchParams = $location.search();
-            const idRecordParam = searchParams?.idRecord;
-            const idRecordVistaInt = handleIdRecordsParams.getIntIdRecord(idRecordParam);
-            const idRecordVistaList = handleIdRecordsParams.getArrayIdRecords(idRecordParam);
+            const idVista = $scope.attachGalleriaReport;
+            const {
+              filtro,
+              campo,
+              risorsa
+            } = $element[0].dataset;
 
-            const digest = () => {
-              if (!scope.$$phase) {
-                scope.$parent.$digest();
+            const createNewElement = function (imagesData) {
+              const div = document.createElement('div');
+              div.className = 'report-gallery report-gallery__image-container';
+              for (let index = 0; index < imagesData.length; index++) {
+                const element = imagesData[index];
+                const caption = document.createElement('p');
+                caption.className = 'report-gallery__caption';
+                caption.innerText = `Immagine ${index + 1}`;
+                div.appendChild(element);
+                div.appendChild(caption);
               }
+
+              return div;
             };
 
-            const createNewElement = ({ idRecordVista }) => {
-              try {
+            const replaceWithManyEls = function () {
+              const idRecords = infoBase?.idRecords || Array.from({ length: 0 });
 
-                if ([attributes?.attachGalleriaReport,
-                attributes?.risorsa,
-                attributes?.campo].some((data) => !data)) throw new Error(`Parametri mancanti: \n {\n attachGalleriaReport: ${attributes?.attachGalleriaReport},\n risorsa: ${attributes?.risorsa}, \n filtro: ${attributes?.filtro}, \n campo: ${attributes?.campo} \n}`);
+              const container = document.createElement("div");
+              const style = "width: 100%; height: 100%; display: flex; padding: 5px; column-gap: 5px; overflow-x: hidden; flex-wrap: wrap;";
+              container.setAttribute("style", style);
 
+              const promisesList = idRecords?.map((id) => {
                 return loadImages({
-                  idVista: attributes?.attachGalleriaReport,
-                  idRecord: idRecordVista,
-                  nomeRisorsa: attributes?.risorsa,
-                  foreignKeyVista: attributes?.filtro,
+                  idVista,
+                  idRecord: id,
+                  nomeRisorsa: risorsa,
+                  foreignKeyVista: filtro,
                   xdbApiService,
                   filesPerCampo,
-                  idCampo: attributes?.campo
+                  idCampo: campo
                 })
-                  .then(images => {
-                    const div = document.createElement('div');
-                    div.className = 'report-gallery';
+                  .catch(() => { })
+                  .then((images) => {
+                    const imageDiv = createNewElement(images);
+                    imageDiv.setAttribute('id', `image-${id}-${risorsa}`);
 
-                    for (let index = 0; index < images.length; index++) {
-                      const container = document.createElement('div');
-                      container.className = 'report-gallery__image-container';
-                      const element = images[index];
-                      const caption = document.createElement('p');
-                      caption.className = 'report-gallery__caption';
-                      caption.innerText = `Immagine ${index + 1}`;
-                      container.appendChild(element);
-                      container.appendChild(caption);
-                      div.appendChild(container);
-                    }
-
-                    return angular.element(div);
+                    container.appendChild(imageDiv);
                   })
-              } catch (error) {
-                console.error(error?.message);
-                return  $element.clone();
-              }
-            };
+              });
 
-            // wrappare tutto in scope.$watch? y/n
-
-            const compileFromAttrsValue = () => {
-              return createNewElement({ idRecordVista: record })
-                .then((newEl) => {
-                  $element.append($compile(newEl)($scope));
-                })
-                .finally(() => {
-                  digest();
-                })
-            };
-
-            const compileFromParamList = async () => {
-              try {
-
-              if (!idRecordVistaList?.length) throw new Error("Non è associato più di un id record al search param idRecord");
-
-              const parentEl = $element.parent();
-              const firstIdRecord = idRecordVistaList[0];
-              const followingIds = idRecordVistaList.splice(1, idRecordVistaList.length); 
-
-                  const firstImage = await createNewElement({ idRecordVista: firstIdRecord });
-                  const followingImages = followingIds.map(async (idRecord) => {
-                    return await createNewElement({idRecordVista: idRecord})
-                  });
-
-                  $element.replaceWith($compile(firstImage)($scope)); 
-                  followingImages.forEach(async (element) => {
-                    parentEl.append($compile(element)($scope));
-                  })
-                } catch (error) {
-                  console.error(error?.message);
-
-                  return;
-                } finally {
-                  digest();
-                }
-              };
-
-            const compileFromParamValue = () => {
-              return createNewElement({ idRecordVista: idRecordVistaInt })
-                .then((newEl) => {
-                  $element.append($compile(newEl)($scope));
-                })
-                .finally(() => {
-                  digest();
+              return Promise.allSettled(promisesList)
+                .then((results) => {
+                  if (results.some((res) => res.status === "fulfilled")) {
+                    $element.append($compile(angular.element(container))($scope));
+                  }
                 });
             };
 
-            const shouldUseAttrValue = Number.isInteger(attributes?.record);
-            const shouldUseSingleParamVal = !shouldUseAttrValue && !infoBase?.idRecords?.length;
-            const shouldUseParamValues = !shouldUseAttrValue && infoBase?.idRecords?.length > 0;
-              
-              switch (true) {
-                case shouldUseParamValues:
-                  return compileFromParamList();
-                case shouldUseSingleParamVal:
-                  return compileFromParamValue();
-                default:
-                  return compileFromAttrsValue();
+            const replaceWithSingleEl = function () {
+              const idRecord = $scope.record || infoBase?.idRecord;
+
+              return loadImages({
+                idVista,
+                idRecord,
+                nomeRisorsa: risorsa,
+                foreignKeyVista: filtro,
+                xdbApiService,
+                filesPerCampo,
+                idCampo: campo
+              }).then(images => {
+                const div = createNewElement(images);
+
+                $element.append($compile(angular.element(div))($scope));
+              });
+            };
+
+            const insertNewElement = function (hasManyIds) {
+              if (hasManyIds) return replaceWithManyEls();
+
+              return replaceWithSingleEl();
+            };
+
+            $scope.$watch(() => $scope.$parent.loading, function (newVal, oldVal) {
+              if (!newVal && oldVal) {
+                $scope.$apply(
+                  insertNewElement(shouldHandleManyIds)
+                );
               }
+
+              if (newVal && !oldVal) {
+                $scope.$destroy();
+              }
+            }, true);
+
           }
         };
       }]);
