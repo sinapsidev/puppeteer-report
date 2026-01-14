@@ -73,11 +73,12 @@
             };
 
             const replaceWithManyEls = function () {
-              const idRecords = infoBase?.idRecords || Array.from({ length: 0 });
+              const idRecords = infoBase?.idRecords;
 
-              const container = document.createElement("div");
-              const style = "width: 100%; height: 100%; display: flex; padding: 5px; column-gap: 5px; overflow-x: hidden; flex-wrap: wrap;";
-              container.setAttribute("style", style);
+              const imageContainerStyle = `width: 100%; height: 100%; padding: 5px; display: grid; grid-template-columns: repeat(auto-fill, minmax(${Math.floor((100 / (!idRecords?.length ? 1 : idRecords?.length)))}%, 100%)); grid-template-rows: repeat(${!idRecords?.length ? 1 : idRecords?.length}, 1fr); grid-gap: 0px;`;
+
+              const container = document.createElement("div")
+              container.setAttribute("style", imageContainerStyle);
 
               const promisesList = idRecords?.map((id) => {
                 return loadImages({
@@ -93,6 +94,8 @@
                   .then((images) => {
                     const imageDiv = createNewElement(images);
                     imageDiv.setAttribute('id', `image-${id}-${risorsa}`);
+
+                    if (!angular.isElement(imageDiv)) return;
 
                     container.appendChild(imageDiv);
                   })
