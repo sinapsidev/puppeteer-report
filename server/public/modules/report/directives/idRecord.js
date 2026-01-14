@@ -38,6 +38,8 @@
                     };
 
                     const processSchedaPromise = ({ infoScheda, idScheda, scopeCopy }) => {
+                        if (!infoScheda || !idScheda) return;
+                        
                         return Promise.resolve(campiSchedaService.getCampiSchedaObject({ idRecord, idScheda, infoScheda }))
                             .then(function (schedaObj) {
                                 if (!Object.entries(schedaObj)?.length) return;

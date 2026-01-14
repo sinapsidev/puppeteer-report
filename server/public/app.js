@@ -116,10 +116,13 @@
             const promises = [];
 
             const vistaRowsPromisesList = visteDataService.getVistaRowsPromisesList(idViste, intIdRecord, visteCorrelate);
-            const schedaRowsPromise = campiSchedaService.getCampiSchedaObject({ infoScheda, idRecord: intIdRecord, idScheda });
-
             promises.push(...vistaRowsPromisesList);
-            promises.push(schedaRowsPromise);
+            
+            if (idScheda && infoScheda) {             
+              const schedaRowsPromise = campiSchedaService.getCampiSchedaObject({ infoScheda, idRecord: intIdRecord, idScheda });
+              promises.push(schedaRowsPromise);
+            } 
+            
             if (promises.length) {
               return Promise.all(promises);
             }
