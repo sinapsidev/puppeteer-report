@@ -56,14 +56,17 @@
 
             const createNewElement = function (imagesData) {
               const div = document.createElement('div');
-              div.className = 'report-gallery report-gallery__image-container';
+              div.className = 'report-gallery';
               for (let index = 0; index < imagesData.length; index++) {
+                const container = document.createElement('div');
+                container.className = 'report-gallery__image-container';
                 const element = imagesData[index];
                 const caption = document.createElement('p');
                 caption.className = 'report-gallery__caption';
                 caption.innerText = `Immagine ${index + 1}`;
-                div.appendChild(element);
-                div.appendChild(caption);
+                container.appendChild(element);
+                container.appendChild(caption);
+                div.appendChild(container);
               }
 
               return div;
@@ -115,9 +118,9 @@
                 filesPerCampo,
                 idCampo: campo
               }).then(images => {
-                const div = createNewElement(images);
+                const imageDiv = createNewElement(images);
 
-                $element.append($compile(angular.element(div))($scope));
+                $element.append($compile(angular.element(imageDiv))($scope));
               });
             };
 
