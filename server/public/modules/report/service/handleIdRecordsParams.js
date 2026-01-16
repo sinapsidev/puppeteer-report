@@ -1,0 +1,52 @@
+(function () {
+  const service = function () {
+
+    const canParamBecomeArray = (param) => [...(param ?? "").matchAll(/((?=.*[0-9])(?=.*,).*$)/g)]?.length > 0;
+
+    this.getArrayIdRecords = (searchParams) => {
+      if (!searchParams) throw new Error("SearchParams assenti");
+
+      const idRecordParam = searchParams.get('idRecord');
+
+      if (!idRecordParam) throw new Error("Parametro idRecord assente");
+
+      if (!canParamBecomeArray(idRecordParam)) return [];
+
+      const withoutInclusion = idRecordParam.split(/(%25|IN|=|%3D|,|%)/).filter((subStr) => typeof subStr === 'string' && !subStr.match(/(%25|IN|=|%3D|,|%)/));
+      const asStringsArray = withoutInclusion.filter(str => typeof str === 'string' && str.match(/[0-9]/));
+      const asNumsArray = asStringsArray.map(str => parseInt(str, 10));
+
+      return asNumsArray;
+    };
+
+    this.getIntIdRecord = (searchParams) => {
+      if (!searchParams) throw new Error("SearchParams assenti");
+
+      const idRecordParam = searchParams.get('idRecord');
+
+      if (!idRecordParam) throw new Error("Parametro idRecord assente");
+
+      if (canParamBecomeArray(idRecordParam)) {
+        const array = this.getArrayIdRecords(searchParams);
+
+        return array[0];
+      }
+      
+      return parseInt(idRecordParam, 10);
+    };
+
+    this.validateIdRecordParam = (idRecord) => {
+      if ((typeof idRecord == undefined) || (typeof idRecord == null)) {
+        throw new Error('idRecord mancante', typeof idRecord);
+      };
+      
+      return `=%25=${idRecord}`;
+    };
+  };
+
+  window.angular
+    .module('reportApp.report')
+    .service('handleIdRecordsParams', [
+      service
+    ]);
+})();

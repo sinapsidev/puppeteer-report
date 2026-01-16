@@ -445,9 +445,8 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
   cluster.task(async ({
     page, data: {
       port,
-      templateId,
-      recordId,
-      tenantId,
+      path,
+      queryParams,
       token,
       timeZone,
       body,
@@ -466,9 +465,8 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     const url = urlBuilder({
       port,
       domain,
-      tenantId,
-      templateId,
-      recordId
+      path,
+      queryParams
     });
 
     logger.info(`Opening ${url}`);
@@ -496,9 +494,8 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
 
   const print = async ({
     port,
-    templateId,
-    recordId,
-    tenantId,
+    path,
+    queryParams,
     token,
     timeZone,
     body,
@@ -509,9 +506,8 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
 
     return await cluster.execute({
       port,
-      templateId,
-      recordId,
-      tenantId,
+      path,
+      queryParams,
       token,
       timeZone,
       body,
