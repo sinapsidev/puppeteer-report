@@ -39,11 +39,7 @@
       if ((typeof idRecord == undefined) || (typeof idRecord == null)) {
         throw new Error('idRecord mancante', typeof idRecord);
       };
-
-      if (Array.isArray(idRecord)) {
-        return `=%25IN=${idRecord.toString()}`;
-      }
-
+      
       return `=%25=${idRecord}`;
     };
   };

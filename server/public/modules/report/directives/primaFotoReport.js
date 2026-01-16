@@ -8,7 +8,7 @@
             link: {
                 post(scope, element, attrs, _controller) {
                     const idFoto = parseInt(attrs.primaFotoReport, 10);
-                    const idRecord = scope.idRecord ?? scope.infoBase.idRecord;
+                    const idRecord = scope.infoBase.idRecord;
                     const nomeRisorsa = attrs.risorsa;
                     const idCampo = attrs.campo;
                     const filtroCampo = attrs.filtro;
