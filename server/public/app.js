@@ -1,111 +1,13 @@
 (function () {
   'use strict';
 
-  const getPlaceholdersScheda = function (template) {
-    const matched = template.match(/{{scheda_[0-9a-zA-Z](.*?)}}/g) || [];
-    const placeholdersScheda = matched.map(function (val) {
-      return val.replace(/({{|}})/g, '');
-    });
-    return placeholdersScheda;
-  };
-
-  const getPlaceholdersViste = function (template) {
-    const matched = template.match(/"item in vista_(.*?)"/g) || [];
-    const placeholdersViste = matched.map(function (val) {
-      return val.replace(/(ng-repeat=|"|item in )/g, '').replace(/ \| orderBy:'(.*?)'/g, '');
-    });
-    return placeholdersViste;
-  };
-
-  const getPlaceholdersVisteSingole = function (template) {
-    const matched = template.match(/{{vista_(.*?)[0-9](.*?)}}/g) || [];
-
-    const placeholdersViste = matched.map(function (val) {
-      return val.replace(/({{|}})/g, '');
-    });
-
-    return placeholdersViste;
-  };
-
-  const getIdScheda = function (template) {
-    const placeholdersScheda = getPlaceholdersScheda(template);
-    const idsPlaceholders = placeholdersScheda.map(function (placeholder) {
-      const schedaInfo = placeholder.split('.')[0];
-      const schedaInfoArray = schedaInfo.split('_');
-      const schedaInfoId = schedaInfoArray[schedaInfoArray.length - 1];
-      return parseInt(schedaInfoId, 10);
-    });
-
-    return idsPlaceholders[0];
-  };
-
-  const getIdViste = function (template) {
-    let placeholdersViste = getPlaceholdersViste(template);
-    const placeholdersVisteSingole = getPlaceholdersVisteSingole(template);
-    placeholdersViste = placeholdersViste.concat(placeholdersVisteSingole);
-    const idsPlaceholders = placeholdersViste.map(function (placeholder) {
-      const vistaInfo = deSanitizeId(placeholder.split('.')[0]);
-      const vistaInfoArray = vistaInfo.split('_');
-      const vistaInfoId = vistaInfoArray[vistaInfoArray.length - 1];
-      return parseInt(vistaInfoId, 10);
-    });
-
-    return idsPlaceholders;
-  };
-
-  const sanitizeSlug = function (string) {
-    if (!string) {
-      return '_' + new Date().getTime();
-    }
-    return string.replace(/\([^()]*\)/g, '').replace(/\s+$/, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w\s]/gi, '').toLowerCase().split(' ').join('_');
-  };
-
-  const deSanitizeId = function (number) {
-    const string = number + '';
-    return string.toLowerCase().replace(/\[.*\]/g, '').split('pers').join('-');
-  };
-
-  const mapSchedaToReportData = function (infoScheda, valori) {
-    const toReturn = {};
-    valori.forEach(function (valore) {
-      const content = valore.dettagli ? valore.dettagli : valore.valore;
-
-      const schedaKey = 'scheda_' + sanitizeSlug(infoScheda.nomeScheda) + '_' + infoScheda.idScheda;
-      const campoKey = 'campo_' + sanitizeSlug(valore.etichetta) + '_' + valore.idCampoScheda;
-
-      if (!toReturn[schedaKey]) {
-        toReturn[schedaKey] = {};
-      }
-
-      toReturn[schedaKey][campoKey] = content;
-    });
-
-    return toReturn;
-  };
-
-  const mapVistaToReportData = function (infoVista, valori) {
-    const toReturn = {};
-    const stringIdVista = infoVista.idVista + '';
-    const idVistaSanitized = stringIdVista.replace(/-/g, 'pers');
-    toReturn['vista_' + sanitizeSlug(infoVista.etichettaVista) + '_' + idVistaSanitized] = valori.records;
-
-    return toReturn;
-  };
-
-  const reportHelpers = {
-    getIdScheda,
-    getIdViste,
-    mapSchedaToReportData,
-    mapVistaToReportData
-  };
-
   window.angular.module('reportApp', [
     // MODULES
     'reportApp.auth',
     'reportApp.common',
     'reportApp.files',
     'reportApp.report',
-    'reportApp.xdb'
+    'reportApp.xdb',
   ]);
 
   window.angular.module('reportApp')
@@ -113,24 +15,32 @@
       '$scope',
       'avatars',
       'reportService',
-      'xdbApiService',
       '$compile',
       'currentUser',
       'campiEditabiliReport',
       'storageService',
       'domUtilsService',
-      'filesPerCampo',
+      'handleIdRecordsParams',
+      'reportHelpers',
+      'visteDataService',
+      'vistaDataStore',
+      'schedeDataStore',
+      'campiSchedaService',
       function (
         $scope,
         avatars,
         reportService,
-        xdbApiService,
         $compile,
         currentUser,
         campiEditabiliReport,
         storageService,
         domUtilsService,
-        filesPerCampo
+        handleIdRecordsParams,
+        reportHelpers,
+        visteDataService,
+        vistaDataStore,
+        schedeDataStore,
+        campiSchedaService
       ) {
         const ID_SCHEDA_CONFIGURAZIONE = 90;
 
@@ -138,7 +48,7 @@
           if (error && error.message) {
             return error.message;
           }
-          return `Errore sconosciuto: ${error.textContent}`;
+          return `Errore sconosciuto: ${typeof error} ${error}`;
         };
 
         const printError = e => {
@@ -154,7 +64,8 @@
           const url = new URL(window.location.href);
           const searchParams = url.searchParams;
           const idTemplate = parseInt(searchParams.get('idTemplate'), 10);
-          const idRecord = parseInt(searchParams.get('idRecord'), 10);
+          const intIdRecord = handleIdRecordsParams.getIntIdRecord(searchParams);
+          const arrayIdRecords = handleIdRecordsParams.getArrayIdRecords(searchParams);
           const tenantId = parseInt(searchParams.get('tenantId'), 10);
 
           currentUser.changeTenant(tenantId);
@@ -183,49 +94,55 @@
             Object.assign($scope, {
               infoBase
             });
-            $scope.infoBase.idRecord = idRecord;
+
+            Object.assign($scope.infoBase, {
+              idRecord: intIdRecord,
+              idRecords: arrayIdRecords,
+            });
 
             idScheda = reportHelpers.getIdScheda(template);
             idViste = reportHelpers.getIdViste(template);
 
             idViste = [...new Set(idViste)];
 
+            vistaDataStore.setData({ idRecord: intIdRecord, idRecords: arrayIdRecords, visteCorrelate, idViste });
+
             return reportService.getDatiSchedaDiRiferimento(idScheda);
           }).then(function (res) {
             infoScheda = res;
 
+            schedeDataStore.setData({ idScheda, infoScheda });
+
             const promises = [];
-            if (idScheda) {
-              promises.push(xdbApiService.getValoriCampiScheda(idScheda, idRecord));
-            }
 
-            idViste.forEach(function (idVista) {
-              const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === idVista; }) || {};
-              const foreignKeyVista = vistaCorrelata.campoVistaPerFiltro;
-              const q = foreignKeyVista ? (foreignKeyVista + '=%25=' + idRecord) : null;
-              const limit = q ? -1 : 1000;
-              promises.push(xdbApiService.getVistaRows(idVista, limit, 0, null, q));
-            });
-
+            const vistaRowsPromisesList = visteDataService.getVistaRowsPromisesList(idViste, intIdRecord, visteCorrelate);
+            promises.push(...vistaRowsPromisesList);
+            
+            if (idScheda && infoScheda) {             
+              const schedaRowsPromise = campiSchedaService.getCampiSchedaObject({ infoScheda, idRecord: intIdRecord, idScheda });
+              promises.push(schedaRowsPromise);
+            } 
+            
             if (promises.length) {
               return Promise.all(promises);
             }
           }).then(function (res) {
-            if (res && idScheda) {
-              const resScheda = res.splice(0, 1);
-              Object.assign($scope, reportHelpers.mapSchedaToReportData(infoScheda, resScheda[0].data));
+
+            if (idScheda && infoScheda) {
+              const schedaObj = res[res.length - 1];
+
+              Object.assign($scope, schedaObj);
             }
 
             if (res && res.length) {
-              res.forEach(function (vista, index) {
-                const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === idViste[index]; }) || {};
+              const promisesResults = (idScheda && infoScheda) ? res.splice(0, res.length - 1) : res;
 
-                const infoVista = {
-                  idVista: idViste[index],
-                  etichettaVista: vistaCorrelata.etichettaVista
-                };
+              promisesResults.forEach(function (vista) {
+                const vistaCorrelata = visteCorrelate.find(function (v) { return v.idVista === vista?.data?.id; }) || {};
 
-                Object.assign($scope, reportHelpers.mapVistaToReportData(infoVista, vista.data));
+                const vistaToReportData = visteDataService.createReportVistaObject({ vistaCorrelata, vistaResult: vista?.data });
+
+                Object.assign($scope, vistaToReportData);
               });
             }
 
@@ -252,33 +169,11 @@
                 });
             });
 
-            domUtilsService.waitForSelector('[data-prima-foto-report]').then((primaFoto) => {
-              const idVista = primaFoto.dataset.primaFotoReport;
-              const nomeRisorsa = primaFoto.dataset.risorsa;
-              const idCampo = primaFoto.dataset.campo;
-              const filtroPerCampo = primaFoto.dataset.filtro;
-
-              // genere la query per andare a recuperare i dati per una persona specifica
-              const q = filtroPerCampo ? (filtroPerCampo + '=%25=' + idRecord) : null;
-              xdbApiService.getVistaRows(idVista, 1, 0, null, q).then((res) => {
-                const records = res.data.records ?? [];
-                const image = records.filter(file => filesPerCampo.isImage(file.nome));
-                filesPerCampo
-                  .download(
-                    nomeRisorsa,
-                    image[0].ID,
-                    idCampo
-                  ).then((url) => {
-                    primaFoto.src = `${url}`;
-                  });
-              });
-            });
-
             reportService.getApiTemplateCss(parseInt(searchParams.get('idTemplate'), 10)).then((res) => {
               const withPrintInstructions = res.length > 0 ? `@media print {
              ${res} 
             }` : '';
-              
+
               const styleTags = document.querySelectorAll("style");
               const styleTag = styleTags[styleTags.length - 1];
 
@@ -292,31 +187,12 @@
 
             })
 
-            return campiEditabiliReport.applyValues(valoriCampiEditabili).then(() => {
-              const images = body.querySelectorAll('[data-avatar-record]');
-
-              images.forEach(image => {
-                const idSschedaPerAvatar = image.dataset.avatarRecord || idScheda;
-                avatars
-                  .get(idSschedaPerAvatar, idRecord)
-                  .then(url => {
-                    const div = document.createElement('div');
-                    div.style.width = `${image.width}px`;
-                    div.style.height = `${image.height}px`;
-                    div.style.backgroundImage = `url('${url}')`;
-                    div.style.backgroundPosition = 'center';
-                    div.style.backgroundSize = 'cover';
-
-                    image.replaceWith(div);
-                  });
-              });
-            });
+            return campiEditabiliReport.applyValues(valoriCampiEditabili)
 
           }).catch(function (e) {
             printError(e);
           }).finally(function () {
             $scope.$applyAsync(function () {
-              $scope.loading = false;
               const reportHeader = document.getElementById('header');
               if (reportHeader) {
                 setTimeout(function () {
@@ -327,6 +203,7 @@
                   } else {
                     window.top.postMessage('hideReportHeaderWarning', '*');
                   }
+                  $scope.loading = false;
                 }, 0);
               }
             });
