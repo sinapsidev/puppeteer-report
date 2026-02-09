@@ -1,4 +1,12 @@
 # Change Log
+1.33.0 - 09/02/2026
+- Feat: gestione id record multipli in anteprima stampa e stampa report(Rif.Int.: 2025/ 4394)
+- feat: gestione dati viste multipli id records (Rif.Int.: 2025/ 4394)
+- fix: corretto comportamento dello scope duplicato tra directives
+- feat: gestione campi scheda per id records (Rif.Int.: 2025/ 5095)
+- fix: applicazione stili nel footer (Rif.Int.: 2025/4927 e 2025/4928)
+- feat: correzione directive per allegare immagini della galleria documenti (Rif.Int. 2026/ 34)
+
 1.32.0 - 28/10/2025
 - fix: reports: ripristino ripetizione header e contenuto in interruzione pagine (Rif. Int. 2025/ 4393)
 
