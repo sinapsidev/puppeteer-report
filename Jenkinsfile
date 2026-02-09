@@ -42,8 +42,9 @@ pipeline {
             }
             steps {
                 sh  """
-                    AWS_PROFILE=${AWS_PROFILE} docker push ${IMAGE_NAME}:${env.VERSION}
-                    AWS_PROFILE=${AWS_PROFILE} docker push ${IMAGE_NAME}:latest                
+                    aws ecr get-login-password --profile ${AWS_PROFILE} --region eu-central-1 | docker login --username AWS --password-stdin 891377062216.dkr.ecr.eu-central-1.amazonaws.com
+                    docker push ${IMAGE_NAME}:${env.VERSION}
+                    docker push ${IMAGE_NAME}:latest                
                     """
             }
         }
