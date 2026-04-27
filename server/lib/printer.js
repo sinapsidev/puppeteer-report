@@ -482,6 +482,20 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
 
     const buffer = await generator(page, config);
 
+    if (config.path && (printMode === 'pdf' || printMode === 'docx')) {
+      try {
+        const fs = require('fs');
+        fs.unlink(config.path, (err) => {
+          if (err) {
+            logger.error(`Error deleting temporary file ${config.path}: ${err.message}`);
+          } else {
+            logger.info(`Deleted temporary file ${config.path}`);
+          }
+        });
+      } catch (error) {
+        logger.error(`Error deleting temporary file ${config.path}: ${error.message}`);
+      }
+    }
     const end = Date.now();
 
     logger.info(`Processed page ${url} in ${end - start}ms`);
