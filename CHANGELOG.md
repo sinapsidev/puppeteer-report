@@ -1,4 +1,7 @@
 # Change Log
+1.34.0 27-04-2026
+- fix(eliminazione-file-temporanei): Implementa l'eliminazione di file temporanei (Refs: Int. 2026/1964)
+
 1.33.0 - 09/02/2026
 - Feat: gestione id record multipli in anteprima stampa e stampa report(Rif.Int.: 2025/ 4394)
 - feat: gestione dati viste multipli id records (Rif.Int.: 2025/ 4394)
