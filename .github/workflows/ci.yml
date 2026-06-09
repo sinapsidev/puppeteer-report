@@ -1,5 +1,4 @@
 name: Node JS Build and Deploy to ECS
-
 on:
   push:
     branches:
