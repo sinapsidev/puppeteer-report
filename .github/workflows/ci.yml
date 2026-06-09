@@ -77,3 +77,16 @@ jobs:
           account: ${{ steps.deploy-env.outputs.account }}
           aws_ecr_registry: '891377062216.dkr.ecr.eu-central-1.amazonaws.com'
           version: ${{ steps.version.outputs.VERSION }}
+      
+      - name: Notify Slack
+        # Secrets non si può usare nella sezione "if", quindi usiamo una variabile d'ambiente per controllare se inviare la notifica
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: ${{ always() && env.SLACK_WEBHOOK_URL != '' }}
+        uses: ./.github/actions/slack-notify
+        with:
+          webhook_url: ${{ env.SLACK_WEBHOOK_URL }}
+          status: ${{ job.status }}
+          repository: ${{ github.repository }}
+          branch: ${{ github.ref_name }}
+          build_number: ${{ github.run_number }}
