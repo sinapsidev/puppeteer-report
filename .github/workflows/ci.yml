@@ -1,17 +1,79 @@
-name: Node JS Build and Deploy to ECS
+name: Node build
 on:
   push:
     branches:
-      - 'develop'
-      - 'master'
+      - master
+      - develop
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
-    uses: sinapsidev/snps-jenkins-library/.github/workflows/nodejs-build.yml@master
-    with:
-      image_name: 'logica/puppeteerreport'
-      service_name: 'puppeteer'
-    secrets:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  node-js-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Extract package version
+        id: version
+        run: |
+          version=$(node -p "require('./package.json').version")
+          echo "Version retrieved: $version"
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: 'eu-central-1'
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Determine deploy environment
+        id: deploy-env
+        run: |
+          BRANCH="${{github.ref_name}}"
+          # if branch is develop set environment to dev
+          if [[ "$BRANCH" == "develop" ]]; then
+            echo "account=730335348179" >> $GITHUB_OUTPUT
+            echo "env=dev" >> $GITHUB_OUTPUT
+          elif [[ "$BRANCH" == "main" || "$BRANCH" == "master" ]]; then
+            echo "account=654654424482" >> $GITHUB_OUTPUT
+            echo "env=prod" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push Docker image
+        if: >-
+          (github.ref_name == 'main' || github.ref_name == 'master' || github.ref_name == 'develop')
+        id: build-and-push
+        shell: bash
+        env:
+          ECR_IMAGE: '891377062216.dkr.ecr.eu-central-1.amazonaws.com/logica/puppeteerreport'
+        run: |
+          docker build -t ${{ env.ECR_IMAGE }}:${{ steps.version.outputs.version }} -t ${{ env.ECR_IMAGE }}:latest .
+          docker push ${{ env.ECR_IMAGE }}:${{ steps.version.outputs.version }}
+
+      - name: Clean docker cache
+        id: clean-docker-cache
+        shell: bash
+        run: |
+          docker system prune -f
+
+      - name: Deploy to ECS
+        if: github.ref_name == 'main' || github.ref_name == 'master' || github.ref_name == 'develop'
+        uses: sinapsidev/snps-jenkins-library/.github/actions/ecs-deploy@master
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          image: 'logica/puppeteerreport'
+          service_name: 'puppeteer'
+          environment: ${{ steps.deploy-env.outputs.env }}
+          account: ${{ steps.deploy-env.outputs.account }}
+          aws_ecr_registry: '891377062216.dkr.ecr.eu-central-1.amazonaws.com'
+          version: ${{ steps.version.outputs.VERSION }}
