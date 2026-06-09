@@ -1,4 +1,4 @@
-name: Node Build and Deploy to ECS
+name: Node JS Build and Deploy to ECS
 
 on:
   push:
