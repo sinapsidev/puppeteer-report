@@ -1,0 +1,17 @@
+name: Node Build and Deploy to ECS.
+on:
+  push:
+    branches:
+      - 'develop'
+      - 'master'
+
+jobs:
+  build-and-deploy:
+    uses: sinapsidev/snps-jenkins-library/.github/workflows/node-build.yml@master
+    with:
+      image_name: 'logica/puppeteerreport'
+      service_name: 'puppeteer'
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
