@@ -1,0 +1,295 @@
+name: 'ECS Deploy'
+description: 'Deploy a new image to an ECS service'
+
+inputs:
+  service_name:
+    description: 'Name of the ECS service (e.g. core, gateway, hub)'
+    required: true
+    type: string
+  environment:
+    description: 'Target environment (e.g. dev, stg, prod)'
+    required: true
+    type: string
+  image:
+    description: 'Full Docker image reference (registry/repository:tag)'
+    required: true
+    type: string
+  migration:
+    description: 'Migration to apply before starting the service (e.g. flywayxdbhub, flywaydbcore)'
+    required: false
+    type: string
+  migration_image:
+    description: 'Migration Docker image reference (registry/repository:tag)'
+    required: false
+  project:
+    description: 'Project identifier'
+    required: false
+    type: string
+    default: 'logica'
+  aws_region:
+    description: 'AWS region'
+    required: false
+    type: string
+    default: 'eu-central-1'
+  wait_for_stable:
+    description: 'Whether to wait for the stack update to complete'
+    required: false
+    type: boolean
+    default: true
+  aws_access_key_id:
+    required: true
+    description: 'AWS Access Key ID'
+  aws_secret_access_key:
+    required: true
+    description: 'AWS Secret Access Key'
+  webhook_url:
+    description: 'Slack webhook URL'
+    required: true
+  role-duration-seconds:
+    description: 'Role duration in seconds'
+    required: true
+    default: '3600'
+  account:
+    description: 'AWS account'
+    required: true
+  aws_ecr_registry:
+    description: 'AWS ECR registry'
+    required: true
+  version:
+    description: 'Version of the project'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ inputs.aws_access_key_id }}
+        aws-secret-access-key: ${{ inputs.aws_secret_access_key }}
+        aws-region: ${{ inputs.aws_region }}
+        role-to-assume: arn:aws:iam::${{ inputs.account }}:role/cicd-from-shared-logica-${{ inputs.environment }}
+        role-duration-seconds: 3600
+        role-skip-session-tagging: true
+
+    - name: Migrations
+      shell: bash
+      if: >-
+        (github.ref_name == 'main' || github.ref_name == 'master' || github.ref_name == 'develop')
+        && inputs.migration != ''
+        && inputs.migration_image != ''
+      env:
+        MIGRATION: ${{ inputs.migration }}
+        MIGRATION_IMAGE: ${{ inputs.aws_ecr_registry }}/${{ inputs.migration_image }}:${{ inputs.version }}
+        PROJECT: ${{ inputs.project }}
+        ENVIRONMENT: ${{ inputs.environment }}
+      run: |
+        set -e
+        CUSTOMER=sinapsi
+        STACK_NAME="task-ecs-migration-${MIGRATION}-${PROJECT}-${ENVIRONMENT}"
+        PARAMETER_PATH="/${ENVIRONMENT}/${PROJECT}/images/${MIGRATION}"
+        
+        echo "Updating SSM parameter: ${PARAMETER_PATH}"
+        aws ssm put-parameter \
+          --name "${PARAMETER_PATH}" \
+          --value "${MIGRATION_IMAGE}" \
+          --type String \
+          --overwrite
+        echo "SSM parameter for migration updated successfully"
+
+    - name: Update CloudFormation Stack for migration and run migration task
+      shell: bash
+      if: >-
+        (github.ref_name == 'main' || github.ref_name == 'master' || github.ref_name == 'develop')
+        && inputs.migration != '' 
+        && inputs.migration_image != ''
+      env:
+        MIGRATION: ${{ inputs.migration }}
+        MIGRATION_IMAGE: ${{ inputs.aws_ecr_registry }}/${{ inputs.migration_image }}:${{ inputs.version }}
+        PROJECT: ${{ inputs.project }}
+        ENVIRONMENT: ${{ inputs.environment }}
+      run: |
+        set -e
+        CUSTOMER=sinapsi
+        STACK_NAME="task-ecs-migration-${MIGRATION}-${PROJECT}-${ENVIRONMENT}"
+        echo "Updating stack: ${STACK_NAME}"
+        
+        aws cloudformation describe-stacks \
+          --stack-name "${STACK_NAME}" \
+          --query 'Stacks[0].Parameters' > parameters.json
+        
+        UPDATE_OUTPUT=$(aws cloudformation update-stack \
+          --stack-name "${STACK_NAME}" \
+          --use-previous-template \
+          --parameters file://parameters.json \
+          --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM 2>&1) || true
+        echo "$UPDATE_OUTPUT"
+        
+        echo "Waiting for CloudFormation stack update..."
+        aws cloudformation wait stack-update-complete \
+          --stack-name "${STACK_NAME}" 2>/dev/null || true
+        
+        # Get VPC configuration and task definition from CF outputs
+        vpcConfigurationParameter=$(aws cloudformation describe-stacks \
+          --stack-name "${STACK_NAME}" \
+          | jq --raw-output '.Stacks[0].Outputs | map(select(.OutputKey == "VpcConfigurationParameter")) | .[].OutputValue')
+        
+        vpcConfiguration=$(aws ssm get-parameter --name "$vpcConfigurationParameter" | jq --raw-output '.Parameter.Value')
+        
+        taskDefinition=$(aws cloudformation describe-stacks \
+          --stack-name "${STACK_NAME}" \
+          | jq --raw-output '.Stacks[0].Outputs | map(select(.OutputKey == "TaskDefinition")) | .[0].OutputValue')
+        
+        # Run migration task
+        taskArn=$(aws ecs run-task \
+          --cluster "${CUSTOMER}-${PROJECT}-${ENVIRONMENT}-ecs" \
+          --task-definition "${taskDefinition}" \
+          --count 1 \
+          --network-configuration "$vpcConfiguration" \
+          | jq --raw-output '.tasks[0].taskArn')
+        
+        echo "Migration task started: $taskArn"
+
+        # Wait for migration to complete
+        
+        lastStatus=""
+          while [ "$lastStatus" != "STOPPED" ]; do
+            lastStatus=$(aws ecs describe-tasks \
+              --cluster "${CUSTOMER}-${PROJECT}-${ENVIRONMENT}-ecs" \
+              --tasks "$taskArn" \
+              --query "tasks[0].lastStatus" \
+              --output text)
+            echo "Migration Task Status: $lastStatus"
+            sleep 5
+          done
+          echo "Migration Task Finished"
+
+    - name: Update SSM Parameter
+      shell: bash
+      if: >-
+        (github.ref_name == 'main' || github.ref_name == 'master' || github.ref_name == 'develop')
+        && inputs.service_name != ''
+        && inputs.image != ''
+      env:
+        SERVICE: ${{ inputs.service_name }}
+        SERVICE_IMAGE: ${{ inputs.aws_ecr_registry }}/${{ inputs.image }}:${{ inputs.version }}
+        PROJECT: ${{ inputs.project }}
+        ENVIRONMENT: ${{ inputs.environment }}
+      run: |
+        set -e
+        PARAMETER_PATH="/${ENVIRONMENT}/${PROJECT}/images/${SERVICE}"
+        echo "Updating SSM parameter: ${PARAMETER_PATH}"
+        aws ssm put-parameter \
+          --name "${PARAMETER_PATH}" \
+          --value "${SERVICE_IMAGE}" \
+          --type String \
+          --overwrite
+        echo "SSM parameter updated successfully"
+
+    - name: Update CloudFormation Stack
+      shell: bash
+      if: >-
+        (github.ref_name == 'main' || github.ref_name == 'master' || github.ref_name == 'develop')
+        && inputs.service_name != ''
+        && inputs.image != ''
+      env:
+        SERVICE: ${{ inputs.service_name }}
+        SERVICE_IMAGE: ${{ inputs.aws_ecr_registry }}/${{ inputs.image }}:${{ inputs.version }}
+        PROJECT: ${{ inputs.project }}
+        ENVIRONMENT: ${{ inputs.environment }}
+      run: |
+        set -e
+        CUSTOMER=sinapsi
+        STACK_NAME="service-ecs-${SERVICE}-${PROJECT}-${ENVIRONMENT}"
+        CF_UPDATE_DONE=false
+        ECS_DEPLOYMENT_DONE=false
+        echo "Updating stack: ${STACK_NAME}"
+        
+        # Determine force restart (true for non-prod)
+          if [ "ENVIRONMENT" != "prod" ]; then
+            FORCE=true
+          else
+            FORCE=false
+          fi
+        
+        aws cloudformation describe-stacks \
+          --stack-name "${STACK_NAME}" \
+          --query 'Stacks[0].Parameters' > parameters.json
+        
+        UPDATE_OUTPUT=$(aws cloudformation update-stack \
+        --stack-name "${STACK_NAME}" \
+        --use-previous-template \
+        --parameters file://parameters.json \
+        --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM 2>&1) || true
+        echo "$UPDATE_OUTPUT"
+        
+        # If no CF changes and force restart, force ECS deployment
+        if [[ "$UPDATE_OUTPUT" == *"No updates are to be performed."* && "$FORCE" = true ]]; then
+          echo "No updates to be performed. Forcing ECS deployment..."
+          ECS_UPDATE_OUTPUT=$(aws ecs update-service \
+              --cluster "${CUSTOMER}-${PROJECT}-${ENVIRONMENT}-ecs" \
+              --service "${SERVICE}-${PROJECT}-${ENVIRONMENT}" \
+              --force-new-deployment 2>&1)
+          CF_UPDATE_DONE=true
+        elif [[ "$UPDATE_OUTPUT" == *" error "* ]]; then
+          echo "CloudFormation update failed."
+          exit 1
+        fi
+        
+        echo "Waiting for deployment to stabilize..."
+        sleep 10
+        
+        # Wait for Stack Update to complete
+        while [ "$CF_UPDATE_DONE" != true ]; do
+            stackStatus=$(aws cloudformation describe-stacks \
+                --stack-name "${STACK_NAME}" \
+                --query "Stacks[0].StackStatus" \
+                --output text)
+            echo "CloudFormation Stack Status: $stackStatus"
+        
+            if [[ "$stackStatus" == "CREATE_COMPLETE" ]]; then
+                echo "Cloudformation stack created successfully."
+                CF_UPDATE_DONE=true
+            elif [[ "$stackStatus" == "UPDATE_COMPLETE" ]]; then
+                echo "CloudFormation stack updated successfully."
+                CF_UPDATE_DONE=true
+            elif [[ "$stackStatus" == "ROLLBACK_COMPLETE" ]]; then
+                echo "CloudFormation stack creation failed - rollback completed."
+                CF_UPDATE_DONE=true
+            elif [[ "$stackStatus" == "UPDATE_ROLLBACK_FAILED" ]]; then
+                echo "CloudFormation stack update failed - rollback failed."
+                CF_UPDATE_DONE=true
+            fi
+            sleep 10
+        done
+        
+        # Poll deployment status
+        while [ "$ECS_DEPLOYMENT_DONE" != true ]; do
+          deployment=$(aws ecs describe-services \
+            --cluster "${CUSTOMER}-${PROJECT}-${ENVIRONMENT}-ecs" \
+            --service "${SERVICE}-${PROJECT}-${ENVIRONMENT}")
+          
+          new_deployment_rolloutState=$(echo $deployment | jq -r '.services[0].deployments[0].rolloutState')
+          new_deployment_status=$(echo $deployment | jq -r '.services[0].deployments[0].status')
+          old_deployment_rolloutState=$(echo $deployment | jq -r '.services[0].deployments[1].rolloutState')
+          old_deployment_status=$(echo $deployment | jq -r '.services[0].deployments[1].status')
+
+          # Header
+          printf "%-10s %-15s %-5s\n" "Deployment" "Status" "Rollout State"
+          # Separator
+          printf "%s\n" "----------------------------------------------------"
+          # Data Rows
+          printf "%-10s %-15s %-5s\n" "NEW DEPLOY" $new_deployment_status $new_deployment_rolloutState
+          printf "%-10s %-15s %-5s\n" "OLD DEPLOY" $old_deployment_status $old_deployment_rolloutState
+          printf "\n"
+          
+          if [ "$new_deployment_rolloutState" == "COMPLETED" ]; then
+            echo "ECS Deployment Succeded"
+            ECS_DEPLOYMENT_DONE=true
+          elif [ "$new_deployment_rolloutState" == "FAILED" ]; then
+            echo "ECS Deployment failed - Rollback completed"
+            ECS_DEPLOYMENT_DONE=true
+          fi
+          echo "*************************************************"
+          sleep 10
+        done
