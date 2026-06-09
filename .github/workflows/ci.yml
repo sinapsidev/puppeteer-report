@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-and-deploy:
-    uses: sinapsidev/snps-jenkins-library/.github/workflows/nodejs-build.yml@master
+    uses: sinapsidev/snps-jenkins-library/.github/workflows/simple-docker-build.yml@master
     with:
       image_name: 'logica/puppeteerreport'
       service_name: 'puppeteer'
