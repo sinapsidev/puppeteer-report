@@ -1,4 +1,7 @@
 # Change Log
+1.35.0 10-06-2026
+- fix(style-source): imposta il dominio di produzione come origine per lo stylesheet (#16) (Refs: Int. 2026/2482)
+
 1.34.0 27-04-2026
 - fix(eliminazione-file-temporanei): Implementa l'eliminazione di file temporanei (Refs: Int. 2026/1964)
 
