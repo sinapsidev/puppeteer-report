@@ -1,7 +1,7 @@
-FROM node:18-buster-slim
+FROM node:18-bookworm-slim
 
 RUN apt-get update && \
-    apt-get install -y gconf-service \
+    apt-get install -y \
     libasound2 \
     libatk1.0-0 \
     libatk-bridge2.0-0 \
@@ -11,8 +11,7 @@ RUN apt-get update && \
     libdbus-1-3 \
     libexpat1 \
     libfontconfig1 \
-    libgcc1 \
-    libgconf-2-4 \
+    libgcc-s1 \
     libgdk-pixbuf2.0-0 \
     libglib2.0-0 \
     libgtk-3-0 \
@@ -27,7 +26,7 @@ RUN apt-get update && \
     libxcomposite1 \
     libxcursor1 \
     libxdamage1 \
-    libxext6  \
+    libxext6 \
     libxfixes3 \
     libxi6 \
     libxrandr2 \
@@ -36,7 +35,6 @@ RUN apt-get update && \
     libxtst6 \
     ca-certificates \
     fonts-liberation \
-    libappindicator1 \
     libnss3 \
     lsb-release \
     xdg-utils \
@@ -49,8 +47,8 @@ COPY server/ server/
 COPY templates/ templates/
 COPY package.json package.json
 
-RUN npm install 
+RUN npm install
 
 EXPOSE 5000
 
-CMD npm start
+CMD ["npm", "start"]

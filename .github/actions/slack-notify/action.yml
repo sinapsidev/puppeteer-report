@@ -1,0 +1,104 @@
+name: 'Slack Notification'
+description: 'Send build status notifications to Slack'
+author: 'Sinapsi DevOps'
+
+inputs:
+  webhook_url:
+    description: 'Slack webhook URL'
+    required: true
+  status:
+    description: 'Build status: success, failure, or cancelled'
+    required: true
+  repository:
+    description: 'Repository name'
+    required: false
+    default: ${{ github.repository }}
+  branch:
+    description: 'Branch name'
+    required: false
+    default: ${{ github.ref_name }}
+  build_number:
+    description: 'Build number'
+    required: false
+    default: ${{ github.run_number }}
+
+runs:
+  using: composite
+  steps:
+    - name: Send Slack notification (success)
+      if: ${{ inputs.status == 'success' }}
+      uses: slackapi/slack-github-action@v3.0.1
+      with:
+        webhook: ${{ inputs.webhook_url }}
+        webhook-type: incoming-webhook
+        payload: |
+          {
+            "attachments": [
+              {
+                "color": "#2eb886",
+                "blocks": [
+                  {
+                    "type": "section",
+                     "text": {
+                      "type": "mrkdwn",
+                      "text": "Job *${{ inputs.repository }}* on branch *${{ inputs.branch }}* with build number *${{ inputs.build_number }}* was successful! :tada:"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+
+    - name: Send Slack notification (failure)
+      if: ${{ inputs.status == 'failure' }}
+      uses: slackapi/slack-github-action@v3.0.1
+      with:
+        webhook: ${{ inputs.webhook_url }}
+        webhook-type: incoming-webhook
+        payload: |
+          {
+            "text": " ",
+            "attachments": [
+              {
+                "color": "#a30200",
+                "blocks": [
+                  {
+                    "type": "section",
+                     "text": {
+                      "type": "mrkdwn",
+                      "text": "Job *${{ inputs.repository }}* on branch *${{ inputs.branch }}* with build number *${{ inputs.build_number }}* failed! :x:"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+
+    - name: Send Slack notification (cancelled)
+      if: ${{ inputs.status == 'cancelled' }}
+      uses: slackapi/slack-github-action@v3.0.1
+      with:
+        webhook: ${{ inputs.webhook_url }}
+        webhook-type: incoming-webhook
+        payload: |
+          {
+            "text": " ",
+            "attachments": [
+              {
+                "color": "#ffa500",
+                "blocks": [
+                  {
+                    "type": "section",
+                     "text": {
+                      "type": "mrkdwn",
+                      "text": "Job *${{ inputs.repository }}* on branch *${{ inputs.branch }}* with build number *${{ inputs.build_number }}* was cancelled! :warning:"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+
+branding:
+  icon: 'message-circle'
+  color: 'purple'
