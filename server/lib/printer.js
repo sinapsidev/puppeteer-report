@@ -102,7 +102,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     const WIDTH = body.width + 'mm';
     const HEIGHT = body.height + 'mm';
     const IS_PAGE_NUMBER_VISIBLE = body.insertPageNumber;
-    const SHOW_LOGO = process.env.SHOW_LOGO || true;
+    const SHOW_LOGO = body.madeBy ?? true;
 
     await page.waitForSelector('#header', { timeout: 0, visible: true });
     await page.waitForSelector('#footer', { timeout: 0, visible: true });
