@@ -102,6 +102,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     const WIDTH = body.width + 'mm';
     const HEIGHT = body.height + 'mm';
     const IS_PAGE_NUMBER_VISIBLE = body.insertPageNumber;
+    const SHOW_LOGO = process.env.SHOW_LOGO || true;
 
     await page.waitForSelector('#header', { timeout: 0, visible: true });
     await page.waitForSelector('#footer', { timeout: 0, visible: true });
@@ -117,13 +118,36 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
       }));
     });
 
-    const { FOOTER_TEMPLATE, HAS_FOOTER, FOOTER_H, CUSTOM_CSS } = await page.evaluate((addedStyle) => {
+    const { FOOTER_TEMPLATE, HAS_FOOTER, FOOTER_H, CUSTOM_CSS, LOGO_TEMPLATE } = await page.evaluate(async (addedStyle) => {
 
       const SBECCO = 20;
+      
+      // Converti l'immagine in base64 per evitare problemi di caricamento
+      const LOGO_URL = await new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL('image/png'));
+        };
+        img.onerror = function() {
+          // Fallback: usa un'immagine vuota se il caricamento fallisce
+          resolve('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
+        };
+        img.src = `https://app.logicasolutions.it/assets/image-resources/favicon.ico`;
+      });
 
       const FOOTER_TEMPLATE = document.querySelector('#footer').innerHTML;
       const HEADER_TEMPLATE = document.querySelector('#header').innerHTML;
       const BODY_TEMPLATE = document.querySelector('#body').innerHTML;
+      const LOGO_TEMPLATE = `
+      <div id="logo-container" class="page-footer page-footer--with-logo">
+          Made by Logica <img class="logo" src="${LOGO_URL}" alt="Logica Logo" >
+      </div>`;
 
       const HAS_FOOTER = !!FOOTER_TEMPLATE;
       const HAS_HEADER = !!HEADER_TEMPLATE;
@@ -174,6 +198,18 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             flex-direction: column; 
             align-items: center; 
             justify-content: center;
+          }
+
+          .page-footer--with-logo {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .logo {
+            width: 16px;
+            height: 16px;
           }
 
           .page-header {
@@ -309,7 +345,8 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
         FOOTER_TEMPLATE,
         HAS_FOOTER,
         FOOTER_H,
-        CUSTOM_CSS
+        CUSTOM_CSS,
+        LOGO_TEMPLATE
       };
     }, apiCss);
 
@@ -370,7 +407,27 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
         ${!HAS_FOOTER ? "" : FOOTER_TEMPLATE}
         <div id="page-numbers-container" class="page-footer">
           Pagina <span class="pageNumber"></span> di <span class="totalPages"></span>
+          ${SHOW_LOGO ? LOGO_TEMPLATE : ""}
         </div>
+      </div>`;
+    }
+
+    if (SHOW_LOGO && !IS_PAGE_NUMBER_VISIBLE ) {
+      config.displayHeaderFooter = true;
+      config.margin = {
+        top: 0,
+        right: 0,
+        left: 0,
+        bottom: HAS_FOOTER ? FOOTER_H + 40 : 40
+      };
+      config.printBackground = true;
+      config.footerTemplate = `
+      <style>
+      ${CUSTOM_CSS}
+      </style>
+      <div class="page-footer page-footer--fixed">
+      ${!HAS_FOOTER ? "" : FOOTER_TEMPLATE}
+      ${SHOW_LOGO ? LOGO_TEMPLATE : ""}
       </div>`;
     }
 
