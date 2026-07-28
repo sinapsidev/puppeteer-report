@@ -204,7 +204,7 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
             display: flex;
             flex-direction: row;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-end;
           }
 
           .logo {
