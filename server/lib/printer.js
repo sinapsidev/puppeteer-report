@@ -108,6 +108,10 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
     await page.waitForSelector('#footer', { timeout: 0, visible: true });
     await page.waitForSelector('#body', { timeout: 0, visible: true });
 
+    await page.waitForFunction(() =>
+      !document.querySelector('[data-prima-foto-report-loading="true"]'),
+    { timeout: 0 });
+
     await page.evaluate(async () => {
       const selectors = Array.from(document.querySelectorAll('img'));
       await Promise.all(selectors.filter(img => !img.complete).map(img => {
