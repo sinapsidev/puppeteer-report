@@ -212,8 +212,8 @@ const create = async ({ timeout, logger, networkLogging, cluster }) => {
           }
 
           .logo {
-            width: 16px;
-            height: 16px;
+            width: 25px;
+            height: 25px;
           }
 
           .page-header {
