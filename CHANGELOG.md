@@ -1,4 +1,10 @@
 # Change Log
+
+1.36.0 28/10/2026
+-----------------------------
+- fix(immagine-report): sistema la generazione del report con immagine (Refs: Rich. 2026/935)
+- fix(style-source): imposta il dominio di produzione come origine per lo stylesheet (Refs: Int. 2026/2482)
+
 1.34.0 27-04-2026
 - fix(eliminazione-file-temporanei): Implementa l'eliminazione di file temporanei (Refs: Int. 2026/1964)
 

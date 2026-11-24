@@ -1,6 +1,6 @@
 'use strict';
 (function () {
-    window.angular.module('reportApp.report').directive('primaFotoReport', function ($timeout, handleIdRecordsParams, xdbApiService, filesPerCampo) {
+    window.angular.module('reportApp.report').directive('primaFotoReport', function (handleIdRecordsParams, xdbApiService, filesPerCampo) {
         return {
             restrict: 'A',
             scope: false,
@@ -15,45 +15,46 @@
 
                     const isValidValue = (value) => value !== undefined && value !== null;
 
-                    $timeout(function () {
-                            const compileImage = function () {
+                    const compileImage = function () {
+                        const q = filtroCampo ? `${filtroCampo}${handleIdRecordsParams.validateIdRecordParam(idRecord)}` : null;
 
-                            const q = filtroCampo ? `${filtroCampo}${handleIdRecordsParams.validateIdRecordParam(idRecord)}` : null;
+                        return xdbApiService
+                            .getVistaRows(idFoto, 1, 0, null, q)
+                            .then((res) => {
+                                const records = res.data.records ?? [];
+                                const image = records?.find(file => filesPerCampo.isImage(file.nome));
 
-                            return xdbApiService
-                                .getVistaRows(idFoto, 1, 0, null, q)
-                                .catch(() => { })
-                                .then((res) => {
+                                if ([nomeRisorsa, image?.["ID"], idCampo].some((val) => !isValidValue(val))) return;
 
-                                    const records = res.data.records ?? [];
-                                    const image = records?.find(file => filesPerCampo.isImage(file.nome));
+                                return filesPerCampo
+                                    .download(
+                                        nomeRisorsa,
+                                        image?.["ID"],
+                                        idCampo
+                                    )
+                                    .catch(() => { })
+                                    .then((url) => {
+                                        if (!url) return;
 
-                                    if ([nomeRisorsa, image?.["ID"], idCampo].some((val) => !isValidValue(val))) return;
+                                        element?.[0]?.setAttribute('src', `${url}`);
+                                    })
+                                    .finally(() => {
+                                        if (!scope.$$phase) {
+                                            scope.$parent.$digest();
+                                        }
+                                    });
+                            });
+                    };
 
-                                    return filesPerCampo
-                                        .download(
-                                            nomeRisorsa,
-                                            image?.["ID"],
-                                            idCampo
-                                        )
-                                        .catch(() => { })
-                                        .then((url) => {
-                                            if (!url) return;
-
-                                            scope.$applyAsync(function () {
-                                                element?.[0]?.setAttribute('src', `${url}`);
-                                            });
-                                        })
-                                        .finally(() => {
-                                            if (!scope.$$phase) {
-                                                scope.$parent.$digest();
-                                            }
-                                        });
-                                });
-                        };
-
-                        angular.isElement(element) && compileImage();
-                    }, 1000)
+                    if (angular.isElement(element)) {
+                        element[0].setAttribute('data-prima-foto-report-loading', 'true');
+                        Promise.resolve()
+                            .then(compileImage)
+                            .catch((error) => console.error('primaFotoReport:', error))
+                            .finally(() => {
+                                element[0].removeAttribute('data-prima-foto-report-loading');
+                            });
+                    }
                 }
             }
         };
